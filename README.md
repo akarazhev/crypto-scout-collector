@@ -26,7 +26,7 @@ flowchart LR
         S3[crypto-bybit-stream]
     end
 
-    subgraph App[crypto-scout-collector ActiveJ]
+    subgraph App[crypto-scout-collector -> ActiveJ]
         A1[AmqpConsumer]
         A2[MetricsCmcCollector]
         A3[MetricsBybitCollector]
@@ -41,8 +41,8 @@ flowchart LR
     end
 
     S1 -->|Payload.CMC| A1 --> A2 --> T1
-    S2 -->|Payload.BYBIT LPL| A1 --> A3 --> T3
-    S3 -->|Payload.BYBIT Spot tickers| A1 --> A4 --> T2
+    S2 -->|Payload.BYBIT -> LPL| A1 --> A3 --> T3
+    S3 -->|Payload.BYBIT -> Spot tickers| A1 --> A4 --> T2
 ```
 
 Key modules/classes:
