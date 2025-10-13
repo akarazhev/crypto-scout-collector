@@ -34,7 +34,7 @@ flowchart LR
         W[WebModule /health]
     end
 
-    subgraph DB[(TimescaleDB)]
+    subgraph DB[TimescaleDB]
         T1[crypto_scout.cmc_fgi]
         T2[crypto_scout.bybit_spot_tickers]
         T3[crypto_scout.bybit_lpl]
