@@ -51,7 +51,7 @@ public final class Collector extends Launcher {
         awaitShutdown();
     }
 
-    public static void main(final String[] args) throws Exception {
+    static void main(final String[] args) throws Exception {
         new Collector().launch(args);
     }
 }

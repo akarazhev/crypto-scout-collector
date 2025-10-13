@@ -135,7 +135,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                             case BYBIT -> metricsBybitCollector.save(payload);
                             case BYBIT_STREAM -> cryptoBybitCollector.save(payload);
                         })
-                        .whenComplete(($, ex) -> {
+                        .whenComplete((_, ex) -> {
                             if (ex == null) {
                                 context.storeOffset();
                             } else {

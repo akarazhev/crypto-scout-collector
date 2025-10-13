@@ -1,7 +1,7 @@
 version: "3.9"
 
 services:
-  postgres:
+  crypto-scout-collector-db:
     image: timescale/timescaledb:latest-pg17
     container_name: crypto-scout-collector-db
     shm_size: "1g"
@@ -76,7 +76,7 @@ services:
           cpus: '2.00'
           memory: 8G
 
-  pgbackups:
+  crypto-scout-collector-backup:
     image: prodrigestivill/postgres-backup-local:latest
     container_name: crypto-scout-collector-db-backups
     restart: unless-stopped
@@ -85,7 +85,7 @@ services:
     volumes:
       - ./backups:/backups
     depends_on:
-      - postgres
+      - crypto-scout-collector-db
     networks:
       - crypto-scout
 

@@ -20,7 +20,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-FROM eclipse-temurin:21.0.8_9-jre-ubi9-minimal
+FROM eclipse-temurin:25-jre
 WORKDIR /app
 COPY target/crypto-scout-collector-0.0.1.jar crypto-scout-collector.jar
 ENTRYPOINT ["java", "-jar", "crypto-scout-collector.jar"]
