@@ -1,30 +1,34 @@
-# crypto-scout-collector – Production Setup Report
+# crypto-scout-collector – Production Setup Report (v0.0.1)
 
 ## Executive summary
 
-This report documents a production-ready setup for `crypto-scout-collector`, grounded in the repository. The service
-consumes crypto metrics from RabbitMQ Streams and persists time-series data into TimescaleDB. The repo provides a
+This report documents a production-ready setup for `crypto-scout-collector`, grounded in the source tree. The service
+consumes crypto metrics from RabbitMQ Streams and persists time-series data into TimescaleDB. The repository includes a
 compose definition for TimescaleDB with tuning and a backup sidecar, an initialization SQL that creates hypertables and
 policies, and a container image definition for the collector.
-
-Key outcomes:
 
 - Database and backups: `podman-compose.yml` provisions TimescaleDB (`timescale/timescaledb:latest-pg17`) and a backup
   sidecar (`prodrigestivill/postgres-backup-local`) with env-driven scheduling and retention. Secrets are placed under
   `secret/`.
 - Schema and policies: `script/init.sql` creates schema `crypto_scout`, hypertables, indexes, compression, reorder, and
   retention policies.
-- Application: Java 21 (ActiveJ). Reads RabbitMQ Streams, batches inserts via HikariCP to TimescaleDB, exposes
+- Application: Java 25 (ActiveJ). Reads RabbitMQ Streams, batches inserts via HikariCP to TimescaleDB, exposes
   `GET /health`.
-- Documentation: Production-ready README content has been applied via a safe shell command.
+- Documentation: `README.md` updated to reflect Java 25, compose service names, and Docker base; this report added under
+  `doc/0.0.1/`.
+
+## Proposed short GitHub description
+
+Event‑driven Java service that ingests crypto market metrics from RabbitMQ Streams into TimescaleDB, with automated
+backups.
 
 ## Verified repository inventory
 
 - Compose & containers
-    - `podman-compose.yml`: TimescaleDB service `postgres` with tuning, healthcheck, and volumes; backup sidecar
-      `pgbackups` writing to `./backups`. Network `crypto-scout`.
-    - `Dockerfile`: Eclipse Temurin JRE 21 (UBI9 minimal), copies shaded jar `crypto-scout-collector-0.0.1.jar`,
-      entrypoint `java -jar crypto-scout-collector.jar`.
+    - `podman-compose.yml`: TimescaleDB service `crypto-scout-collector-db` with tuning, healthcheck, and volumes;
+      backup sidecar service `crypto-scout-collector-backup` writing to `./backups`. Network `crypto-scout`.
+    - `Dockerfile`: Eclipse Temurin JRE 25, copies shaded jar `crypto-scout-collector-0.0.1.jar`, entrypoint
+      `java -jar crypto-scout-collector.jar`.
 
 - Initialization & schema
     - `script/init.sql`: installs `timescaledb` and `pg_stat_statements`; creates schema `crypto_scout`;
@@ -32,15 +36,16 @@ Key outcomes:
         - `crypto_scout.cmc_fgi`
         - `crypto_scout.bybit_spot_tickers`
         - `crypto_scout.bybit_lpl`
-          Adds indexes, compression policies (segmentby/orderby, 7-day threshold), reorder, and retention (180–730
-          days). Grants privileges to role `crypto_scout_db` and default privileges.
+          Adds indexes, compression policies (7‑day threshold), reorder, and retention (180–730 days). Grants privileges
+          to role `crypto_scout_db` and default privileges.
 
 - Secrets & configuration (gitignored examples)
-    - `secret/timescaledb.env.example` and `secret/timescaledb.env`: DB name/user/password, telemetry off, tune params,
-      optional `POSTGRES_INITDB_ARGS`, timezone. Loaded by the DB service.
+    - `secret/timescaledb.env.example` and `secret/timescaledb.env`: DB name/user/password, telemetry off, optional
+      `POSTGRES_INITDB_ARGS`, and tuning values. Loaded by the DB service.
     - `secret/postgres-backup.env.example` and `secret/postgres-backup.env`: host, DB credentials, backup
       schedule/retention, extra dump opts. Loaded by the backup sidecar.
-    - `secret/README.md`: instructions to create both env files and set permissions (`chmod 600`).
+    - `secret/README.md`: instructions to create env files and set permissions (`chmod 600`). Note: use the compose DB
+      service name `crypto-scout-collector-db` for `POSTGRES_HOST`.
 
 - Application
     - Entry point: `src/main/java/com/github/akarazhev/cryptoscout/Collector.java` (ActiveJ `Launcher`).
@@ -51,7 +56,8 @@ Key outcomes:
     - Repos & datasource: `collector/db/CollectorDataSource.java`, `collector/db/*Repository.java`.
     - Config readers: `config/AmqpConfig.java`, `config/JdbcConfig.java`, `config/ServerConfig.java`; keys in
       `config/Constants.java`.
-    - App defaults: `src/main/resources/application.properties` (server, AMQP, JDBC/Hikari), logs via `logback.xml`.
+    - App defaults: `src/main/resources/application.properties` (server, AMQP, JDBC/Hikari), logs via
+      `src/main/resources/logback.xml`.
     - Build: `pom.xml` with shade plugin; main class `com.github.akarazhev.cryptoscout.Collector`.
 
 ## Architecture and data flow
@@ -85,9 +91,9 @@ flowchart LR
 
 Runtime characteristics:
 
-- Event loop and concurrency: Single-threaded `NioReactor` for orchestration; blocking DB operations offloaded to a
-  virtual-thread executor.
-- Batching: Collectors buffer messages and flush on size/time thresholds (`jdbc.bybit.batch-size`,
+- Event loop and concurrency: single‑threaded `NioReactor` for orchestration; blocking DB ops offloaded to a
+  virtual‑thread executor.
+- Batching: collectors buffer messages and flush on size/time thresholds (`jdbc.bybit.batch-size`,
   `jdbc.bybit.flush-interval-ms`, etc.).
 - Health: `/health` returns `ok` via `WebModule`.
 
@@ -96,37 +102,38 @@ Runtime characteristics:
 - DB image: `timescale/timescaledb:latest-pg17`.
 - Volumes: `./data/postgresql:/var/lib/postgresql/data`, `./script/init.sql` mounted read-only to
   `/docker-entrypoint-initdb.d/init.sql`.
-- Tuning (from `podman-compose.yml`): preload `timescaledb,pg_stat_statements`, higher `shared_buffers`, WAL tuning,
-  timezone=UTC, `timescaledb.telemetry_level=off`, `pg_stat_statements.track=all`, IO timing, and related settings.
+- Tuning (from `podman-compose.yml`): preload `timescaledb,pg_stat_statements`, `shared_buffers`, WAL settings, timezone
+  UTC, `timescaledb.telemetry_level=off`, `pg_stat_statements.track=all`, IO timing, etc.
 - Healthcheck: `pg_isready -U $POSTGRES_USER -d $POSTGRES_DB`.
 
-Backups sidecar: `prodrigestivill/postgres-backup-local:latest`.
+Backups sidecar: `prodrigestivill/postgres-backup-local:latest` (service: `crypto-scout-collector-backup`).
 
-- Env-driven schedule (`SCHEDULE`, e.g., `@daily`) and retention (`BACKUP_KEEP_DAYS/WEEKS/MONTHS`).
+- Env‑driven schedule (`SCHEDULE`, e.g., `@daily`) and retention (`BACKUP_KEEP_DAYS/WEEKS/MONTHS`).
 - Output directory: `./backups` on the host.
 - Connection: values in `secret/postgres-backup.env` must match the DB service credentials.
+- Host: set `POSTGRES_HOST=crypto-scout-collector-db` (compose service name).
 
 Secrets management:
 
-- `secret/timescaledb.env` is the only env file loaded by the DB service.
-- `secret/postgres-backup.env` is the only env file loaded by the backup container.
-- Follow `secret/README.md` to generate strong credentials and `chmod 600` the files.
+- `secret/timescaledb.env` is the env file loaded by the DB service.
+- `secret/postgres-backup.env` is the env file loaded by the backup container.
+- Generate strong credentials and `chmod 600` the files.
 
 ## Schema and policies (from `script/init.sql`)
 
 - Extensions: `timescaledb`, `pg_stat_statements`.
 - Schema: `crypto_scout`; search_path set for DB and role.
-- Tables (hypertables with 1-day chunks):
+- Tables (hypertables with 1‑day chunks):
     - `crypto_scout.cmc_fgi` — primary key `(id, timestamp)`.
     - `crypto_scout.bybit_spot_tickers` — primary key `(id, timestamp)`; indexes on `(timestamp)` and
       `(symbol, timestamp)`.
     - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
 - Compression policies (segmentby/orderby) for all three tables (compress chunks older than 7 days).
-- Reorder policies align with time-descending indexes.
+- Reorder policies align with time‑descending indexes.
 - Retention: ~2 years for `cmc_fgi` and `bybit_lpl`, 180 days for `bybit_spot_tickers`.
 - Grants and default privileges for role `crypto_scout_db`.
 
-Recommendation: Validate chunk interval, compression, and retention windows vs. expected volume and query patterns
+Recommendation: validate chunk interval, compression, and retention windows vs. expected volume and query patterns
 before rollout.
 
 ## Application configuration keys
@@ -152,7 +159,8 @@ From `src/main/resources/application.properties`:
     - batching and Hikari pool sizing/timeouts.
 
 Container networking tip: if the app runs on the same compose network, use
-`jdbc:postgresql://postgres:5432/crypto_scout` (host `postgres` is the DB service name).
+`jdbc:postgresql://crypto-scout-collector-db:5432/crypto_scout` (host `crypto-scout-collector-db` is the DB service
+name).
 
 ## Build, run, and deploy
 
@@ -199,8 +207,8 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
 - Rotate credentials in `secret/*.env`; avoid committing real secrets. Enforce `chmod 600`.
 - Consider `POSTGRES_INITDB_ARGS=--auth=scram-sha-256` in `secret/timescaledb.env` before first init.
 - Validate retention and compression windows in `script/init.sql` for your SLA/cost profile.
-- Run DB on persistent storage with regular off-site backup sync from `./backups`.
-- Set non-empty `amqp.rabbitmq.password` and `jdbc.datasource.password` before production use.
+- Run DB on persistent storage with regular off‑site backup sync from `./backups`.
+- Set non‑empty `amqp.rabbitmq.password` and `jdbc.datasource.password` before production use.
 
 ## Validation steps
 
@@ -211,8 +219,11 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
 
 ## Changelog & implementation
 
-- Updated `README.md` with comprehensive, grounded documentation via a safe heredoc command.
-- Wrote this production setup report to `doc/0.0.1/collector-production-setup.md` via a safe heredoc command.
+- Updated `README.md` to reflect Java 25, compose service names (`crypto-scout-collector-db`,
+  `crypto-scout-collector-backup`), and Docker base image; removed placeholder artifacts and restored
+  Architecture/Database sections.
+- Added this production setup report at `doc/0.0.1/collector-production-setup.md` including the proposed GitHub short
+  description.
 
 ## References to source
 

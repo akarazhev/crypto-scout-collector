@@ -5,11 +5,11 @@ backups.
 
 ## Overview
 
-`crypto-scout-collector` is a Java 21, event-driven service that consumes messages from RabbitMQ Streams and persists
+`crypto-scout-collector` is a Java 25, event-driven service that consumes messages from RabbitMQ Streams and persists
 structured, time-series data into TimescaleDB. The repository includes a production-ready TimescaleDB setup with
 automated daily backups via a sidecar container.
 
-- Technologies: Java 21, ActiveJ, RabbitMQ Streams, PostgreSQL/TimescaleDB, HikariCP, SLF4J/Logback
+- Technologies: Java 25, ActiveJ, RabbitMQ Streams, PostgreSQL/TimescaleDB, HikariCP, SLF4J/Logback
 - DB provisioning and policies: `script/init.sql`
 - DB and backups containers: `podman-compose.yml` using `timescale/timescaledb:latest-pg17` and
   `prodrigestivill/postgres-backup-local`
@@ -79,11 +79,11 @@ your workload.
 
 The repository ships a `podman-compose.yml` with:
 
-- `postgres` — `timescale/timescaledb:latest-pg17`
+- `crypto-scout-collector-db` — `timescale/timescaledb:latest-pg17`
     - Mounts `./data/postgresql` for data and `./script/init.sql` for bootstrap.
     - Healthcheck via `pg_isready`.
     - Tuned Postgres/TimescaleDB settings and `pg_stat_statements` enabled.
-- `pgbackups` — `prodrigestivill/postgres-backup-local:latest`
+- `crypto-scout-collector-backup` — `prodrigestivill/postgres-backup-local:latest`
     - Writes backups to `./backups` on the host.
     - Schedule and retention configured via env file.
 
@@ -138,7 +138,8 @@ Default configuration is in `src/main/resources/application.properties`:
     - Batched insert settings and HikariCP pool configuration
 
 When running the app in a container on the same compose network as the DB, set `jdbc.datasource.url` host to
-`postgres` (the compose service name), e.g. `jdbc:postgresql://postgres:5432/crypto_scout`.
+`crypto-scout-collector-db` (the compose service name), e.g.
+`jdbc:postgresql://crypto-scout-collector-db:5432/crypto_scout`.
 
 To change configuration, edit `src/main/resources/application.properties` and rebuild. Ensure your RabbitMQ host/ports
 and DB credentials match your environment.
@@ -162,7 +163,7 @@ configured hosts/ports.
 
 ## Container image
 
-The provided `Dockerfile` packages the shaded JAR on Eclipse Temurin JRE 21 (UBI9 minimal):
+The provided `Dockerfile` packages the shaded JAR on Eclipse Temurin JRE 25:
 
 ```bash
 # Build image
@@ -180,7 +181,7 @@ docker run --rm \
 
 ## Backups and restore
 
-Backups are produced by the `pgbackups` sidecar into `./backups` per the schedule and retention in
+Backups are produced by the `crypto-scout-collector-backup` sidecar into `./backups` per the schedule and retention in
 `secret/postgres-backup.env`.
 
 Restore guidance (adjust to the backup file format):
