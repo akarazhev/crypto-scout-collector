@@ -64,6 +64,9 @@ build/
 dev
 
 ### Data files ###
-podman-prod/data
-podman-dev/data
 dependency-reduced-pom.xml
+data
+backups
+
+### Secrets ###
+secret/*.env
