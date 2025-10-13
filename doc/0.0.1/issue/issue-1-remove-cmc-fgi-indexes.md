@@ -24,7 +24,7 @@ Take the following roles:
 
 - **Implementation**
     - Updated `script/init.sql`: removed `idx_cmc_fgi_score` and `idx_cmc_fgi_name`; retained `idx_cmc_fgi_timestamp`.
-- **Documentation updates** (`doc/timescaledb-production-setup.md`)
+- **Documentation updates** (`doc/0.0.1/timescaledb-production-setup.md`)
     - **Indexes**: removed selectivity helpers `idx_cmc_fgi_score` and `idx_cmc_fgi_name`.
     - **Tables and hypertables**: ensured `crypto_scout.cmc_fgi (timestamp)` and both Bybit ticker tables are listed.
     - **Compression**: documented `cmc_fgi` compression (`compress_segmentby = 'name'`, `compress_orderby = 'timestamp DESC'`).

@@ -20,4 +20,4 @@ Take the following roles:
 - As the expert tech-writer review the `crypto-scout-collector` project and write professional documentation of the
   `crypto-scout-collector` project here: `README.md`. Propose a short description of the project for `github`.
 - Recheck your proposal and make sure that they are correct and haven't missed any important points.
-- Write a report with your proposal and implementation into `doc/collector-production-setup.md`.
+- Write a report with your proposal and implementation into `doc/0.0.1/collector-production-setup.md`.

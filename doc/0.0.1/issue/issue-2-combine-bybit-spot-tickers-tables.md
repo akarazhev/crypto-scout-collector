@@ -128,5 +128,5 @@ Take the following roles:
 
 - `script/init.sql` is for bootstrap. If the old per-pair tables exist in a running cluster, backfill into
   `bybit_spot_tickers` with the proper `symbol` and drop old tables afterward.
-- Other docs (e.g., `doc/timescaledb-production-setup.md`, `README.md`) still reference the per-pair tables; update them
+- Other docs (e.g., `doc/0.0.1/timescaledb-production-setup.md`, `README.md`) still reference the per-pair tables; update them
   separately to reflect the unified schema.

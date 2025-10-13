@@ -212,7 +212,7 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
 ## Changelog & implementation
 
 - Updated `README.md` with comprehensive, grounded documentation via a safe heredoc command.
-- Wrote this production setup report to `doc/collector-production-setup.md` via a safe heredoc command.
+- Wrote this production setup report to `doc/0.0.1/collector-production-setup.md` via a safe heredoc command.
 
 ## References to source
 
