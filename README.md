@@ -26,7 +26,7 @@ flowchart LR
         S3[crypto-bybit-stream]
     end
 
-    subgraph App[crypto-scout-collector (ActiveJ)]
+    subgraph App[crypto-scout-collector ActiveJ]
         A1[AmqpConsumer]
         A2[MetricsCmcCollector]
         A3[MetricsBybitCollector]
