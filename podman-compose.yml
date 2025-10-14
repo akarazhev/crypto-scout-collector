@@ -15,7 +15,7 @@ services:
       - ./data/postgresql:/var/lib/postgresql/data
       - ./script/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
-      - crypto-scout
+      - crypto-scout-bridge
     env_file:
       - ./secret/timescaledb.env
     healthcheck:
@@ -87,8 +87,9 @@ services:
     depends_on:
       - crypto-scout-collector-db
     networks:
-      - crypto-scout
+      - crypto-scout-bridge
 
 networks:
-  crypto-scout:
-    driver: bridge
+  crypto-scout-bridge:
+    name: crypto-scout-bridge
+    external: true
