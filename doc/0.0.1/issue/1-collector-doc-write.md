@@ -1,4 +1,4 @@
-# Context: Document updating of the `crypto-scout-collector` production ready service
+# Issue 1: Document updating of the `crypto-scout-collector` production ready service
 
 In this `crypto-scout-collector` project the `timescaledb` server has been configured in a container to collect crypto
 data with `backups` from rabbitmq streams. So you will need to update professional documentation of the 

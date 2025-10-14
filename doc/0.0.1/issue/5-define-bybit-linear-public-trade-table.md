@@ -1,4 +1,4 @@
-# Issue 4: Define `bybit_linear_public_trade` table
+# Issue 5: Define `bybit_linear_public_trade` table
 
 In this `crypto-scout-collector-db` project we are going to define a new `bybit_linear_public_trade` table.
 

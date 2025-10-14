@@ -1,4 +1,4 @@
-# Issue 2: Combine `bybit_spot_tickers_btc_usdt` and `bybit_spot_tickers_eth_usdt` tables into `bybit_spot_tickers`
+# Issue 3: Combine `bybit_spot_tickers_btc_usdt` and `bybit_spot_tickers_eth_usdt` tables into `bybit_spot_tickers`
 
 In this `crypto-scout-collector-db` project we are going to combine two tables `bybit_spot_tickers_btc_usdt` and
 `bybit_spot_tickers_eth_usdt` into one `bybit_spot_tickers` table.

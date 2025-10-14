@@ -1,4 +1,4 @@
-# Issue 1: Removing of the `idx_cmc_fgi_score` and `idx_cmc_fgi_name` indexes
+# Issue 2: Removing of the `idx_cmc_fgi_score` and `idx_cmc_fgi_name` indexes
 
 In this `crypto-scout-collector-db` project we are going to remove the `idx_cmc_fgi_score` and `idx_cmc_fgi_name` indexes.
 

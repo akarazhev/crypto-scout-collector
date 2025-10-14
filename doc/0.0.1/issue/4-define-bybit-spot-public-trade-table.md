@@ -1,4 +1,4 @@
-# Issue 3: Define `bybit_spot_public_trade` table
+# Issue 4: Define `bybit_spot_public_trade` table
 
 In this `crypto-scout-collector-db` project we are going to define a new `bybit_spot_public_trade` table.
 
@@ -13,6 +13,7 @@ Take the following roles:
 
 - Use the best practices and design patterns.
 - Do not hallucinate.
+- Use the following technical stack: `java 25`
 
 ## Tasks
 
