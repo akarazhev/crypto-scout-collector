@@ -24,7 +24,7 @@ Take the following roles:
   important points.
 - As the expert database engineer Rely on the sample of the data section.
 - As the technical writer update the `README.md` and `timescaledb-production-setup.md` files with your results.
-- As the technical writer update the `issue-6-define-bybit-linear-all-liquidation-table.md` file with your resolution.
+- As the technical writer update the `6-define-bybit-linear-all-liquidation-table.md` file with your resolution.
 
 ## Sample of the data
 

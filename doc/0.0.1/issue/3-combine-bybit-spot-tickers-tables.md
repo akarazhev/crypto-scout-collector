@@ -25,7 +25,7 @@ Take the following roles:
   indexes, retentions and compressions.
 - Recheck your proposal and make sure that they are correct and haven't missed any important points.
 - Rely on the sample of the data section.
-- Update the documentation `issue-2-combine-spot-tickers-tables.md` with your results in the resolution section.
+- Update the documentation `3-combine-spot-tickers-tables.md` with your results in the resolution section.
 
 ## Sample of the data
 
