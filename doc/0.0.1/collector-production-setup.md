@@ -97,7 +97,7 @@ Runtime characteristics:
   `jdbc.bybit.flush-interval-ms`, etc.).
 - Health: `/health` returns `ok` via `WebModule`.
 
-## TimescaleDB and backups setup
+## TimescaleDB, backups, and application container
 
 - DB image: `timescale/timescaledb:latest-pg17`.
 - Volumes: `./data/postgresql:/var/lib/postgresql/data`, `./script/init.sql` mounted read-only to
@@ -109,21 +109,29 @@ Runtime characteristics:
 Backups sidecar: `prodrigestivill/postgres-backup-local:latest` (service: `crypto-scout-collector-backup`).
 
 - Env‑driven schedule (`SCHEDULE`, e.g., `@daily`) and retention (`BACKUP_KEEP_DAYS/WEEKS/MONTHS`).
-- Output directory: `./backups` on the host.
-- Connection: values in `secret/postgres-backup.env` must match the DB service credentials.
-- Host: set `POSTGRES_HOST=crypto-scout-collector-db` (compose service name).
 
 Secrets management:
 
 - `secret/timescaledb.env` is the env file loaded by the DB service.
 - `secret/postgres-backup.env` is the env file loaded by the backup container.
-- Generate strong credentials and `chmod 600` the files.
+- `secret/collector.env` is the env file loaded by the application container. By default, the application uses
+  `src/main/resources/application.properties`. If you need runtime overrides, adjust compose to pass JVM `-D` flags or
+  update `application.properties` and rebuild. `JAVA_TOOL_OPTIONS` should include only `-XX:+ExitOnOutOfMemoryError`.
 
-## Schema and policies (from `script/init.sql`)
+  Generate strong credentials and `chmod 600` the files.
 
-- Extensions: `timescaledb`, `pg_stat_statements`.
-- Schema: `crypto_scout`; search_path set for DB and role.
-- Tables (hypertables with 1‑day chunks):
+Application container: `crypto-scout-collector`
+
+- Base image: Eclipse Temurin 25 JRE Alpine (pinned digest), OCI metadata labels present.
+- Runs as non-root user/group `10001:10001`; workdir `/opt/crypto-scout`.
+- Healthcheck: `curl -f http://localhost:8081/health` (interval 10s, timeout 3s, retries 5, start period 30s).
+- Compose hardening:
+    - `read_only: true`, `tmpfs: /tmp:rw,size=64m,mode=1777,nodev,nosuid`
+    - `security_opt: [no-new-privileges=true]`, `cap_drop: [ALL]`
+    - `cpus: "1.00"`, `memory: 1G`, `pids_limit: 256`, `ulimits.noFile: 4096:4096`
+    - `user: "10001:10001"`, `init: true`, `restart: unless-stopped`, `stop_signal: SIGTERM`, `stop_grace_period: 30s`
+- Networking: joins the external network `crypto-scout-bridge` to reach the DB service by name
+  `crypto-scout-collector-db`.
     - `crypto_scout.cmc_fgi` — primary key `(id, timestamp)`.
     - `crypto_scout.bybit_spot_tickers` — primary key `(id, timestamp)`; indexes on `(timestamp)` and
       `(symbol, timestamp)`.
@@ -182,6 +190,23 @@ name).
   chmod 600 ./secret/*.env
   podman-compose -f podman-compose.yml up -d
   # optional: docker compose -f podman-compose.yml up -d
+  ```
+
+- Run the application container (Podman Compose)
+  ```bash
+  # Build fat JAR required by the app image
+  mvn -q -DskipTests package
+
+  # Prepare collector env
+  cp ./secret/collector.env.example ./secret/collector.env
+  chmod 600 ./secret/collector.env
+
+  # Build the app image and bring up the full stack
+  podman-compose -f podman-compose.yml build crypto-scout-collector
+  podman-compose -f podman-compose.yml up -d
+
+  # Verify health
+  curl -s http://localhost:8081/health  # -> ok
   ```
 
 - Build container image and run

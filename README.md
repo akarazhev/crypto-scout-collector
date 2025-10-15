@@ -161,23 +161,62 @@ curl -s http://localhost:8081/health
 Ensure RabbitMQ (with Streams enabled, reachable on `amqp.stream.port`) and TimescaleDB are reachable using the
 configured hosts/ports.
 
-## Container image
+## Run the collector in a container
 
-The provided `Dockerfile` packages the shaded JAR on Eclipse Temurin JRE 25:
+The `podman-compose.yml` now includes the `crypto-scout-collector` service. The `Dockerfile` uses a minimal Temurin
+JRE 25 Alpine base and runs as a non-root user.
+
+Prerequisites:
+
+- Build the shaded JAR: `mvn -q -DskipTests package` (required before building the image).
+- Create the external network (one time): `./script/network.sh` → creates `crypto-scout-bridge`.
+- Prepare secrets:
+    - `cp ./secret/timescaledb.env.example ./secret/timescaledb.env`
+    - `cp ./secret/postgres-backup.env.example ./secret/postgres-backup.env`
+    - `cp ./secret/collector.env.example ./secret/collector.env`
+    - `chmod 600 ./secret/*.env`
+
+Edit `./secret/collector.env` and set individual environment variables. By default, the application uses
+`src/main/resources/application.properties`. If you need runtime overrides driven by env vars, either adjust the compose
+to pass JVM `-D` flags or update `application.properties` and rebuild. Minimal required keys:
+
+```env
+# Server
+SERVER_PORT=8081
+
+# RabbitMQ Streams
+AMQP_RABBITMQ_HOST=<rabbitmq_host>
+AMQP_RABBITMQ_PORT=5672
+AMQP_STREAM_PORT=5552
+AMQP_RABBITMQ_USERNAME=crypto_scout_mq
+AMQP_RABBITMQ_PASSWORD=REDACTED
+
+# JDBC
+JDBC_DATASOURCE_URL=jdbc:postgresql://crypto-scout-collector-db:5432/crypto_scout
+JDBC_DATASOURCE_USERNAME=crypto_scout_db
+JDBC_DATASOURCE_PASSWORD=REDACTED
+```
+
+Start the stack with Podman Compose:
 
 ```bash
-# Build image
-docker build -t crypto-scout-collector:0.0.1 .
+# Build images (collector depends on the shaded JAR)
+podman-compose -f podman-compose.yml build crypto-scout-collector
 
-# Run (attach to the same user-defined network as TimescaleDB/backup stack)
-docker run --rm \
-  --name crypto-scout-collector \
-  --network <compose_network_name> \
-  -p 8081:8081 \
-  crypto-scout-collector:0.0.1
+# Start DB + backups + collector
+podman-compose -f podman-compose.yml up -d
 
-# Replace <compose_network_name> with the network created by your compose stack.
+# Health check
+curl -s http://localhost:8081/health  # -> ok
 ```
+
+Notes:
+
+- `crypto-scout-collector` joins the external network `crypto-scout-bridge` alongside the DB and backup services.
+- Ensure `amqp.rabbitmq.host` in `collector.env` resolves from within the compose network (e.g., a RabbitMQ container
+  name or a reachable host).
+- Container security: non-root user, `read_only` root FS with `tmpfs:/tmp`, `no-new-privileges`, and ulimit tuning are
+  applied in `podman-compose.yml`.
 
 ## Backups and restore
 

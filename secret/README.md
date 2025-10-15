@@ -1,35 +1,35 @@
-# Secret for TimescaleDB (production)
+# Secrets for TimescaleDB and Collector (production)
 
-This folder holds a local secret used by `podman-compose.yml` for TimescaleDB. Files here are ignored by git (see project
-`.gitignore`).
+This folder holds a local secret used by `podman-compose.yml` for TimescaleDB. Files here are ignored by git (see
+project `.gitignore`).
 
 Required files:
 
 - `timescaledb.env` — env file providing:
-  - `POSTGRES_DB`
-  - `POSTGRES_USER`
-  - `POSTGRES_PASSWORD`
-  - `TIMESCALEDB_TELEMETRY`
-  - `TIMESCALEDB_TUNE_MAX_CONNECTIONS`
-  - `TIMESCALEDB_TUNE_MAX_BACKGROUND_WORKERS`
-  - `TIMESCALEDB_TUNE_MAX_PARALLEL_WORKERS`
-  - `TIMESCALEDB_TUNE_MEMORY`
-  - `POSTGRES_INITDB_ARGS` (optional; applies at initdb only)
-  - `TZ` (optional; applies to the container)
+    - `POSTGRES_DB`
+    - `POSTGRES_USER`
+    - `POSTGRES_PASSWORD`
+    - `TIMESCALEDB_TELEMETRY`
+    - `TIMESCALEDB_TUNE_MAX_CONNECTIONS`
+    - `TIMESCALEDB_TUNE_MAX_BACKGROUND_WORKERS`
+    - `TIMESCALEDB_TUNE_MAX_PARALLEL_WORKERS`
+    - `TIMESCALEDB_TUNE_MEMORY`
+    - `POSTGRES_INITDB_ARGS` (optional; applies at initdb only)
+    - `TZ` (optional; applies to the container)
 
 - `postgres-backup.env` — env file for the backup sidecar providing:
-   - `POSTGRES_HOST`
-   - `POSTGRES_DB`
-   - `POSTGRES_USER`
-   - `POSTGRES_PASSWORD`
-   - `SCHEDULE`
-   - `BACKUP_KEEP_DAYS`
-   - `BACKUP_KEEP_WEEKS`
-   - `BACKUP_KEEP_MONTHS`
-   - `POSTGRES_EXTRA_OPTS`
-   - `POSTGRES_PASSWORD`
-   - `TZ` (optional; applies to the container)
-      
+    - `POSTGRES_HOST`
+    - `POSTGRES_DB`
+    - `POSTGRES_USER`
+    - `POSTGRES_PASSWORD`
+    - `SCHEDULE`
+    - `BACKUP_KEEP_DAYS`
+    - `BACKUP_KEEP_WEEKS`
+    - `BACKUP_KEEP_MONTHS`
+    - `POSTGRES_EXTRA_OPTS`
+    - `POSTGRES_PASSWORD`
+    - `TZ` (optional; applies to the container)
+
 Quick start
 
 1. Create the directory if missing:
@@ -56,30 +56,32 @@ Quick start
    
    printf "POSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\nTIMESCALEDB_TELEMETRY=%s\nTIMESCALEDB_TUNE_MAX_CONNECTIONS=%s\nTIMESCALEDB_TUNE_MAX_BACKGROUND_WORKERS=%s\nTIMESCALEDB_TUNE_MAX_PARALLEL_WORKERS=%s\nTIMESCALEDB_TUNE_MEMORY=%s\nPOSTGRES_INITDB_ARGS=%s\nTZ=%s\n" \
       "$POSTGRES_DB" "$POSTGRES_USER" "$POSTGRES_PASSWORD" "$TIMESCALEDB_TELEMETRY" "$TIMESCALEDB_TUNE_MAX_CONNECTIONS" \
-      "$TIMESCALEDB_TUNE_MAX_BACKGROUND_WORKERS" "$TIMESCALEDB_TUNE_MAX_PARALLEL_WORKERS" "$TIMESCALEDB_TUNE_MEMORY" \ 
+      "$TIMESCALEDB_TUNE_MAX_BACKGROUND_WORKERS" "$TIMESCALEDB_TUNE_MAX_PARALLEL_WORKERS" "$TIMESCALEDB_TUNE_MEMORY" \
       "$POSTGRES_INITDB_ARGS" "$TZ" > ./secret/timescaledb.env
    
    chmod 600 ./secret/timescaledb.env
    ```
 
-4. Create the backup env file (this is the ONLY env file loaded by the backup sidecar) using values from
+3. Create the backup env file (this is the ONLY env file loaded by the backup sidecar) using values from
    `timescaledb.env` to ensure credentials match:
    ```bash
    source ./secret/timescaledb.env
-
-   POSTGRES_HOST=postgres
+   POSTGRES_HOST=crypto-scout-collector-db
    SCHEDULE=@daily
    BACKUP_KEEP_DAYS=7
    BACKUP_KEEP_WEEKS=4
    BACKUP_KEEP_MONTHS=6
    POSTGRES_EXTRA_OPTS=--schema=crypto_scout --blobs
    TZ=UTC
-
    printf "POSTGRES_HOST=%s\nPOSTGRES_DB=%s\nPOSTGRES_USER=%s\nPOSTGRES_PASSWORD=%s\nSCHEDULE=%s\nBACKUP_KEEP_DAYS=%s\nBACKUP_KEEP_WEEKS=%s\nBACKUP_KEEP_MONTHS=%s\nPOSTGRES_EXTRA_OPTS=%s\nTZ=%s\n" \
       "$POSTGRES_HOST" "$POSTGRES_DB" "$POSTGRES_USER" "$POSTGRES_PASSWORD" "$SCHEDULE" "$BACKUP_KEEP_DAYS" \
       "$BACKUP_KEEP_WEEKS" "$BACKUP_KEEP_MONTHS" "$POSTGRES_EXTRA_OPTS" "$TZ" > ./secret/postgres-backup.env
-
    chmod 600 ./secret/postgres-backup.env
+   ```
+
+   ```bash
+   cp ./secret/collector.env.example ./secret/collector.env
+   chmod 600 ./secret/collector.env
    ```
 
 Notes
@@ -88,7 +90,13 @@ Notes
 - For the backup sidecar, `podman-compose.yml` loads only `postgres-backup.env`.
 - Ensure `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` in `postgres-backup.env` match the values in
   `timescaledb.env`. Mismatched credentials will cause backup failures.
-- `POSTGRES_HOST` in `postgres-backup.env` should be the compose service name of the database: `postgres`.
-- Files matching `secret/*.env` are gitignored (see project `.gitignore`). Keep permissions restrictive (`chmod 600`).
-- To harden local auth during bootstrap, add `POSTGRES_INITDB_ARGS=--auth=scram-sha-256` to `secret/timescaledb.env`.
-  This only takes effect when creating a new data directory; to apply later, re-initialize `./data/postgresql`.
+- `POSTGRES_HOST` in `postgres-backup.env` should be the compose service name of the database:
+  `crypto-scout-collector-db`.
+
+Collector app env file (`collector.env`):
+
+- Provides environment variables to the container (e.g., `SERVER_PORT`, `AMQP_*`, `JDBC_*`). See
+  `secret/collector.env.example` for the full list.
+- `JAVA_TOOL_OPTIONS` should include only `-XX:+ExitOnOutOfMemoryError`.
+- By default the application uses `src/main/resources/application.properties`. If you need runtime overrides, adjust the
+  compose to pass JVM `-D` flags or update `application.properties` and rebuild.
