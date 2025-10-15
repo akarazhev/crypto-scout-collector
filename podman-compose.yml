@@ -4,6 +4,8 @@ services:
   crypto-scout-collector-db:
     image: timescale/timescaledb:latest-pg17
     container_name: crypto-scout-collector-db
+    cpus: "2.00"
+    memory: 8G
     shm_size: "1g"
     ulimits:
       nofile:
@@ -70,11 +72,6 @@ services:
       - track_functions=pl
     restart: unless-stopped
     stop_grace_period: 1m
-    deploy:
-      resources:
-        limits:
-          cpus: '2.00'
-          memory: 8G
 
   crypto-scout-collector-backup:
     image: prodrigestivill/postgres-backup-local:latest
