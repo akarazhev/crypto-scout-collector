@@ -20,6 +20,8 @@ services:
       - crypto-scout-bridge
     env_file:
       - ./secret/timescaledb.env
+    environment:
+      TZ: UTC
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
       interval: 10s
@@ -79,6 +81,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./secret/postgres-backup.env
+    environment:
+      TZ: UTC
     volumes:
       - ./backups:/backups
     depends_on:
