@@ -12,6 +12,16 @@ SET search_path TO public, crypto_scout;
 ALTER DATABASE crypto_scout SET search_path TO public, crypto_scout;
 ALTER ROLE crypto_scout_db IN DATABASE crypto_scout SET search_path TO public, crypto_scout;
 
+-- Track last processed offsets per stream (external offset tracking)
+CREATE TABLE IF NOT EXISTS crypto_scout.stream_offsets (
+    stream TEXT PRIMARY KEY,
+    offset BIGINT NOT NULL CHECK (offset >= 0),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+);
+
+-- Set ownership to application role
+ALTER TABLE crypto_scout.stream_offsets OWNER TO crypto_scout_db;
+
 -- Create Fear & Greed Index table in crypto_scout schema
 CREATE TABLE IF NOT EXISTS crypto_scout.cmc_fgi (
     id BIGSERIAL,
