@@ -76,4 +76,17 @@ public final class Constants {
         static final int SPOT_TICKERS_PRICE_24H_PCNT = 10;
         static final int SPOT_TICKERS_USD_INDEX_PRICE = 11;
     }
+
+    final static class Offsets {
+        private Offsets() {
+            throw new UnsupportedOperationException();
+        }
+
+        static final String SELECT = "SELECT offset FROM crypto_scout.stream_offsets WHERE stream = ?";
+        static final int CURRENT_OFFSET = 1;
+        static final String UPSERT = "INSERT INTO crypto_scout.stream_offsets(stream, offset) VALUES (?, ?) " +
+                "ON CONFLICT (stream) DO UPDATE SET offset = EXCLUDED.offset, updated_at = NOW()";
+        static final int STREAM = 1;
+        static final int LAST_OFFSET = 2;
+    }
 }
