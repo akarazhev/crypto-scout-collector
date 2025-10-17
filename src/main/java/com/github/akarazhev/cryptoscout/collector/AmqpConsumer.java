@@ -170,7 +170,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
         reactor.execute(() ->
                 Promise.ofBlocking(executor, () -> JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
                         .then(payload -> switch (type) {
-                            case CMC -> metricsCmcCollector.save(context.offset(), payload);
+                            case CMC -> metricsCmcCollector.save(payload, context.offset());
                             case BYBIT -> metricsBybitCollector.save(payload);
                             case BYBIT_STREAM -> cryptoBybitCollector.save(payload);
                         })

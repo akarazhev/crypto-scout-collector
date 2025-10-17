@@ -28,6 +28,7 @@ import com.github.akarazhev.cryptoscout.collector.db.MetricsCmcRepository;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
 import com.github.akarazhev.jcryptolib.stream.Source;
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
@@ -38,6 +39,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -46,21 +48,24 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
     private final static Logger LOGGER = LoggerFactory.getLogger(MetricsCmcCollector.class);
     private final Executor executor;
     private final MetricsCmcRepository metricsCmcRepository;
+    private final String cmcStream;
     private final int batchSize;
     private final long flushIntervalMs;
-    private final Queue<Payload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
+    private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
 
     public static MetricsCmcCollector create(final NioReactor reactor, final Executor executor,
                                              final MetricsCmcRepository metricsCmcRepository) {
         return new MetricsCmcCollector(reactor, executor, metricsCmcRepository);
     }
 
-    private MetricsCmcCollector(final NioReactor reactor, final Executor executor, final MetricsCmcRepository metricsCmcRepository) {
+    private MetricsCmcCollector(final NioReactor reactor, final Executor executor,
+                                final MetricsCmcRepository metricsCmcRepository) {
         super(reactor);
         this.executor = executor;
         this.metricsCmcRepository = metricsCmcRepository;
         this.batchSize = JdbcConfig.getCmcBatchSize();
         this.flushIntervalMs = JdbcConfig.getCmcFlushIntervalMs();
+        this.cmcStream = AmqpConfig.getAmqpMetricsCmcStream();
     }
 
     @Override
@@ -77,13 +82,17 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
         return promise;
     }
 
-    public Promise<?> save(final Payload<Map<String, Object>> payload) {
+    public OptionalLong getStreamOffset(final String stream) throws Exception {
+        return metricsCmcRepository.getStreamOffset(stream);
+    }
+
+    public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
         if (!Provider.CMC.equals(payload.getProvider())) {
             LOGGER.warn("Invalid payload: {}", payload);
             return Promise.complete();
         }
 
-        buffer.add(payload);
+        buffer.add(OffsetPayload.of(offset, payload));
         if (buffer.size() >= batchSize) {
             return flush();
         }
@@ -92,7 +101,7 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
     }
 
     private void scheduledFlush() {
-        flush().whenComplete(($, e) ->
+        flush().whenComplete((_, _) ->
                 reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
     }
 
@@ -101,7 +110,7 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
             return Promise.complete();
         }
 
-        final var snapshot = new ArrayList<Payload<Map<String, Object>>>();
+        final var snapshot = new ArrayList<OffsetPayload>();
         while (true) {
             final var item = buffer.poll();
             if (item == null) {
@@ -117,15 +126,30 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
 
         return Promise.ofBlocking(executor, () -> {
             final var fgi = new ArrayList<Map<String, Object>>();
-            for (final var payload : snapshot) {
+            long maxOffset = -1L;
+            for (final var msg : snapshot) {
+                final var payload = msg.payload();
                 final var source = payload.getSource();
                 if (Source.FGI.equals(source)) {
                     fgi.add(payload.getData());
                 }
+
+                if (msg.offset() > maxOffset) {
+                    maxOffset = msg.offset();
+                }
             }
 
             if (!fgi.isEmpty()) {
-                LOGGER.info("Inserted {} FGI points", metricsCmcRepository.insertFgi(fgi));
+                if (maxOffset >= 0) {
+                    LOGGER.info("Inserted {} FGI points (tx) and updated offset {}",
+                            metricsCmcRepository.insertFgi(fgi, cmcStream, maxOffset), maxOffset);
+                } else {
+                    LOGGER.info("Inserted {} FGI points", metricsCmcRepository.insertFgi(fgi));
+                }
+            } else if (maxOffset >= 0) {
+                // No data to insert but we still may want to advance offset in rare cases
+                metricsCmcRepository.upsertStreamOffset(cmcStream, maxOffset);
+                LOGGER.debug("Upserted CMC stream offset {} for stream '{}' (no data batch)", maxOffset, cmcStream);
             }
 
             return null;
