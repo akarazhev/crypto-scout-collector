@@ -15,7 +15,7 @@ ALTER ROLE crypto_scout_db IN DATABASE crypto_scout SET search_path TO public, c
 -- Track last processed offsets per stream (external offset tracking)
 CREATE TABLE IF NOT EXISTS crypto_scout.stream_offsets (
     stream TEXT PRIMARY KEY,
-    offset BIGINT NOT NULL CHECK (offset >= 0),
+    "offset" BIGINT NOT NULL CHECK ("offset" >= 0),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
