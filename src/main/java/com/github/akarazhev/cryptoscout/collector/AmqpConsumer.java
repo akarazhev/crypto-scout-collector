@@ -26,6 +26,7 @@ package com.github.akarazhev.cryptoscout.collector;
 
 import com.rabbitmq.stream.Message;
 import com.rabbitmq.stream.MessageHandler;
+import com.rabbitmq.stream.SubscriptionListener;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
@@ -77,15 +78,15 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     public Promise<?> start() {
         return Promise.ofBlocking(executor, () -> {
             try {
+                final var cmcStream = AmqpConfig.getAmqpMetricsCmcStream();
                 environment = AmqpConfig.getEnvironment();
                 metricsCmcConsumer = environment.consumerBuilder()
-                        .name(AmqpConfig.getAmqpMetricsCmcStream())
-                        .stream(AmqpConfig.getAmqpMetricsCmcStream())
-                        .offset(OffsetSpecification.first())
-                        .manualTrackingStrategy()
-                        .builder()
+                        .stream(cmcStream)
+                        .noTrackingStrategy()
+                        .subscriptionListener(context ->
+                                updateOffset(cmcStream, context))
                         .messageHandler((context, message) ->
-                                consume(StreamType.CMC, context, message))
+                                consumePayload(StreamType.CMC, context, message))
                         .build();
                 metricsBybitConsumer = environment.consumerBuilder()
                         .name(AmqpConfig.getAmqpMetricsBybitStream())
@@ -94,7 +95,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                         .manualTrackingStrategy()
                         .builder()
                         .messageHandler((context, message) ->
-                                consume(StreamType.BYBIT, context, message))
+                                consumePayload(StreamType.BYBIT, context, message))
                         .build();
                 streamBybitConsumer = environment.consumerBuilder()
                         .name(AmqpConfig.getAmqpCryptoBybitStream())
@@ -103,7 +104,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                         .manualTrackingStrategy()
                         .builder()
                         .messageHandler((context, message) ->
-                                consume(StreamType.BYBIT_STREAM, context, message))
+                                consumePayload(StreamType.BYBIT_STREAM, context, message))
                         .build();
                 LOGGER.info("AmqpConsumer started");
             } catch (final Exception ex) {
@@ -127,17 +128,57 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
         });
     }
 
-    private void consume(final StreamType type, final MessageHandler.Context context, final Message message) {
+    private void updateOffset(final String stream, final SubscriptionListener.SubscriptionContext context) {
+        reactor.execute(() ->
+                Promise.ofBlocking(executor, () -> metricsCmcCollector.getStreamOffset(stream))
+                        .then(saved -> {
+                            if (saved.isPresent()) {
+                                context.offsetSpecification(OffsetSpecification.offset(saved.getAsLong() + 1));
+                                LOGGER.info("CMC consumer starting from DB offset {}+1 for stream {}", saved.getAsLong(),
+                                        stream);
+                            } else {
+                                context.offsetSpecification(OffsetSpecification.first());
+                                LOGGER.info("CMC consumer starting from first for stream {}", stream);
+                            }
+
+                            return Promise.complete();
+                        })
+                        .whenComplete((_, ex) -> {
+                            if (ex != null) {
+                                LOGGER.warn("Failed to load CMC offset from DB, starting from first", ex);
+                                context.offsetSpecification(OffsetSpecification.first());
+                            }
+                        })
+        );
+//        try {
+//            final var saved = metricsCmcCollector.getStreamOffset(stream);
+//            if (saved.isPresent()) {
+//                context.offsetSpecification(OffsetSpecification.offset(saved.getAsLong() + 1));
+//                LOGGER.info("CMC consumer starting from DB offset {}+1 for stream {}", saved.getAsLong(), stream);
+//            } else {
+//                context.offsetSpecification(OffsetSpecification.first());
+//                LOGGER.info("CMC consumer starting from first for stream {}", stream);
+//            }
+//        } catch (final Exception ex) {
+//            LOGGER.warn("Failed to load CMC offset from DB, starting from first", ex);
+//            context.offsetSpecification(OffsetSpecification.first());
+//        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void consumePayload(final StreamType type, final MessageHandler.Context context, final Message message) {
         reactor.execute(() ->
                 Promise.ofBlocking(executor, () -> JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
                         .then(payload -> switch (type) {
-                            case CMC -> metricsCmcCollector.save(payload);
+                            case CMC -> metricsCmcCollector.save(context.offset(), payload);
                             case BYBIT -> metricsBybitCollector.save(payload);
                             case BYBIT_STREAM -> cryptoBybitCollector.save(payload);
                         })
                         .whenComplete((_, ex) -> {
                             if (ex == null) {
-                                context.storeOffset();
+                                if (type != StreamType.CMC) {
+                                    context.storeOffset();
+                                }
                             } else {
                                 LOGGER.error("Failed to process stream message from {}", type, ex);
                             }
