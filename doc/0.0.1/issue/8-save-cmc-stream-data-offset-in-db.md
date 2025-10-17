@@ -55,14 +55,14 @@ Take the following roles:
 - **Collector (`src/main/java/com/github/akarazhev/cryptoscout/collector/MetricsCmcCollector.java`)**
     - Accept `save(long offset, Payload<...>)` and buffer `{offset, payload}`.
     - On flush, compute the max processed offset and call
-      `MetricsCmcRepository.insertFgiAndUpdateOffset(fgi, stream, maxOffset)` to write data and update the offset
+      `MetricsCmcRepository.insertFgi(fgi, stream, maxOffset)` to write data and update the offset
       atomically.
 
 - **Repository (`src/main/java/com/github/akarazhev/cryptoscout/collector/db/MetricsCmcRepository.java`)**
     - New methods:
         - `OptionalLong getStreamOffset(String stream)`
         - `int upsertStreamOffset(String stream, long offset)`
-        - `int insertFgiAndUpdateOffset(List<Map<String, Object>> fgis, String stream, long offset)` (transactional)
+        - `int insertFgi(List<Map<String, Object>> fgis, String stream, long offset)` (transactional)
     - New SQL constants in `collector/db/Constants.java` under `Offsets` (SELECT/UPSERT).
 
 - **DI wiring (`src/main/java/com/github/akarazhev/cryptoscout/module/CollectorModule.java`)**
@@ -71,7 +71,7 @@ Take the following roles:
 ### Database schema
 
 - `script/init.sql`
-    - Add table `crypto_scout.stream_offsets(stream TEXT PRIMARY KEY, offset BIGINT NOT NULL, updated_at TIMESTAMPTZ)`.
+    - Add table `crypto_scout.stream_offsets(stream TEXT PRIMARY KEY, "offset" BIGINT NOT NULL, updated_at TIMESTAMPTZ)`.
     - Set owner to `crypto_scout_db` and rely on existing grants/default privileges.
 
 ### Testing
