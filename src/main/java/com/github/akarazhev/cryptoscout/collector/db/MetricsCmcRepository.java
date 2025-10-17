@@ -35,6 +35,7 @@ import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_BTC_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_BTC_VOLUME;
@@ -42,6 +43,11 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_IN
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_NAME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SCORE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_TIMESTAMP;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.CURRENT_OFFSET;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Utils.toBigDecimal;
 import static com.github.akarazhev.cryptoscout.collector.db.Utils.toOffsetDateTimeFromSeconds;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_PRICE;
@@ -75,6 +81,7 @@ public final class MetricsCmcRepository extends AbstractReactive implements Reac
         return Promise.complete();
     }
 
+    @Deprecated
     public int insertFgi(final List<Map<String, Object>> fgis) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection(); final var ps = c.prepareStatement(FGI_INSERT)) {
@@ -108,5 +115,83 @@ public final class MetricsCmcRepository extends AbstractReactive implements Reac
         }
 
         return count;
+    }
+
+    public int insertFgi(final List<Map<String, Object>> fgis, final String stream, final long offset)
+            throws SQLException {
+        var count = 0;
+        try (final var c = dataSource.getConnection()) {
+            final boolean oldAutoCommit = c.getAutoCommit();
+            c.setAutoCommit(false);
+            try (final var ps = c.prepareStatement(FGI_INSERT);
+                 final var psOffset = c.prepareStatement(UPSERT)) {
+                for (final var fgi : fgis) {
+                    if (fgi != null && fgi.containsKey(DATA_LIST)) {
+                        for (final var dl : (List<Map<String, Object>>) fgi.get(DATA_LIST)) {
+                            final var score = dl.get(SCORE);
+                            if (score instanceof Number n) {
+                                ps.setInt(FGI_SCORE, n.intValue());
+                            } else if (score instanceof String s) {
+                                ps.setInt(FGI_SCORE, Integer.parseInt(s));
+                            } else {
+                                ps.setNull(FGI_SCORE, Types.INTEGER);
+                            }
+
+                            ps.setString(FGI_NAME, (String) dl.get(NAME));
+                            final var ts = (String) dl.get(TIMESTAMP);
+                            ps.setObject(FGI_TIMESTAMP, toOffsetDateTimeFromSeconds(ts != null ? Long.parseLong(ts) : 0L));
+                            ps.setBigDecimal(FGI_BTC_PRICE, toBigDecimal(dl.get(BTC_PRICE)));
+                            ps.setBigDecimal(FGI_BTC_VOLUME, toBigDecimal(dl.get(BTC_VOLUME)));
+
+                            ps.addBatch();
+                            if (++count % batchSize == 0) {
+                                ps.executeBatch();
+                            }
+                        }
+                    }
+                }
+
+                ps.executeBatch();
+
+                psOffset.setString(STREAM, stream);
+                psOffset.setLong(LAST_OFFSET, offset);
+                psOffset.executeUpdate();
+
+                c.commit();
+            } catch (final Exception ex) {
+                c.rollback();
+                throw ex instanceof SQLException ? (SQLException) ex : new SQLException(ex);
+            } finally {
+                c.setAutoCommit(oldAutoCommit);
+            }
+        }
+
+        return count;
+    }
+
+    public OptionalLong getStreamOffset(final String stream) throws SQLException {
+        try (final var c = dataSource.getConnection();
+             final var ps = c.prepareStatement(SELECT)) {
+            ps.setString(STREAM, stream);
+            try (final var rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    final var offset = rs.getLong(CURRENT_OFFSET);
+                    if (!rs.wasNull()) {
+                        return OptionalLong.of(offset);
+                    }
+                }
+            }
+        }
+
+        return OptionalLong.empty();
+    }
+
+    public int upsertStreamOffset(final String stream, final long offset) throws SQLException {
+        try (final var c = dataSource.getConnection();
+             final var ps = c.prepareStatement(UPSERT)) {
+            ps.setString(STREAM, stream);
+            ps.setLong(LAST_OFFSET, offset);
+            return ps.executeUpdate();
+        }
     }
 }
