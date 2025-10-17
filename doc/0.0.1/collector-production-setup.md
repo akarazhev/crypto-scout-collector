@@ -36,6 +36,7 @@ backups.
         - `crypto_scout.cmc_fgi`
         - `crypto_scout.bybit_spot_tickers`
         - `crypto_scout.bybit_lpl`
+        - `crypto_scout.stream_offsets` (plain table for external offset tracking)
           Adds indexes, compression policies (7‑day threshold), reorder, and retention (180–730 days). Grants privileges
           to role `crypto_scout_db` and default privileges.
 
@@ -132,10 +133,13 @@ Application container: `crypto-scout-collector`
     - `user: "10001:10001"`, `init: true`, `restart: unless-stopped`, `stop_signal: SIGTERM`, `stop_grace_period: 30s`
 - Networking: joins the external network `crypto-scout-bridge` to reach the DB service by name
   `crypto-scout-collector-db`.
-    - `crypto_scout.cmc_fgi` — primary key `(id, timestamp)`.
-    - `crypto_scout.bybit_spot_tickers` — primary key `(id, timestamp)`; indexes on `(timestamp)` and
-      `(symbol, timestamp)`.
-    - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
+  - `crypto_scout.cmc_fgi` — primary key `(id, timestamp)`.
+  - `crypto_scout.bybit_spot_tickers` — primary key `(id, timestamp)`; indexes on `(timestamp)` and
+    `(symbol, timestamp)`.
+  - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
+  - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
+    - External offset tracking for CMC stream: `AmqpConsumer` starts CMC consumer from DB offset and disables
+      server-side tracking; `MetricsCmcCollector` batches inserts and updates offset atomically.
 - Compression policies (segmentby/orderby) for all three tables (compress chunks older than 7 days).
 - Reorder policies align with time‑descending indexes.
 - Retention: ~2 years for `cmc_fgi` and `bybit_lpl`, 180 days for `bybit_spot_tickers`.
@@ -221,6 +225,16 @@ name).
 
 Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
 
+## Offset handling
+
+- **CMC stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
+  - The consumer starts from `offset + 1` if present, otherwise from `first`.
+  - On flush, `MetricsCmcCollector` inserts data and updates the max processed offset in a single transaction.
+- **Bybit streams:** continue with server-side offset tracking via manual acknowledgments.
+
+If your DB was initialized before this change, apply the `stream_offsets` DDL manually or re-initialize the data dir to
+pick up `script/init.sql` changes.
+
 ## Operations
 
 - Health: `GET /health` returns `ok`.
@@ -249,6 +263,10 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
   Architecture/Database sections.
 - Added this production setup report at `doc/0.0.1/collector-production-setup.md` including the proposed GitHub short
   description.
+- Implemented external DB-backed offset tracking for CMC stream:
+  - New table `crypto_scout.stream_offsets`.
+  - `AmqpConsumer` starts CMC consumer from DB offset and disables server-side tracking.
+  - `MetricsCmcCollector` batches inserts and updates offset atomically.
 
 ## References to source
 

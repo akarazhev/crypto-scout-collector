@@ -32,3 +32,60 @@ Take the following roles:
 - As the technical writer update the `README.md` and `collector-production-setup.md` files with your results.
 - As the technical writer update the `8-save-cmc-stream-data-offset-in-db.md` file with your resolution.
 - As the technical writer propose `git` commit message.
+
+## Resolution
+
+### Approach
+
+- **External offset tracking for CMC stream.** Store the last processed RabbitMQ Stream offset in the DB table
+  `crypto_scout.stream_offsets` and start the CMC consumer from `offset + 1` on restart.
+- **Atomicity.** Insert processed data and update the stored offset within the same DB transaction to guarantee
+  at-least-once semantics without drifting offsets.
+- **Server-side offset tracking disabled for CMC.** We keep RabbitMQ server-side tracking for Bybit streams but disable
+  it for CMC to rely on our DB-backed offsets.
+
+### Code changes
+
+- **Consumer (`src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java`)**
+    - Use `.noTrackingStrategy()` and `subscriptionListener` for the CMC consumer to choose start offset from DB via
+      `MetricsCmcRepository.getStreamOffset(...)` and `OffsetSpecification.offset(saved+1)` (fallback to `first`).
+    - Pass the current message offset to processing: `metricsCmcCollector.save(context.offset(), payload)`.
+    - Avoid `context.storeOffset()` for CMC; keep it for Bybit streams.
+
+- **Collector (`src/main/java/com/github/akarazhev/cryptoscout/collector/MetricsCmcCollector.java`)**
+    - Accept `save(long offset, Payload<...>)` and buffer `{offset, payload}`.
+    - On flush, compute the max processed offset and call
+      `MetricsCmcRepository.insertFgiAndUpdateOffset(fgi, stream, maxOffset)` to write data and update the offset
+      atomically.
+
+- **Repository (`src/main/java/com/github/akarazhev/cryptoscout/collector/db/MetricsCmcRepository.java`)**
+    - New methods:
+        - `OptionalLong getStreamOffset(String stream)`
+        - `int upsertStreamOffset(String stream, long offset)`
+        - `int insertFgiAndUpdateOffset(List<Map<String, Object>> fgis, String stream, long offset)` (transactional)
+    - New SQL constants in `collector/db/Constants.java` under `Offsets` (SELECT/UPSERT).
+
+- **DI wiring (`src/main/java/com/github/akarazhev/cryptoscout/module/CollectorModule.java`)**
+    - Provide `MetricsCmcRepository` to `AmqpConsumer.create(...)`.
+
+### Database schema
+
+- `script/init.sql`
+    - Add table `crypto_scout.stream_offsets(stream TEXT PRIMARY KEY, offset BIGINT NOT NULL, updated_at TIMESTAMPTZ)`.
+    - Set owner to `crypto_scout_db` and rely on existing grants/default privileges.
+
+### Testing
+
+1. Start TimescaleDB with updated `init.sql` (new deployments) or apply the `stream_offsets` DDL manually to existing
+   DBs.
+2. Run the collector and publish CMC FGI messages to `metrics-cmc-stream`.
+3. Verify data in `crypto_scout.cmc_fgi` and a row in `crypto_scout.stream_offsets` for the stream name from
+   `AmqpConfig.getAmqpMetricsCmcStream()`.
+4. Stop the app. Publish additional messages. Restart the app.
+5. Confirm consumption resumes from the stored offset (`offset + 1`) with no data loss, and the offset advances after
+   flushes.
+
+### Migration note
+
+- Existing environments must add the `stream_offsets` table manually if the DB was initialized before this change
+  (or re-initialize the data directory so `init.sql` runs again).

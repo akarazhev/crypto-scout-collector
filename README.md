@@ -68,6 +68,7 @@ The TimescaleDB schema is created and managed by `script/init.sql` (mounted into
     - `crypto_scout.cmc_fgi` (FGI metrics)
     - `crypto_scout.bybit_spot_tickers` (Bybit spot tickers)
     - `crypto_scout.bybit_lpl` (Bybit Launch Pool data)
+    - `crypto_scout.stream_offsets` (external consumer offsets; used by CMC)
 - Add indexes, compression settings, reorder and retention policies (e.g., 7-day compression window, retention 180–730
   days depending on the table).
 - Grant privileges to the application DB role `crypto_scout_db`.
@@ -160,6 +161,18 @@ curl -s http://localhost:8081/health
 
 Ensure RabbitMQ (with Streams enabled, reachable on `amqp.stream.port`) and TimescaleDB are reachable using the
 configured hosts/ports.
+
+## Offset management
+
+- **CMC stream (external offsets):** `AmqpConsumer` disables server-side offset tracking and uses a DB-backed offset in
+  `crypto_scout.stream_offsets`.
+  - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if absent).
+  - `MetricsCmcCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
+  - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once semantics.
+- **Bybit streams:** continue using RabbitMQ Streams server-side offset tracking with manual acknowledgment.
+
+Migration note: `script/init.sql` creates `crypto_scout.stream_offsets` on first bootstrap. If your DB is already
+initialized, apply the DDL manually or re-initialize the data directory to pick up the new table.
 
 ## Run the collector in a container
 
