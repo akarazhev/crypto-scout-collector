@@ -138,14 +138,15 @@ Application container: `crypto-scout-collector`
     `(symbol, timestamp)`.
   - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
   - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
-    - External offset tracking for CMC stream: `AmqpConsumer` starts CMC consumer from DB offset and disables
-      server-side tracking; `MetricsCmcCollector` batches inserts and updates offset atomically.
+    - External offset tracking for CMC and Bybit metrics streams:
+      - `AmqpConsumer` starts consumers from DB offset and disables server-side tracking.
+      - `MetricsCmcCollector`/`MetricsBybitCollector` batch inserts and update offsets atomically.
 - Compression policies (segmentby/orderby) for all three tables (compress chunks older than 7 days).
 - Reorder policies align with time‑descending indexes.
 - Retention: ~2 years for `cmc_fgi` and `bybit_lpl`, 180 days for `bybit_spot_tickers`.
 - Grants and default privileges for role `crypto_scout_db`.
 
-Recommendation: validate chunk interval, compression, and retention windows vs. expected volume and query patterns
+Offset handling:
 before rollout.
 
 ## Application configuration keys
@@ -230,7 +231,10 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
 - **CMC stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
   - The consumer starts from `offset + 1` if present, otherwise from `first`.
   - On flush, `MetricsCmcCollector` inserts data and updates the max processed offset in a single transaction.
-- **Bybit streams:** continue with server-side offset tracking via manual acknowledgments.
+- **Bybit metrics stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
+  - The consumer starts from `offset + 1` if present, otherwise from `first`.
+  - On flush, `MetricsBybitCollector` inserts data and updates the max processed offset in a single transaction.
+- **Bybit spot stream:** continues with server-side offset tracking via manual acknowledgments.
 
 If your DB was initialized before this change, apply the `stream_offsets` DDL manually or re-initialize the data dir to
 pick up `script/init.sql` changes.

@@ -169,7 +169,10 @@ configured hosts/ports.
   - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if absent).
   - `MetricsCmcCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
   - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once semantics.
-- **Bybit streams:** continue using RabbitMQ Streams server-side offset tracking with manual acknowledgment.
+- **Bybit metrics stream (external offsets):** the `metrics-bybit-stream` uses the same DB-backed offset approach.
+  - On startup, `AmqpConsumer` reads `metrics-bybit-stream` offset from DB and subscribes from `offset + 1`.
+  - `MetricsBybitCollector` batches inserts and updates the max processed offset in one transaction.
+- **Bybit spot stream:** `crypto-bybit-stream` continues using RabbitMQ server-side offset tracking with manual ack.
 
 Migration note: `script/init.sql` creates `crypto_scout.stream_offsets` on first bootstrap. If your DB is already
 initialized, apply the DDL manually or re-initialize the data directory to pick up the new table.
