@@ -25,6 +25,7 @@
 package com.github.akarazhev.cryptoscout.collector;
 
 import com.github.akarazhev.cryptoscout.collector.db.MetricsCmcRepository;
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
 import com.github.akarazhev.jcryptolib.stream.Source;
@@ -39,7 +40,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -47,25 +47,29 @@ import java.util.concurrent.Executor;
 public final class MetricsCmcCollector extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(MetricsCmcCollector.class);
     private final Executor executor;
+    private final StreamOffsetsRepository streamOffsetsRepository;
     private final MetricsCmcRepository metricsCmcRepository;
-    private final String cmcStream;
+    private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
 
     public static MetricsCmcCollector create(final NioReactor reactor, final Executor executor,
+                                             final StreamOffsetsRepository streamOffsetsRepository,
                                              final MetricsCmcRepository metricsCmcRepository) {
-        return new MetricsCmcCollector(reactor, executor, metricsCmcRepository);
+        return new MetricsCmcCollector(reactor, executor, streamOffsetsRepository, metricsCmcRepository);
     }
 
     private MetricsCmcCollector(final NioReactor reactor, final Executor executor,
+                                final StreamOffsetsRepository streamOffsetsRepository,
                                 final MetricsCmcRepository metricsCmcRepository) {
         super(reactor);
         this.executor = executor;
+        this.streamOffsetsRepository = streamOffsetsRepository;
         this.metricsCmcRepository = metricsCmcRepository;
         this.batchSize = JdbcConfig.getCmcBatchSize();
         this.flushIntervalMs = JdbcConfig.getCmcFlushIntervalMs();
-        this.cmcStream = AmqpConfig.getAmqpMetricsCmcStream();
+        this.stream = AmqpConfig.getAmqpMetricsCmcStream();
     }
 
     @Override
@@ -80,10 +84,6 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
         final var promise = flush();
         LOGGER.info("MetricsCmcCollector stopped");
         return promise;
-    }
-
-    public OptionalLong getStreamOffset(final String stream) throws Exception {
-        return metricsCmcRepository.getStreamOffset(stream);
     }
 
     public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
@@ -142,14 +142,12 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
             if (!fgi.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} FGI points (tx) and updated offset {}",
-                            metricsCmcRepository.insertFgi(fgi, cmcStream, maxOffset), maxOffset);
-                } else {
-                    LOGGER.info("Inserted {} FGI points", metricsCmcRepository.insertFgi(fgi));
+                            metricsCmcRepository.insertFgi(fgi, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases
-                metricsCmcRepository.upsertStreamOffset(cmcStream, maxOffset);
-                LOGGER.debug("Upserted CMC stream offset {} for stream '{}' (no data batch)", maxOffset, cmcStream);
+                streamOffsetsRepository.upsertOffset(stream, maxOffset);
+                LOGGER.debug("Upserted CMC stream offset {} (no data batch)", maxOffset);
             }
 
             return null;

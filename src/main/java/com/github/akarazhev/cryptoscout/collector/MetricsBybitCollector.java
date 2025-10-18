@@ -25,9 +25,11 @@
 package com.github.akarazhev.cryptoscout.collector;
 
 import com.github.akarazhev.cryptoscout.collector.db.MetricsBybitRepository;
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
 import com.github.akarazhev.jcryptolib.stream.Source;
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
@@ -45,23 +47,29 @@ import java.util.concurrent.Executor;
 public final class MetricsBybitCollector extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(MetricsBybitCollector.class);
     private final Executor executor;
+    private final StreamOffsetsRepository streamOffsetsRepository;
     private final MetricsBybitRepository metricsBybitRepository;
+    private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
-    private final Queue<Payload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
+    private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
 
     public static MetricsBybitCollector create(final NioReactor reactor, final Executor executor,
+                                               final StreamOffsetsRepository streamOffsetsRepository,
                                                final MetricsBybitRepository metricsBybitRepository) {
-        return new MetricsBybitCollector(reactor, executor, metricsBybitRepository);
+        return new MetricsBybitCollector(reactor, executor, streamOffsetsRepository, metricsBybitRepository);
     }
 
     private MetricsBybitCollector(final NioReactor reactor, final Executor executor,
+                                  final StreamOffsetsRepository streamOffsetsRepository,
                                   final MetricsBybitRepository metricsBybitRepository) {
         super(reactor);
         this.executor = executor;
+        this.streamOffsetsRepository = streamOffsetsRepository;
         this.metricsBybitRepository = metricsBybitRepository;
         this.batchSize = JdbcConfig.getBybitBatchSize();
         this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
+        this.stream = AmqpConfig.getAmqpMetricsBybitStream();
     }
 
     @Override
@@ -78,13 +86,13 @@ public final class MetricsBybitCollector extends AbstractReactive implements Rea
         return promise;
     }
 
-    public Promise<?> save(final Payload<Map<String, Object>> payload) {
+    public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
         if (!Provider.BYBIT.equals(payload.getProvider())) {
             LOGGER.warn("Invalid payload: {}", payload);
             return Promise.complete();
         }
 
-        buffer.add(payload);
+        buffer.add(OffsetPayload.of(offset, payload));
         if (buffer.size() >= batchSize) {
             return flush();
         }
@@ -102,7 +110,7 @@ public final class MetricsBybitCollector extends AbstractReactive implements Rea
             return Promise.complete();
         }
 
-        final var snapshot = new ArrayList<Payload<Map<String, Object>>>();
+        final var snapshot = new ArrayList<OffsetPayload>();
         while (true) {
             final var item = buffer.poll();
             if (item == null) {
@@ -118,15 +126,28 @@ public final class MetricsBybitCollector extends AbstractReactive implements Rea
 
         return Promise.ofBlocking(executor, () -> {
             final var lpl = new ArrayList<Map<String, Object>>();
-            for (final var payload : snapshot) {
+            long maxOffset = -1L;
+            for (final var msg : snapshot) {
+                final var payload = msg.payload();
                 final var source = payload.getSource();
                 if (Source.LPL.equals(source)) {
                     lpl.add(payload.getData());
                 }
+
+                if (msg.offset() > maxOffset) {
+                    maxOffset = msg.offset();
+                }
             }
 
             if (!lpl.isEmpty()) {
-                LOGGER.info("Inserted {} LPL points", metricsBybitRepository.insertLpl(lpl));
+                if (maxOffset >= 0) {
+                    LOGGER.info("Inserted {} LPL points (tx) and updated offset {}",
+                            metricsBybitRepository.insertLpl(lpl, maxOffset), maxOffset);
+                }
+            } else if (maxOffset >= 0) {
+                // No data to insert but we still may want to advance offset in rare cases
+                streamOffsetsRepository.upsertOffset(stream, maxOffset);
+                LOGGER.debug("Upserted Bybit metrics stream offset {} (no data batch)", maxOffset);
             }
 
             return null;

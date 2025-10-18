@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector.db;
 
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
@@ -31,6 +32,7 @@ import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Map;
@@ -45,6 +47,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_TRADE_BEGIN_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WEBSITE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WHITE_PAPER;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Utils.toOffsetDateTime;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DESC;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN;
@@ -59,6 +64,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.WHITE_PAP
 public final class MetricsBybitRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
     private final int batchSize;
+    private final String stream;
 
     public static MetricsBybitRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         return new MetricsBybitRepository(reactor, collectorDataSource);
@@ -68,6 +74,7 @@ public final class MetricsBybitRepository extends AbstractReactive implements Re
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
         this.batchSize = JdbcConfig.getBybitBatchSize();
+        this.stream = AmqpConfig.getAmqpMetricsBybitStream();
     }
 
     @Override
@@ -80,34 +87,52 @@ public final class MetricsBybitRepository extends AbstractReactive implements Re
         return Promise.complete();
     }
 
-    public int insertLpl(final Iterable<Map<String, Object>> lpls) throws SQLException {
+    public int insertLpl(final Iterable<Map<String, Object>> lpls, final long offset) throws SQLException {
         var count = 0;
-        try (final var c = dataSource.getConnection(); final var ps = c.prepareStatement(LPL_INSERT)) {
-            for (final var lpl : lpls) {
-                ps.setString(LPL_RETURN_COIN, (String) lpl.get(RETURN_COIN));
-                ps.setString(LPL_RETURN_COIN_ICON, (String) lpl.get(RETURN_COIN_ICON));
-                ps.setString(LPL_DESC, (String) lpl.get(DESC));
-                ps.setString(LPL_WEBSITE, (String) lpl.get(WEBSITE));
-                ps.setString(LPL_WHITE_PAPER, (String) lpl.get(WHITE_PAPER));
-                ps.setString(LPL_RULES, (String) lpl.get(RULES));
-                ps.setObject(LPL_STAKE_BEGIN_TIME, toOffsetDateTime((Long) lpl.get(STAKE_BEGIN_TIME)));
-                ps.setObject(LPL_STAKE_END_TIME, toOffsetDateTime((Long) lpl.get(STAKE_END_TIME)));
-                final var tradeBegin = (Long) lpl.get(TRADE_BEGIN_TIME);
-                if (tradeBegin != null) {
-                    ps.setObject(LPL_TRADE_BEGIN_TIME, toOffsetDateTime(tradeBegin));
-                } else {
-                    ps.setNull(LPL_TRADE_BEGIN_TIME, Types.TIMESTAMP_WITH_TIMEZONE);
+        try (final var c = dataSource.getConnection()) {
+            final boolean oldAuto = c.getAutoCommit();
+            c.setAutoCommit(false);
+            try (final var ps = c.prepareStatement(LPL_INSERT);
+                 final var psOffset = c.prepareStatement(UPSERT)) {
+                for (final var lpl : lpls) {
+                    ps.setString(LPL_RETURN_COIN, (String) lpl.get(RETURN_COIN));
+                    ps.setString(LPL_RETURN_COIN_ICON, (String) lpl.get(RETURN_COIN_ICON));
+                    ps.setString(LPL_DESC, (String) lpl.get(DESC));
+                    ps.setString(LPL_WEBSITE, (String) lpl.get(WEBSITE));
+                    ps.setString(LPL_WHITE_PAPER, (String) lpl.get(WHITE_PAPER));
+                    ps.setString(LPL_RULES, (String) lpl.get(RULES));
+                    ps.setObject(LPL_STAKE_BEGIN_TIME, toOffsetDateTime((Long) lpl.get(STAKE_BEGIN_TIME)));
+                    ps.setObject(LPL_STAKE_END_TIME, toOffsetDateTime((Long) lpl.get(STAKE_END_TIME)));
+                    final var tradeBegin = (Long) lpl.get(TRADE_BEGIN_TIME);
+                    if (tradeBegin != null) {
+                        ps.setObject(LPL_TRADE_BEGIN_TIME, toOffsetDateTime(tradeBegin));
+                    } else {
+                        ps.setNull(LPL_TRADE_BEGIN_TIME, Types.TIMESTAMP_WITH_TIMEZONE);
+                    }
+
+                    ps.addBatch();
+                    if (++count % batchSize == 0) {
+                        ps.executeBatch();
+                    }
                 }
 
-                ps.addBatch();
-                if (++count % batchSize == 0) {
-                    ps.executeBatch();
-                }
+                ps.executeBatch();
+                updateOffset(psOffset, offset);
+                c.commit();
+            } catch (final Exception ex) {
+                c.rollback();
+                throw ex instanceof SQLException ? (SQLException) ex : new SQLException(ex);
+            } finally {
+                c.setAutoCommit(oldAuto);
             }
-
-            ps.executeBatch();
         }
 
         return count;
+    }
+
+    private void updateOffset(final PreparedStatement psOffset, final long offset) throws SQLException {
+        psOffset.setString(STREAM, stream);
+        psOffset.setLong(LAST_OFFSET, offset);
+        psOffset.executeUpdate();
     }
 }

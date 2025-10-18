@@ -32,6 +32,7 @@ import com.github.akarazhev.cryptoscout.collector.MetricsCmcCollector;
 import com.github.akarazhev.cryptoscout.collector.db.CryptoBybitRepository;
 import com.github.akarazhev.cryptoscout.collector.db.MetricsBybitRepository;
 import com.github.akarazhev.cryptoscout.collector.db.MetricsCmcRepository;
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import io.activej.inject.annotation.Eager;
 import io.activej.inject.annotation.Provides;
 import io.activej.inject.module.AbstractModule;
@@ -54,17 +55,26 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private MetricsBybitRepository metricsBybitRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private StreamOffsetsRepository streamOffsetsRepository(final NioReactor reactor,
+                                                            final CollectorDataSource collectorDataSource) {
+        return StreamOffsetsRepository.create(reactor, collectorDataSource);
+    }
+
+    @Provides
+    private MetricsBybitRepository metricsBybitRepository(final NioReactor reactor,
+                                                          final CollectorDataSource collectorDataSource) {
         return MetricsBybitRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
-    private MetricsCmcRepository metricsCmcRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private MetricsCmcRepository metricsCmcRepository(final NioReactor reactor,
+                                                      final CollectorDataSource collectorDataSource) {
         return MetricsCmcRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
-    private CryptoBybitRepository cryptoBybitRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private CryptoBybitRepository cryptoBybitRepository(final NioReactor reactor,
+                                                        final CollectorDataSource collectorDataSource) {
         return CryptoBybitRepository.create(reactor, collectorDataSource);
     }
 
@@ -76,22 +86,26 @@ public final class CollectorModule extends AbstractModule {
 
     @Provides
     private MetricsBybitCollector metricsBybitCollector(final NioReactor reactor, final Executor executor,
+                                                        final StreamOffsetsRepository streamOffsetsRepository,
                                                         final MetricsBybitRepository metricsBybitRepository) {
-        return MetricsBybitCollector.create(reactor, executor, metricsBybitRepository);
+        return MetricsBybitCollector.create(reactor, executor, streamOffsetsRepository, metricsBybitRepository);
     }
 
     @Provides
     private MetricsCmcCollector metricsCmcCollector(final NioReactor reactor, final Executor executor,
+                                                    final StreamOffsetsRepository streamOffsetsRepository,
                                                     final MetricsCmcRepository metricsCmcRepository) {
-        return MetricsCmcCollector.create(reactor, executor, metricsCmcRepository);
+        return MetricsCmcCollector.create(reactor, executor, streamOffsetsRepository, metricsCmcRepository);
     }
 
     @Provides
     @Eager
     private AmqpConsumer amqpConsumer(final NioReactor reactor, final Executor executor,
+                                      final StreamOffsetsRepository streamOffsetsRepository,
                                       final CryptoBybitCollector cryptoBybitCollector,
                                       final MetricsBybitCollector metricsBybitCollector,
                                       final MetricsCmcCollector metricsCmcCollector) {
-        return AmqpConsumer.create(reactor, executor, cryptoBybitCollector, metricsBybitCollector, metricsCmcCollector);
+        return AmqpConsumer.create(reactor, executor, streamOffsetsRepository, cryptoBybitCollector,
+                metricsBybitCollector, metricsCmcCollector);
     }
 }

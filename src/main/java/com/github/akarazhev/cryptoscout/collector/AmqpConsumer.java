@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.rabbitmq.stream.Message;
 import com.rabbitmq.stream.MessageHandler;
 import com.rabbitmq.stream.SubscriptionListener;
@@ -46,6 +47,7 @@ import com.rabbitmq.stream.OffsetSpecification;
 public final class AmqpConsumer extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AmqpConsumer.class);
     private final Executor executor;
+    private final StreamOffsetsRepository streamOffsetsRepository;
     private final CryptoBybitCollector cryptoBybitCollector;
     private final MetricsBybitCollector metricsBybitCollector;
     private final MetricsCmcCollector metricsCmcCollector;
@@ -57,18 +59,22 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     private enum StreamType {CMC, BYBIT, BYBIT_STREAM}
 
     public static AmqpConsumer create(final NioReactor reactor, final Executor executor,
+                                      final StreamOffsetsRepository streamOffsetsRepository,
                                       final CryptoBybitCollector cryptoBybitCollector,
                                       final MetricsBybitCollector metricsBybitCollector,
                                       final MetricsCmcCollector metricsCmcCollector) {
-        return new AmqpConsumer(reactor, executor, cryptoBybitCollector, metricsBybitCollector, metricsCmcCollector);
+        return new AmqpConsumer(reactor, executor, streamOffsetsRepository, cryptoBybitCollector, metricsBybitCollector,
+                metricsCmcCollector);
     }
 
     private AmqpConsumer(final NioReactor reactor, final Executor executor,
+                         final StreamOffsetsRepository streamOffsetsRepository,
                          final CryptoBybitCollector cryptoBybitCollector,
                          final MetricsBybitCollector metricsBybitCollector,
                          final MetricsCmcCollector metricsCmcCollector) {
         super(reactor);
         this.executor = executor;
+        this.streamOffsetsRepository = streamOffsetsRepository;
         this.cryptoBybitCollector = cryptoBybitCollector;
         this.metricsBybitCollector = metricsBybitCollector;
         this.metricsCmcCollector = metricsCmcCollector;
@@ -79,23 +85,19 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
         return Promise.ofBlocking(executor, () -> {
             try {
                 final var cmcStream = AmqpConfig.getAmqpMetricsCmcStream();
+                final var bybitStream = AmqpConfig.getAmqpMetricsBybitStream();
                 environment = AmqpConfig.getEnvironment();
                 metricsCmcConsumer = environment.consumerBuilder()
                         .stream(cmcStream)
                         .noTrackingStrategy()
-                        .subscriptionListener(context ->
-                                updateOffset(cmcStream, context))
-                        .messageHandler((context, message) ->
-                                consumePayload(StreamType.CMC, context, message))
+                        .subscriptionListener(c -> updateOffset(cmcStream, c))
+                        .messageHandler((c, m) -> consumePayload(StreamType.CMC, c, m))
                         .build();
                 metricsBybitConsumer = environment.consumerBuilder()
-                        .name(AmqpConfig.getAmqpMetricsBybitStream())
-                        .stream(AmqpConfig.getAmqpMetricsBybitStream())
-                        .offset(OffsetSpecification.first())
-                        .manualTrackingStrategy()
-                        .builder()
-                        .messageHandler((context, message) ->
-                                consumePayload(StreamType.BYBIT, context, message))
+                        .stream(bybitStream)
+                        .noTrackingStrategy()
+                        .subscriptionListener(c -> updateOffset(bybitStream, c))
+                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT, c, m))
                         .build();
                 streamBybitConsumer = environment.consumerBuilder()
                         .name(AmqpConfig.getAmqpCryptoBybitStream())
@@ -103,8 +105,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                         .offset(OffsetSpecification.first())
                         .manualTrackingStrategy()
                         .builder()
-                        .messageHandler((context, message) ->
-                                consumePayload(StreamType.BYBIT_STREAM, context, message))
+                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_STREAM, c, m))
                         .build();
                 LOGGER.info("AmqpConsumer started");
             } catch (final Exception ex) {
@@ -129,26 +130,24 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     }
 
     private void updateOffset(final String stream, final SubscriptionListener.SubscriptionContext context) {
-        reactor.execute(() ->
-                Promise.ofBlocking(executor, () -> metricsCmcCollector.getStreamOffset(stream))
-                        .then(saved -> {
-                            if (saved.isPresent()) {
-                                context.offsetSpecification(OffsetSpecification.offset(saved.getAsLong() + 1));
-                                LOGGER.info("CMC consumer starting from DB offset {}+1 for stream {}", saved.getAsLong(),
-                                        stream);
-                            } else {
-                                context.offsetSpecification(OffsetSpecification.first());
-                                LOGGER.info("CMC consumer starting from first for stream {}", stream);
-                            }
+        reactor.execute(() -> Promise.ofBlocking(executor, () -> streamOffsetsRepository.getOffset(stream))
+                .then(saved -> {
+                    if (saved.isPresent()) {
+                        context.offsetSpecification(OffsetSpecification.offset(saved.getAsLong() + 1));
+                        LOGGER.info("Consumer starting from DB offset {}+1 for stream {}", saved.getAsLong(), stream);
+                    } else {
+                        context.offsetSpecification(OffsetSpecification.first());
+                        LOGGER.info("Consumer starting from first for stream {}", stream);
+                    }
 
-                            return Promise.complete();
-                        })
-                        .whenComplete((_, ex) -> {
-                            if (ex != null) {
-                                LOGGER.warn("Failed to load CMC offset from DB, starting from first", ex);
-                                context.offsetSpecification(OffsetSpecification.first());
-                            }
-                        })
+                    return Promise.complete();
+                })
+                .whenComplete((_, ex) -> {
+                    if (ex != null) {
+                        LOGGER.warn("Failed to load offset from DB, starting from first", ex);
+                        context.offsetSpecification(OffsetSpecification.first());
+                    }
+                })
         );
 //        try {
 //            final var saved = metricsCmcCollector.getStreamOffset(stream);
@@ -167,22 +166,22 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
 
     @SuppressWarnings("unchecked")
     private void consumePayload(final StreamType type, final MessageHandler.Context context, final Message message) {
-        reactor.execute(() ->
-                Promise.ofBlocking(executor, () -> JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
-                        .then(payload -> switch (type) {
-                            case CMC -> metricsCmcCollector.save(payload, context.offset());
-                            case BYBIT -> metricsBybitCollector.save(payload);
-                            case BYBIT_STREAM -> cryptoBybitCollector.save(payload);
-                        })
-                        .whenComplete((_, ex) -> {
-                            if (ex == null) {
-                                if (type != StreamType.CMC) {
-                                    context.storeOffset();
-                                }
-                            } else {
-                                LOGGER.error("Failed to process stream message from {}", type, ex);
-                            }
-                        })
+        reactor.execute(() -> Promise.ofBlocking(executor, () ->
+                        JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
+                .then(payload -> switch (type) {
+                    case CMC -> metricsCmcCollector.save(payload, context.offset());
+                    case BYBIT -> metricsBybitCollector.save(payload, context.offset());
+                    case BYBIT_STREAM -> cryptoBybitCollector.save(payload);
+                })
+                .whenComplete((_, ex) -> {
+                    if (ex == null) {
+                        if (type == StreamType.BYBIT_STREAM) {
+                            context.storeOffset();
+                        }
+                    } else {
+                        LOGGER.error("Failed to process stream message from {}", type, ex);
+                    }
+                })
         );
     }
 
