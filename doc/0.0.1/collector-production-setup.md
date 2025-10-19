@@ -125,7 +125,7 @@ Application container: `crypto-scout-collector`
 
 - Base image: Eclipse Temurin 25 JRE Alpine (pinned digest), OCI metadata labels present.
 - Runs as non-root user/group `10001:10001`; workdir `/opt/crypto-scout`.
-- Healthcheck: `curl -f http://localhost:8081/health` (interval 10s, timeout 3s, retries 5, start period 30s).
+- Healthcheck: `curl -f http://localhost:8083/health` (interval 10s, timeout 3s, retries 5, start period 30s).
 - Compose hardening:
     - `read_only: true`, `tmpfs: /tmp:rw,size=64m,mode=1777,nodev,nosuid`
     - `security_opt: [no-new-privileges=true]`, `cap_drop: [ALL]`
@@ -153,7 +153,7 @@ Offset handling: DB-backed external offsets are used for all streams except any 
 From `src/main/resources/application.properties`:
 
 - Server
-    - `server.port` (default `8081`).
+    - `server.port` (default `8083`).
 - RabbitMQ
     - `amqp.rabbitmq.host` (default `localhost`)
     - `amqp.rabbitmq.username` (default `crypto_scout_mq`)
@@ -184,7 +184,7 @@ name).
 - Run locally
   ```bash
   java -jar target/crypto-scout-collector-0.0.1.jar
-  curl -s http://localhost:8081/health  # -> ok
+  curl -s http://localhost:8083/health  # -> ok
   ```
 
 - Start DB + backups (Podman Compose)
@@ -210,7 +210,7 @@ name).
   podman-compose -f podman-compose.yml up -d
 
   # Verify health
-  curl -s http://localhost:8081/health  # -> ok
+  curl -s http://localhost:8083/health  # -> ok
   ```
 
 - Build container image and run
@@ -219,7 +219,7 @@ name).
   docker run --rm \
     --name crypto-scout-collector \
     --network <compose_network_name> \
-    -p 8081:8081 \
+    -p 8083:8083 \
     crypto-scout-collector:0.0.1
   ```
 

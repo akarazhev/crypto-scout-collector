@@ -105,7 +105,7 @@ services:
     networks:
       - crypto-scout-bridge
     ports:
-      - "8081:8081"
+      - "8083:8083"
     depends_on:
       - crypto-scout-collector-db
       - crypto-scout-collector-backup
@@ -127,7 +127,7 @@ services:
     stop_signal: SIGTERM
     stop_grace_period: 30s
     healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8081/health || exit 1" ]
+      test: [ "CMD-SHELL", "curl -f http://localhost:8083/health || exit 1" ]
       interval: 10s
       timeout: 3s
       retries: 5
