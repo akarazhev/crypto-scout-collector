@@ -125,13 +125,13 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
         }
 
         return Promise.ofBlocking(executor, () -> {
-            final var fgi = new ArrayList<Map<String, Object>>();
+            final var fgis = new ArrayList<Map<String, Object>>();
             long maxOffset = -1L;
             for (final var msg : snapshot) {
                 final var payload = msg.payload();
                 final var source = payload.getSource();
                 if (Source.FGI.equals(source)) {
-                    fgi.add(payload.getData());
+                    fgis.add(payload.getData());
                 }
 
                 if (msg.offset() > maxOffset) {
@@ -139,10 +139,10 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
                 }
             }
 
-            if (!fgi.isEmpty()) {
+            if (!fgis.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} FGI points (tx) and updated offset {}",
-                            metricsCmcRepository.insertFgi(fgi, maxOffset), maxOffset);
+                            metricsCmcRepository.insertFgi(fgis, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases

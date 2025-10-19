@@ -172,7 +172,10 @@ configured hosts/ports.
 - **Bybit metrics stream (external offsets):** the `metrics-bybit-stream` uses the same DB-backed offset approach.
   - On startup, `AmqpConsumer` reads `metrics-bybit-stream` offset from DB and subscribes from `offset + 1`.
   - `MetricsBybitCollector` batches inserts and updates the max processed offset in one transaction.
-- **Bybit spot stream:** `crypto-bybit-stream` continues using RabbitMQ server-side offset tracking with manual ack.
+- **Bybit spot stream (external offsets):** `crypto-bybit-stream` also uses the DB-backed offset approach.
+  - On startup, `AmqpConsumer` reads `crypto-bybit-stream` offset from DB and subscribes from `offset + 1`.
+  - `CryptoBybitCollector` batches inserts and updates the max processed offset in one transaction.
+  - Manual stream acknowledgments are no longer used.
 
 Migration note: `script/init.sql` creates `crypto_scout.stream_offsets` on first bootstrap. If your DB is already
 initialized, apply the DDL manually or re-initialize the data directory to pick up the new table.

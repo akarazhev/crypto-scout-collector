@@ -25,6 +25,8 @@
 package com.github.akarazhev.cryptoscout.collector;
 
 import com.github.akarazhev.cryptoscout.collector.db.CryptoBybitRepository;
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
@@ -50,23 +52,29 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_ETH_
 public final class CryptoBybitCollector extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(CryptoBybitCollector.class);
     private final Executor executor;
+    private final StreamOffsetsRepository streamOffsetsRepository;
     private final CryptoBybitRepository cryptoBybitRepository;
+    private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
-    private final Queue<Payload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
+    private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
 
     public static CryptoBybitCollector create(final NioReactor reactor, final Executor executor,
+                                              final StreamOffsetsRepository streamOffsetsRepository,
                                               final CryptoBybitRepository cryptoBybitRepository) {
-        return new CryptoBybitCollector(reactor, executor, cryptoBybitRepository);
+        return new CryptoBybitCollector(reactor, executor, streamOffsetsRepository, cryptoBybitRepository);
     }
 
     private CryptoBybitCollector(final NioReactor reactor, final Executor executor,
+                                 final StreamOffsetsRepository streamOffsetsRepository,
                                  final CryptoBybitRepository cryptoBybitRepository) {
         super(reactor);
         this.executor = executor;
+        this.streamOffsetsRepository = streamOffsetsRepository;
         this.cryptoBybitRepository = cryptoBybitRepository;
         this.batchSize = JdbcConfig.getBybitBatchSize();
         this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
+        this.stream = AmqpConfig.getAmqpCryptoBybitStream();
     }
 
     @Override
@@ -83,13 +91,13 @@ public final class CryptoBybitCollector extends AbstractReactive implements Reac
         return promise;
     }
 
-    public Promise<?> save(final Payload<Map<String, Object>> payload) {
+    public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
         if (!Provider.BYBIT.equals(payload.getProvider())) {
             LOGGER.warn("Invalid payload: {}", payload);
             return Promise.complete();
         }
 
-        buffer.add(payload);
+        buffer.add(OffsetPayload.of(offset, payload));
         if (buffer.size() >= batchSize) {
             return flush();
         }
@@ -98,7 +106,7 @@ public final class CryptoBybitCollector extends AbstractReactive implements Reac
     }
 
     private void scheduledFlush() {
-        flush().whenComplete(($, e) ->
+        flush().whenComplete((_, _) ->
                 reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
     }
 
@@ -107,7 +115,7 @@ public final class CryptoBybitCollector extends AbstractReactive implements Reac
             return Promise.complete();
         }
 
-        final var snapshot = new ArrayList<Payload<Map<String, Object>>>();
+        final var snapshot = new ArrayList<OffsetPayload>();
         while (true) {
             final var item = buffer.poll();
             if (item == null) {
@@ -122,22 +130,35 @@ public final class CryptoBybitCollector extends AbstractReactive implements Reac
         }
 
         return Promise.ofBlocking(executor, () -> {
-            final var spotTickers = new ArrayList<Map<String, Object>>();
-            for (final var payload : snapshot) {
-                final var data = payload.getData();
-                final var topic = (String) data.get(TOPIC);
+            final var spts = new ArrayList<Map<String, Object>>();
+            long maxOffset = -1L;
+            for (final var msg : snapshot) {
+                final var payload = msg.payload();
                 final var source = payload.getSource();
                 if (Source.PMST.equals(source)) {
+                    final var data = payload.getData();
+                    final var topic = (String) data.get(TOPIC);
                     if (Objects.equals(topic, TICKERS_BTC_USDT) || Objects.equals(topic, TICKERS_ETH_USDT)) {
-                        spotTickers.add(data);
+                        spts.add(data);
                     }
                 } else if (Source.PML.equals(source)) {
                     // TODO: implement futures
                 }
+
+                if (msg.offset() > maxOffset) {
+                    maxOffset = msg.offset();
+                }
             }
 
-            if (!spotTickers.isEmpty()) {
-                LOGGER.info("Inserted {} spot tickers", cryptoBybitRepository.insertSpotTickers(spotTickers));
+            if (!spts.isEmpty()) {
+                if (maxOffset >= 0) {
+                    LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
+                            cryptoBybitRepository.insertSpotTickers(spts, maxOffset), maxOffset);
+                }
+            } else if (maxOffset >= 0) {
+                // No data to insert but we still may want to advance offset in rare cases
+                streamOffsetsRepository.upsertOffset(stream, maxOffset);
+                LOGGER.debug("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
             }
 
             return null;

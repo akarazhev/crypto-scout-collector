@@ -101,7 +101,7 @@ public final class MetricsBybitCollector extends AbstractReactive implements Rea
     }
 
     private void scheduledFlush() {
-        flush().whenComplete(($, e) ->
+        flush().whenComplete((_, _) ->
                 reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
     }
 
@@ -125,13 +125,13 @@ public final class MetricsBybitCollector extends AbstractReactive implements Rea
         }
 
         return Promise.ofBlocking(executor, () -> {
-            final var lpl = new ArrayList<Map<String, Object>>();
+            final var lpls = new ArrayList<Map<String, Object>>();
             long maxOffset = -1L;
             for (final var msg : snapshot) {
                 final var payload = msg.payload();
                 final var source = payload.getSource();
                 if (Source.LPL.equals(source)) {
-                    lpl.add(payload.getData());
+                    lpls.add(payload.getData());
                 }
 
                 if (msg.offset() > maxOffset) {
@@ -139,10 +139,10 @@ public final class MetricsBybitCollector extends AbstractReactive implements Rea
                 }
             }
 
-            if (!lpl.isEmpty()) {
+            if (!lpls.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} LPL points (tx) and updated offset {}",
-                            metricsBybitRepository.insertLpl(lpl, maxOffset), maxOffset);
+                            metricsBybitRepository.insertLpl(lpls, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases

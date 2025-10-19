@@ -90,7 +90,7 @@ public final class MetricsBybitRepository extends AbstractReactive implements Re
     public int insertLpl(final Iterable<Map<String, Object>> lpls, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAuto = c.getAutoCommit();
+            final boolean oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(LPL_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
@@ -121,9 +121,9 @@ public final class MetricsBybitRepository extends AbstractReactive implements Re
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
-                throw ex instanceof SQLException ? (SQLException) ex : new SQLException(ex);
+                throw ex;
             } finally {
-                c.setAutoCommit(oldAuto);
+                c.setAutoCommit(oldAutoCommit);
             }
         }
 

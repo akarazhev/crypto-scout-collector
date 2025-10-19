@@ -85,7 +85,6 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
         return Promise.ofBlocking(executor, () -> {
             try {
                 final var cmcStream = AmqpConfig.getAmqpMetricsCmcStream();
-                final var bybitStream = AmqpConfig.getAmqpMetricsBybitStream();
                 environment = AmqpConfig.getEnvironment();
                 metricsCmcConsumer = environment.consumerBuilder()
                         .stream(cmcStream)
@@ -93,18 +92,18 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                         .subscriptionListener(c -> updateOffset(cmcStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.CMC, c, m))
                         .build();
+                final var bybitStream = AmqpConfig.getAmqpMetricsBybitStream();
                 metricsBybitConsumer = environment.consumerBuilder()
                         .stream(bybitStream)
                         .noTrackingStrategy()
                         .subscriptionListener(c -> updateOffset(bybitStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.BYBIT, c, m))
                         .build();
+                final var cryptoBybitStream = AmqpConfig.getAmqpCryptoBybitStream();
                 streamBybitConsumer = environment.consumerBuilder()
-                        .name(AmqpConfig.getAmqpCryptoBybitStream())
-                        .stream(AmqpConfig.getAmqpCryptoBybitStream())
-                        .offset(OffsetSpecification.first())
-                        .manualTrackingStrategy()
-                        .builder()
+                        .stream(cryptoBybitStream)
+                        .noTrackingStrategy()
+                        .subscriptionListener(c -> updateOffset(cryptoBybitStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_STREAM, c, m))
                         .build();
                 LOGGER.info("AmqpConsumer started");
@@ -149,19 +148,6 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                     }
                 })
         );
-//        try {
-//            final var saved = metricsCmcCollector.getStreamOffset(stream);
-//            if (saved.isPresent()) {
-//                context.offsetSpecification(OffsetSpecification.offset(saved.getAsLong() + 1));
-//                LOGGER.info("CMC consumer starting from DB offset {}+1 for stream {}", saved.getAsLong(), stream);
-//            } else {
-//                context.offsetSpecification(OffsetSpecification.first());
-//                LOGGER.info("CMC consumer starting from first for stream {}", stream);
-//            }
-//        } catch (final Exception ex) {
-//            LOGGER.warn("Failed to load CMC offset from DB, starting from first", ex);
-//            context.offsetSpecification(OffsetSpecification.first());
-//        }
     }
 
     @SuppressWarnings("unchecked")
@@ -171,15 +157,11 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                 .then(payload -> switch (type) {
                     case CMC -> metricsCmcCollector.save(payload, context.offset());
                     case BYBIT -> metricsBybitCollector.save(payload, context.offset());
-                    case BYBIT_STREAM -> cryptoBybitCollector.save(payload);
+                    case BYBIT_STREAM -> cryptoBybitCollector.save(payload, context.offset());
                 })
                 .whenComplete((_, ex) -> {
-                    if (ex == null) {
-                        if (type == StreamType.BYBIT_STREAM) {
-                            context.storeOffset();
-                        }
-                    } else {
-                        LOGGER.error("Failed to process stream message from {}", type, ex);
+                    if (ex != null) {
+                        LOGGER.error("Failed to process stream message from {}: {}", type.name(), ex);
                     }
                 })
         );

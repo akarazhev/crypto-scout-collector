@@ -82,6 +82,7 @@ public final class MetricsCmcRepository extends AbstractReactive implements Reac
         return Promise.complete();
     }
 
+    @SuppressWarnings("unchecked")
     public int insertFgi(final List<Map<String, Object>> fgis, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
@@ -120,7 +121,7 @@ public final class MetricsCmcRepository extends AbstractReactive implements Reac
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
-                throw ex instanceof SQLException ? (SQLException) ex : new SQLException(ex);
+                throw ex;
             } finally {
                 c.setAutoCommit(oldAutoCommit);
             }
@@ -129,9 +130,9 @@ public final class MetricsCmcRepository extends AbstractReactive implements Reac
         return count;
     }
 
-    private void updateOffset(final PreparedStatement psOffset, final long offset) throws SQLException {
-        psOffset.setString(STREAM, stream);
-        psOffset.setLong(LAST_OFFSET, offset);
-        psOffset.executeUpdate();
+    private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
+        ps.setString(STREAM, stream);
+        ps.setLong(LAST_OFFSET, offset);
+        ps.executeUpdate();
     }
 }
