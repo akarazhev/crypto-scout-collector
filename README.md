@@ -21,14 +21,14 @@ automated daily backups via a sidecar container.
 ```mermaid
 flowchart LR
     subgraph RabbitMQ[ RabbitMQ Streams ]
-        S1[metrics-cmc-stream]
+        S1[cmc-parser-stream]
         S2[bybit-parser-stream]
         S3[bybit-crypto-stream]
     end
 
     subgraph App[crypto-scout-collector -> ActiveJ]
         A1[AmqpConsumer]
-        A2[MetricsCmcCollector]
+        A2[CmcParserCollector]
         A3[BybitParserCollector]
         A4[BybitCryptoCollector]
         W[WebModule /health]
@@ -130,7 +130,7 @@ Default configuration is in `src/main/resources/application.properties`:
     - `amqp.stream.port` (default `5552`)
     - `amqp.bybit.crypto.stream` (default `bybit-crypto-stream`)
     - `amqp.bybit.parser.stream` (default `bybit-parser-stream`)
-    - `amqp.metrics.cmc.stream` (default `metrics-cmc-stream`)
+    - `amqp.cmc.parser.stream` (default `cmc-parser-stream`)
     - `amqp.collector.exchange`, `amqp.collector.queue`
 - JDBC / HikariCP
     - `jdbc.datasource.url` (default `jdbc:postgresql://localhost:5432/crypto_scout`)
@@ -167,7 +167,7 @@ configured hosts/ports.
 - **CMC stream (external offsets):** `AmqpConsumer` disables server-side offset tracking and uses a DB-backed offset in
   `crypto_scout.stream_offsets`.
   - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if absent).
-  - `MetricsCmcCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
+  - `CmcParserCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
   - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once semantics.
 - **Bybit metrics stream (external offsets):** the `bybit-parser-stream` uses the same DB-backed offset approach.
   - On startup, `AmqpConsumer` reads `bybit-parser-stream` offset from DB and subscribes from `offset + 1`.

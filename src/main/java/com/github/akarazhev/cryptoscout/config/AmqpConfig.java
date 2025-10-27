@@ -40,7 +40,7 @@ import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_RABBITMQ_USERNAME;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_CRYPTO_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_PARSER_STREAM;
-import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_METRICS_CMC_STREAM;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CMC_PARSER_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_STREAM_PORT;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.CONNECTION_NAME;
 
@@ -73,8 +73,8 @@ public final class AmqpConfig {
         return AppConfig.getAsString(AMQP_BYBIT_PARSER_STREAM);
     }
 
-    public static String getAmqpMetricsCmcStream() {
-        return AppConfig.getAsString(AMQP_METRICS_CMC_STREAM);
+    public static String getAmqpCmcParserStream() {
+        return AppConfig.getAsString(AMQP_CMC_PARSER_STREAM);
     }
 
     public static String getAmqpCryptoScoutExchange() {

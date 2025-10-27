@@ -27,11 +27,11 @@ package com.github.akarazhev.cryptoscout.module;
 import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
 import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
+import com.github.akarazhev.cryptoscout.collector.CmcParserCollector;
 import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
-import com.github.akarazhev.cryptoscout.collector.MetricsCmcCollector;
 import com.github.akarazhev.cryptoscout.collector.db.BybitCryptoRepository;
-import com.github.akarazhev.cryptoscout.collector.db.MetricsCmcRepository;
+import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import io.activej.inject.annotation.Eager;
 import io.activej.inject.annotation.Provides;
@@ -50,7 +50,7 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private CollectorDataSource jdbcDataSource(final NioReactor reactor, final Executor executor) {
+    private CollectorDataSource collectorDataSource(final NioReactor reactor, final Executor executor) {
         return CollectorDataSource.create(reactor, executor);
     }
 
@@ -67,9 +67,9 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private MetricsCmcRepository metricsCmcRepository(final NioReactor reactor,
-                                                      final CollectorDataSource collectorDataSource) {
-        return MetricsCmcRepository.create(reactor, collectorDataSource);
+    private CmcParserRepository cmcParserRepository(final NioReactor reactor,
+                                                    final CollectorDataSource collectorDataSource) {
+        return CmcParserRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
@@ -93,10 +93,10 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private MetricsCmcCollector metricsCmcCollector(final NioReactor reactor, final Executor executor,
-                                                    final StreamOffsetsRepository streamOffsetsRepository,
-                                                    final MetricsCmcRepository metricsCmcRepository) {
-        return MetricsCmcCollector.create(reactor, executor, streamOffsetsRepository, metricsCmcRepository);
+    private CmcParserCollector cmcParserCollector(final NioReactor reactor, final Executor executor,
+                                                  final StreamOffsetsRepository streamOffsetsRepository,
+                                                  final CmcParserRepository cmcParserRepository) {
+        return CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
     }
 
     @Provides
@@ -105,8 +105,8 @@ public final class CollectorModule extends AbstractModule {
                                       final StreamOffsetsRepository streamOffsetsRepository,
                                       final BybitCryptoCollector bybitCryptoCollector,
                                       final BybitParserCollector bybitParserCollector,
-                                      final MetricsCmcCollector metricsCmcCollector) {
+                                      final CmcParserCollector cmcParserCollector) {
         return AmqpConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
-                bybitParserCollector, metricsCmcCollector);
+                bybitParserCollector, cmcParserCollector);
     }
 }

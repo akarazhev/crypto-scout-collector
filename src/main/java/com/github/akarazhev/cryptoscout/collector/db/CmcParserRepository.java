@@ -56,20 +56,20 @@ import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.NAME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.SCORE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 
-public final class MetricsCmcRepository extends AbstractReactive implements ReactiveService {
+public final class CmcParserRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
     private final int batchSize;
     private final String stream;
 
-    public static MetricsCmcRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
-        return new MetricsCmcRepository(reactor, collectorDataSource);
+    public static CmcParserRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+        return new CmcParserRepository(reactor, collectorDataSource);
     }
 
-    private MetricsCmcRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private CmcParserRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
         this.batchSize = JdbcConfig.getCmcBatchSize();
-        this.stream = AmqpConfig.getAmqpMetricsCmcStream();
+        this.stream = AmqpConfig.getAmqpCmcParserStream();
     }
 
     @Override

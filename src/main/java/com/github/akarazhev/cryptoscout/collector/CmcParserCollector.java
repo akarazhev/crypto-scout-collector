@@ -24,7 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
-import com.github.akarazhev.cryptoscout.collector.db.MetricsCmcRepository;
+import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
@@ -44,45 +44,45 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-public final class MetricsCmcCollector extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(MetricsCmcCollector.class);
+public final class CmcParserCollector extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(CmcParserCollector.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
-    private final MetricsCmcRepository metricsCmcRepository;
+    private final CmcParserRepository cmcParserRepository;
     private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
 
-    public static MetricsCmcCollector create(final NioReactor reactor, final Executor executor,
-                                             final StreamOffsetsRepository streamOffsetsRepository,
-                                             final MetricsCmcRepository metricsCmcRepository) {
-        return new MetricsCmcCollector(reactor, executor, streamOffsetsRepository, metricsCmcRepository);
+    public static CmcParserCollector create(final NioReactor reactor, final Executor executor,
+                                            final StreamOffsetsRepository streamOffsetsRepository,
+                                            final CmcParserRepository cmcParserRepository) {
+        return new CmcParserCollector(reactor, executor, streamOffsetsRepository, cmcParserRepository);
     }
 
-    private MetricsCmcCollector(final NioReactor reactor, final Executor executor,
-                                final StreamOffsetsRepository streamOffsetsRepository,
-                                final MetricsCmcRepository metricsCmcRepository) {
+    private CmcParserCollector(final NioReactor reactor, final Executor executor,
+                               final StreamOffsetsRepository streamOffsetsRepository,
+                               final CmcParserRepository cmcParserRepository) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
-        this.metricsCmcRepository = metricsCmcRepository;
+        this.cmcParserRepository = cmcParserRepository;
         this.batchSize = JdbcConfig.getCmcBatchSize();
         this.flushIntervalMs = JdbcConfig.getCmcFlushIntervalMs();
-        this.stream = AmqpConfig.getAmqpMetricsCmcStream();
+        this.stream = AmqpConfig.getAmqpCmcParserStream();
     }
 
     @Override
     public Promise<?> start() {
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
-        LOGGER.info("MetricsCmcCollector started");
+        LOGGER.info("CmcParserCollector started");
         return Promise.complete();
     }
 
     @Override
     public Promise<?> stop() {
         final var promise = flush();
-        LOGGER.info("MetricsCmcCollector stopped");
+        LOGGER.info("CmcParserCollector stopped");
         return promise;
     }
 
@@ -142,7 +142,7 @@ public final class MetricsCmcCollector extends AbstractReactive implements React
             if (!fgis.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} FGI points (tx) and updated offset {}",
-                            metricsCmcRepository.insertFgi(fgis, maxOffset), maxOffset);
+                            cmcParserRepository.insertFgi(fgis, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases

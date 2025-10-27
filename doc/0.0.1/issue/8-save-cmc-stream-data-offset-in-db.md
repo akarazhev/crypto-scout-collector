@@ -22,8 +22,8 @@ Take the following roles:
 
 - As the expert java engineer review the current `crypto-scout-collector` project implementation and update it by
   saving `CMC` stream data message offset in the database after processing. The implementation of the stream consumer
-  is here: `AmqpConsumer`, processing the data is here: `MetricsCmcCollector`, saving the data is here:
-  `MetricsCmcRepository`.
+  is here: `AmqpConsumer`, processing the data is here: `CmcParserCollector`, saving the data is here:
+  `CmcParserRepository`.
 - As the expert java engineer recheck your proposal and make sure that they are correct and haven't missed any
   important points.
 - As the expert database engineer review and update the `init.sql` schema by supporting offset.
@@ -48,17 +48,17 @@ Take the following roles:
 
 - **Consumer (`src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java`)**
     - Use `.noTrackingStrategy()` and `subscriptionListener` for the CMC consumer to choose start offset from DB via
-      `MetricsCmcRepository.getStreamOffset(...)` and `OffsetSpecification.offset(saved+1)` (fallback to `first`).
-    - Pass the current message offset to processing: `metricsCmcCollector.save(context.offset(), payload)`.
+      `CmcParserRepository.getStreamOffset(...)` and `OffsetSpecification.offset(saved+1)` (fallback to `first`).
+    - Pass the current message offset to processing: `cmcParserCollector.save(context.offset(), payload)`.
     - Avoid `context.storeOffset()` for CMC; keep it for Bybit streams.
 
-- **Collector (`src/main/java/com/github/akarazhev/cryptoscout/collector/MetricsCmcCollector.java`)**
+- **Collector (`src/main/java/com/github/akarazhev/cryptoscout/collector/CmcParserCollector.java`)**
     - Accept `save(long offset, Payload<...>)` and buffer `{offset, payload}`.
     - On flush, compute the max processed offset and call
-      `MetricsCmcRepository.insertFgi(fgi, stream, maxOffset)` to write data and update the offset
+      `CmcParserRepository.insertFgi(fgi, stream, maxOffset)` to write data and update the offset
       atomically.
 
-- **Repository (`src/main/java/com/github/akarazhev/cryptoscout/collector/db/MetricsCmcRepository.java`)**
+- **Repository (`src/main/java/com/github/akarazhev/cryptoscout/collector/db/CmcParserRepository.java`)**
     - New methods:
         - `OptionalLong getStreamOffset(String stream)`
         - `int upsertStreamOffset(String stream, long offset)`
@@ -66,7 +66,7 @@ Take the following roles:
     - New SQL constants in `collector/db/Constants.java` under `Offsets` (SELECT/UPSERT).
 
 - **DI wiring (`src/main/java/com/github/akarazhev/cryptoscout/module/CollectorModule.java`)**
-    - Provide `MetricsCmcRepository` to `AmqpConsumer.create(...)`.
+    - Provide `CmcParserRepository` to `AmqpConsumer.create(...)`.
 
 ### Database schema
 
@@ -78,7 +78,7 @@ Take the following roles:
 
 1. Start TimescaleDB with updated `init.sql` (new deployments) or apply the `stream_offsets` DDL manually to existing
    DBs.
-2. Run the collector and publish CMC FGI messages to `metrics-cmc-stream`.
+2. Run the collector and publish CMC FGI messages to `cmc-parser-stream`.
 3. Verify data in `crypto_scout.cmc_fgi` and a row in `crypto_scout.stream_offsets` for the stream name from
    `AmqpConfig.getAmqpMetricsCmcStream()`.
 4. Stop the app. Publish additional messages. Restart the app.
