@@ -24,7 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
-import com.github.akarazhev.cryptoscout.collector.db.MetricsBybitRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
@@ -44,45 +44,45 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-public final class MetricsBybitCollector extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(MetricsBybitCollector.class);
+public final class BybitParserCollector extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(BybitParserCollector.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
-    private final MetricsBybitRepository metricsBybitRepository;
+    private final BybitParserRepository bybitParserRepository;
     private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
 
-    public static MetricsBybitCollector create(final NioReactor reactor, final Executor executor,
-                                               final StreamOffsetsRepository streamOffsetsRepository,
-                                               final MetricsBybitRepository metricsBybitRepository) {
-        return new MetricsBybitCollector(reactor, executor, streamOffsetsRepository, metricsBybitRepository);
+    public static BybitParserCollector create(final NioReactor reactor, final Executor executor,
+                                              final StreamOffsetsRepository streamOffsetsRepository,
+                                              final BybitParserRepository bybitParserRepository) {
+        return new BybitParserCollector(reactor, executor, streamOffsetsRepository, bybitParserRepository);
     }
 
-    private MetricsBybitCollector(final NioReactor reactor, final Executor executor,
-                                  final StreamOffsetsRepository streamOffsetsRepository,
-                                  final MetricsBybitRepository metricsBybitRepository) {
+    private BybitParserCollector(final NioReactor reactor, final Executor executor,
+                                 final StreamOffsetsRepository streamOffsetsRepository,
+                                 final BybitParserRepository bybitParserRepository) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
-        this.metricsBybitRepository = metricsBybitRepository;
+        this.bybitParserRepository = bybitParserRepository;
         this.batchSize = JdbcConfig.getBybitBatchSize();
         this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
-        this.stream = AmqpConfig.getAmqpMetricsBybitStream();
+        this.stream = AmqpConfig.getAmqpBybitParserStream();
     }
 
     @Override
     public Promise<?> start() {
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
-        LOGGER.info("MetricsBybitCollector started");
+        LOGGER.info("BybitParserCollector started");
         return Promise.complete();
     }
 
     @Override
     public Promise<?> stop() {
         final var promise = flush();
-        LOGGER.info("MetricsBybitCollector stopped");
+        LOGGER.info("BybitParserCollector stopped");
         return promise;
     }
 
@@ -142,7 +142,7 @@ public final class MetricsBybitCollector extends AbstractReactive implements Rea
             if (!lpls.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} LPL points (tx) and updated offset {}",
-                            metricsBybitRepository.insertLpl(lpls, maxOffset), maxOffset);
+                            bybitParserRepository.insertLpl(lpls, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases

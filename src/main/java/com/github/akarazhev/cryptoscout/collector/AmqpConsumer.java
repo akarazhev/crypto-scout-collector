@@ -49,7 +49,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
     private final BybitCryptoCollector bybitCryptoCollector;
-    private final MetricsBybitCollector metricsBybitCollector;
+    private final BybitParserCollector bybitParserCollector;
     private final MetricsCmcCollector metricsCmcCollector;
     private volatile Environment environment;
     private volatile Consumer metricsCmcConsumer;
@@ -61,22 +61,22 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     public static AmqpConsumer create(final NioReactor reactor, final Executor executor,
                                       final StreamOffsetsRepository streamOffsetsRepository,
                                       final BybitCryptoCollector bybitCryptoCollector,
-                                      final MetricsBybitCollector metricsBybitCollector,
+                                      final BybitParserCollector bybitParserCollector,
                                       final MetricsCmcCollector metricsCmcCollector) {
-        return new AmqpConsumer(reactor, executor, streamOffsetsRepository, bybitCryptoCollector, metricsBybitCollector,
+        return new AmqpConsumer(reactor, executor, streamOffsetsRepository, bybitCryptoCollector, bybitParserCollector,
                 metricsCmcCollector);
     }
 
     private AmqpConsumer(final NioReactor reactor, final Executor executor,
                          final StreamOffsetsRepository streamOffsetsRepository,
                          final BybitCryptoCollector bybitCryptoCollector,
-                         final MetricsBybitCollector metricsBybitCollector,
+                         final BybitParserCollector bybitParserCollector,
                          final MetricsCmcCollector metricsCmcCollector) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
         this.bybitCryptoCollector = bybitCryptoCollector;
-        this.metricsBybitCollector = metricsBybitCollector;
+        this.bybitParserCollector = bybitParserCollector;
         this.metricsCmcCollector = metricsCmcCollector;
     }
 
@@ -92,11 +92,11 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                         .subscriptionListener(c -> updateOffset(cmcStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.CMC, c, m))
                         .build();
-                final var bybitStream = AmqpConfig.getAmqpMetricsBybitStream();
+                final var bybitParserStream = AmqpConfig.getAmqpBybitParserStream();
                 metricsBybitConsumer = environment.consumerBuilder()
-                        .stream(bybitStream)
+                        .stream(bybitParserStream)
                         .noTrackingStrategy()
-                        .subscriptionListener(c -> updateOffset(bybitStream, c))
+                        .subscriptionListener(c -> updateOffset(bybitParserStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.BYBIT, c, m))
                         .build();
                 final var bybitCryptoStream = AmqpConfig.getAmqpBybitCryptoStream();
@@ -156,7 +156,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                         JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
                 .then(payload -> switch (type) {
                     case CMC -> metricsCmcCollector.save(payload, context.offset());
-                    case BYBIT -> metricsBybitCollector.save(payload, context.offset());
+                    case BYBIT -> bybitParserCollector.save(payload, context.offset());
                     case BYBIT_STREAM -> bybitCryptoCollector.save(payload, context.offset());
                 })
                 .whenComplete((_, ex) -> {

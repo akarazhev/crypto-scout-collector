@@ -80,7 +80,7 @@ public final class BybitCryptoRepository extends AbstractReactive implements Rea
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
         this.batchSize = JdbcConfig.getBybitBatchSize();
-        this.stream = AmqpConfig.getAmqpMetricsBybitStream();
+        this.stream = AmqpConfig.getAmqpBybitCryptoStream();
     }
 
     @Override

@@ -22,14 +22,14 @@ automated daily backups via a sidecar container.
 flowchart LR
     subgraph RabbitMQ[ RabbitMQ Streams ]
         S1[metrics-cmc-stream]
-        S2[metrics-bybit-stream]
+        S2[bybit-parser-stream]
         S3[bybit-crypto-stream]
     end
 
     subgraph App[crypto-scout-collector -> ActiveJ]
         A1[AmqpConsumer]
         A2[MetricsCmcCollector]
-        A3[MetricsBybitCollector]
+        A3[BybitParserCollector]
         A4[BybitCryptoCollector]
         W[WebModule /health]
     end
@@ -129,7 +129,7 @@ Default configuration is in `src/main/resources/application.properties`:
     - `amqp.rabbitmq.port` (default `5672`)
     - `amqp.stream.port` (default `5552`)
     - `amqp.bybit.crypto.stream` (default `bybit-crypto-stream`)
-    - `amqp.metrics.bybit.stream` (default `metrics-bybit-stream`)
+    - `amqp.bybit.parser.stream` (default `bybit-parser-stream`)
     - `amqp.metrics.cmc.stream` (default `metrics-cmc-stream`)
     - `amqp.collector.exchange`, `amqp.collector.queue`
 - JDBC / HikariCP
@@ -169,9 +169,9 @@ configured hosts/ports.
   - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if absent).
   - `MetricsCmcCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
   - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once semantics.
-- **Bybit metrics stream (external offsets):** the `metrics-bybit-stream` uses the same DB-backed offset approach.
-  - On startup, `AmqpConsumer` reads `metrics-bybit-stream` offset from DB and subscribes from `offset + 1`.
-  - `MetricsBybitCollector` batches inserts and updates the max processed offset in one transaction.
+- **Bybit metrics stream (external offsets):** the `bybit-parser-stream` uses the same DB-backed offset approach.
+  - On startup, `AmqpConsumer` reads `bybit-parser-stream` offset from DB and subscribes from `offset + 1`.
+  - `BybitParserCollector` batches inserts and updates the max processed offset in one transaction.
 - **Bybit spot stream (external offsets):** `bybit-crypto-stream` also uses the DB-backed offset approach.
   - On startup, `AmqpConsumer` reads `bybit-crypto-stream` offset from DB and subscribes from `offset + 1`.
   - `BybitCryptoCollector` batches inserts and updates the max processed offset in one transaction.

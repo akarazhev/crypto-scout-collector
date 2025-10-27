@@ -23,8 +23,8 @@ Take the following roles:
 
 - As the expert java engineer review the current `crypto-scout-collector` project implementation and update it by
   saving metric `Bybit` stream data message offset in the database after processing. The implementation of the stream 
-  consumer is here: `AmqpConsumer`, processing the data is here: `MetricsBybitCollector`, saving the data is here:
-  `MetricsBybitRepository`.
+  consumer is here: `AmqpConsumer`, processing the data is here: `BybitParserCollector`, saving the data is here:
+  `BybitParserRepository`.
 - As the expert java engineer recheck your proposal and make sure that they are correct and haven't missed any
   important points.
 - As the expert database engineer review and update the `init.sql` schema by supporting offset.

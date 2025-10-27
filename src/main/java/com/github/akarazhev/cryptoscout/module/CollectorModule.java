@@ -26,11 +26,11 @@ package com.github.akarazhev.cryptoscout.module;
 
 import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
 import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
+import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
+import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
-import com.github.akarazhev.cryptoscout.collector.MetricsBybitCollector;
 import com.github.akarazhev.cryptoscout.collector.MetricsCmcCollector;
 import com.github.akarazhev.cryptoscout.collector.db.BybitCryptoRepository;
-import com.github.akarazhev.cryptoscout.collector.db.MetricsBybitRepository;
 import com.github.akarazhev.cryptoscout.collector.db.MetricsCmcRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import io.activej.inject.annotation.Eager;
@@ -61,9 +61,9 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private MetricsBybitRepository metricsBybitRepository(final NioReactor reactor,
-                                                          final CollectorDataSource collectorDataSource) {
-        return MetricsBybitRepository.create(reactor, collectorDataSource);
+    private BybitParserRepository bybitParserRepository(final NioReactor reactor,
+                                                        final CollectorDataSource collectorDataSource) {
+        return BybitParserRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
@@ -86,10 +86,10 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private MetricsBybitCollector metricsBybitCollector(final NioReactor reactor, final Executor executor,
-                                                        final StreamOffsetsRepository streamOffsetsRepository,
-                                                        final MetricsBybitRepository metricsBybitRepository) {
-        return MetricsBybitCollector.create(reactor, executor, streamOffsetsRepository, metricsBybitRepository);
+    private BybitParserCollector bybitParserCollector(final NioReactor reactor, final Executor executor,
+                                                      final StreamOffsetsRepository streamOffsetsRepository,
+                                                      final BybitParserRepository bybitParserRepository) {
+        return BybitParserCollector.create(reactor, executor, streamOffsetsRepository, bybitParserRepository);
     }
 
     @Provides
@@ -104,9 +104,9 @@ public final class CollectorModule extends AbstractModule {
     private AmqpConsumer amqpConsumer(final NioReactor reactor, final Executor executor,
                                       final StreamOffsetsRepository streamOffsetsRepository,
                                       final BybitCryptoCollector bybitCryptoCollector,
-                                      final MetricsBybitCollector metricsBybitCollector,
+                                      final BybitParserCollector bybitParserCollector,
                                       final MetricsCmcCollector metricsCmcCollector) {
         return AmqpConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
-                metricsBybitCollector, metricsCmcCollector);
+                bybitParserCollector, metricsCmcCollector);
     }
 }

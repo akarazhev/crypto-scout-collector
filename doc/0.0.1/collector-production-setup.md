@@ -53,7 +53,7 @@ backups.
     - Modules: `module/CoreModule.java` (reactor/executor), `module/CollectorModule.java` (DI and eager `AmqpConsumer`),
       `module/WebModule.java` (`/health`).
     - Collectors: `collector/AmqpConsumer.java`, `collector/MetricsCmcCollector.java`,
-      `collector/MetricsBybitCollector.java`, `collector/BybitCryptoCollector.java`.
+      `collector/BybitParserCollector.java`, `collector/BybitCryptoCollector.java`.
     - Repos & datasource: `collector/db/CollectorDataSource.java`, `collector/db/*Repository.java`.
     - Config readers: `config/AmqpConfig.java`, `config/JdbcConfig.java`, `config/ServerConfig.java`; keys in
       `config/Constants.java`.
@@ -67,14 +67,14 @@ backups.
 flowchart LR
     subgraph RabbitMQ[ RabbitMQ Streams ]
         S1[metrics-cmc-stream]
-        S2[metrics-bybit-stream]
+        S2[bybit-parser-stream]
         S3[bybit-crypto-stream]
     end
 
     subgraph App[crypto-scout-collector (ActiveJ)]
         A1[AmqpConsumer]
         A2[MetricsCmcCollector]
-        A3[MetricsBybitCollector]
+        A3[BybitParserCollector]
         A4[BybitCryptoCollector]
         W[WebModule /health]
     end
@@ -140,7 +140,7 @@ Application container: `crypto-scout-collector`
   - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
 - External offset tracking for CMC, Bybit metrics, and Bybit spot streams:
   - `AmqpConsumer` starts consumers from DB offset and disables server-side tracking.
-  - `MetricsCmcCollector`/`MetricsBybitCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
+  - `MetricsCmcCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
 - Compression policies (segmentby/orderby) for all three tables (compress chunks older than 7 days).
 - Reorder policies align with time‑descending indexes.
 - Retention: ~2 years for `cmc_fgi` and `bybit_lpl`, 180 days for `bybit_spot_tickers`.
@@ -161,7 +161,7 @@ From `src/main/resources/application.properties`:
     - `amqp.rabbitmq.port` (default `5672`)
     - `amqp.stream.port` (default `5552`)
     - `amqp.bybit.crypto.stream` (default `bybit-crypto-stream`)
-    - `amqp.metrics.bybit.stream` (default `metrics-bybit-stream`)
+    - `amqp.bybit.parser.stream` (default `bybit-parser-stream`)
     - `amqp.metrics.cmc.stream` (default `metrics-cmc-stream`)
     - `amqp.collector.exchange`, `amqp.collector.queue`
 - JDBC / HikariCP
@@ -232,7 +232,7 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
   - On flush, `MetricsCmcCollector` inserts data and updates the max processed offset in a single transaction.
 - **Bybit metrics stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
   - The consumer starts from `offset + 1` if present, otherwise from `first`.
-  - On flush, `MetricsBybitCollector` inserts data and updates the max processed offset in a single transaction.
+  - On flush, `BybitParserCollector` inserts data and updates the max processed offset in a single transaction.
 - **Bybit spot stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
   - The consumer starts from `offset + 1` if present, otherwise from `first`.
   - On flush, `BybitCryptoCollector` inserts data and updates the max processed offset in a single transaction.

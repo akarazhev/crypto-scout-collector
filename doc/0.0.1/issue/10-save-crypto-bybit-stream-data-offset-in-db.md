@@ -34,7 +34,7 @@ The offset has been implemented for the `CMC` data stream:
 
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java`
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/db/StreamOffsetsRepository.java`
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/db/MetricsBybitRepository.java`
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/db/BybitParserRepository.java`
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/db/MetricsCmcRepository.java`
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/MetricsCmcCollector.java`
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/MetricsBybitCollector.java`
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/BybitParserCollector.java`

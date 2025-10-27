@@ -61,20 +61,20 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TRADE_BEG
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.WEBSITE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.WHITE_PAPER;
 
-public final class MetricsBybitRepository extends AbstractReactive implements ReactiveService {
+public final class BybitParserRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
     private final int batchSize;
     private final String stream;
 
-    public static MetricsBybitRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
-        return new MetricsBybitRepository(reactor, collectorDataSource);
+    public static BybitParserRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+        return new BybitParserRepository(reactor, collectorDataSource);
     }
 
-    private MetricsBybitRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private BybitParserRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
         this.batchSize = JdbcConfig.getBybitBatchSize();
-        this.stream = AmqpConfig.getAmqpMetricsBybitStream();
+        this.stream = AmqpConfig.getAmqpBybitParserStream();
     }
 
     @Override

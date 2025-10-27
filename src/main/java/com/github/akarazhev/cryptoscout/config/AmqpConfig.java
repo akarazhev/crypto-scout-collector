@@ -39,7 +39,7 @@ import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_RABBITMQ_PORT;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_RABBITMQ_USERNAME;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_CRYPTO_STREAM;
-import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_METRICS_BYBIT_STREAM;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_PARSER_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_METRICS_CMC_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_STREAM_PORT;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.CONNECTION_NAME;
@@ -69,8 +69,8 @@ public final class AmqpConfig {
         return AppConfig.getAsString(AMQP_BYBIT_CRYPTO_STREAM);
     }
 
-    public static String getAmqpMetricsBybitStream() {
-        return AppConfig.getAsString(AMQP_METRICS_BYBIT_STREAM);
+    public static String getAmqpBybitParserStream() {
+        return AppConfig.getAsString(AMQP_BYBIT_PARSER_STREAM);
     }
 
     public static String getAmqpMetricsCmcStream() {
