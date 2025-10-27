@@ -1,6 +1,9 @@
-# Issue 4: Define `bybit_spot_public_trade` table
+# Issue 4: Create bybit spot tables
 
-In this `crypto-scout-collector-db` project we are going to define a new `bybit_spot_public_trade` table.
+In this `crypto-scout-collector-db` project we are going to create the following bybit spot tables to save the data
+received from the Bybit API: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`, `bybit_spot_kline_240m`,
+`bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`. Table schemas must be optimal for
+the analysis, inserting data. Retentions and compressions must be defined.
 
 ## Roles
 
@@ -13,20 +16,24 @@ Take the following roles:
 
 - Use the best practices and design patterns.
 - Do not hallucinate.
-- Use the following technical stack: `java 25`
+- Use the following technical stack: `timescale/timescaledb:latest-pg17`
 
 ## Tasks
 
-- As the expert database engineer review the current `init.sql` script implementation in `crypto-scout-collector-db` project and
-  update it by defining the `bybit_spot_public_trade` table.
-- As the expert database engineer define for the `bybit_spot_public_trade` table indexes, retentions and compressions.
+- As the `expert database engineer` review the current `init.sql` script implementation in `crypto-scout-collector-db`
+  project and update it by defining the following tables: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`,
+  `bybit_spot_kline_240m`, `bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`.
+- As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be
+  optimal for the analysis, inserting data. Retentions and compressions must be defined.
 - As the expert database engineer recheck your proposal and make sure that they are correct and haven't missed any
   important points.
-- As the expert database engineer Rely on the sample of the data section.
-- As the technical writer update the `README.md` and `timescaledb-production-setup.md` files with your results.
-- As the technical writer update the `4-define-bybit-spot-public-trade-table.md` file with your resolution.
+- As the `expert database engineer` rely on the sample of the data section.
+- As the technical writer update the `README.md` and `collector-production-setup.md` files with your results.
+- As the technical writer update the `4-create-bybit-spot-tables.md` file with your resolution.
 
 ## Sample of the data
+
+### Bybit spot public trade
 
 ```json
 {
@@ -237,62 +244,3 @@ same `seq`.
 - `s`: string. Symbol name
 - `BT`: boolean. Whether it is a block trade order or not
 - `RPI`: boolean. Whether it is a RPI trade or not
-
-## Resolution
-
-- **[change]** Added hypertable `crypto_scout.bybit_spot_public_trade` in `script/init.sql` with schema, indexes,
-  compression, reorder, and retention.
-
-### Table schema: `crypto_scout.bybit_spot_public_trade`
-
-- **Columns**
-    - `id BIGSERIAL`
-    - `timestamp TIMESTAMPTZ NOT NULL`
-    - `trade_time TIMESTAMPTZ NOT NULL`
-    - `symbol TEXT NOT NULL`
-    - `taker_side TEXT NOT NULL`
-    - `size NUMERIC(20, 8) NOT NULL`
-    - `price NUMERIC(20, 8) NOT NULL`
-    - `trade_id TEXT NOT NULL`
-    - `block_trade BOOLEAN NOT NULL`
-    - `rpi BOOLEAN`
-    - `cross_sequence BIGINT NOT NULL`
-- **Primary key**: `(id, trade_time)`
-- **Hypertable**: partitioned by `trade_time` (1-day chunks)
-
-### Indexes
-
-- `idx_bybit_spot_public_trade_trade_time` on `(trade_time DESC)`
-- `idx_bybit_spot_public_trade_symbol_trade_time` on `(symbol, trade_time DESC)`
-- Reorder: `add_reorder_policy('crypto_scout.bybit_spot_public_trade', 'idx_bybit_spot_public_trade_trade_time')`
-
-### Compression
-
-- `ALTER TABLE crypto_scout.bybit_spot_public_trade SET (
-  timescaledb.compress,
-  timescaledb.compress_segmentby = 'symbol',
-  timescaledb.compress_orderby = 'trade_time DESC, id DESC'
-);`
-- Policy: `add_compression_policy('crypto_scout.bybit_spot_public_trade', INTERVAL '7 days')`
-
-### Retention
-
-- Policy: `add_retention_policy('crypto_scout.bybit_spot_public_trade', INTERVAL '90 days')`
-
-### Field mapping from sample JSON to schema
-
-- `ts` (ms) → `timestamp` (epoch millis → timestamptz)
-- `data[].T` (ms) → `trade_time` (epoch millis → timestamptz)
-- `data[].s` → `symbol`
-- `data[].S` → `taker_side`
-- `data[].v` → `size`
-- `data[].p` → `price`
-- `data[].i` → `trade_id`
-- `data[].BT` → `block_trade`
-- `data[].RPI` → `rpi`
-- `data[].seq` → `cross_sequence`
-
-Notes:
-
-- Options-only fields `mP`, `iP`, `mIv`, `iv` are intentionally omitted for spot storage.
-- A single message may batch up to 1024 trades; order by `trade_time` and `trade_id` for deterministic processing.
