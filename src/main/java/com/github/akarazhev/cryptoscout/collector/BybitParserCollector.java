@@ -147,7 +147,7 @@ public final class BybitParserCollector extends AbstractReactive implements Reac
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
-                LOGGER.debug("Upserted Bybit metrics stream offset {} (no data batch)", maxOffset);
+                LOGGER.debug("Upserted Bybit parser offset {} (no data batch)", maxOffset);
             }
 
             return null;

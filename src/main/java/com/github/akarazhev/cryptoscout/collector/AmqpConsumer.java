@@ -52,11 +52,11 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     private final BybitParserCollector bybitParserCollector;
     private final CmcParserCollector cmcParserCollector;
     private volatile Environment environment;
-    private volatile Consumer metricsCmcConsumer;
-    private volatile Consumer metricsBybitConsumer;
-    private volatile Consumer streamBybitConsumer;
+    private volatile Consumer cmcParserConsumer;
+    private volatile Consumer bybitParserConsumer;
+    private volatile Consumer bybitCryptoConsumer;
 
-    private enum StreamType {CMC, BYBIT, BYBIT_STREAM}
+    private enum StreamType {CMC_PARSER, BYBIT_PARSER, BYBIT_CRYPTO}
 
     public static AmqpConsumer create(final NioReactor reactor, final Executor executor,
                                       final StreamOffsetsRepository streamOffsetsRepository,
@@ -86,25 +86,25 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
             try {
                 final var cmcStream = AmqpConfig.getAmqpCmcParserStream();
                 environment = AmqpConfig.getEnvironment();
-                metricsCmcConsumer = environment.consumerBuilder()
+                cmcParserConsumer = environment.consumerBuilder()
                         .stream(cmcStream)
                         .noTrackingStrategy()
                         .subscriptionListener(c -> updateOffset(cmcStream, c))
-                        .messageHandler((c, m) -> consumePayload(StreamType.CMC, c, m))
+                        .messageHandler((c, m) -> consumePayload(StreamType.CMC_PARSER, c, m))
                         .build();
                 final var bybitParserStream = AmqpConfig.getAmqpBybitParserStream();
-                metricsBybitConsumer = environment.consumerBuilder()
+                bybitParserConsumer = environment.consumerBuilder()
                         .stream(bybitParserStream)
                         .noTrackingStrategy()
                         .subscriptionListener(c -> updateOffset(bybitParserStream, c))
-                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT, c, m))
+                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_PARSER, c, m))
                         .build();
                 final var bybitCryptoStream = AmqpConfig.getAmqpBybitCryptoStream();
-                streamBybitConsumer = environment.consumerBuilder()
+                bybitCryptoConsumer = environment.consumerBuilder()
                         .stream(bybitCryptoStream)
                         .noTrackingStrategy()
                         .subscriptionListener(c -> updateOffset(bybitCryptoStream, c))
-                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_STREAM, c, m))
+                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_CRYPTO, c, m))
                         .build();
                 LOGGER.info("AmqpConsumer started");
             } catch (final Exception ex) {
@@ -117,12 +117,12 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     @Override
     public Promise<?> stop() {
         return Promise.ofBlocking(executor, () -> {
-            closeConsumer(metricsCmcConsumer);
-            metricsCmcConsumer = null;
-            closeConsumer(metricsBybitConsumer);
-            metricsBybitConsumer = null;
-            closeConsumer(streamBybitConsumer);
-            streamBybitConsumer = null;
+            closeConsumer(cmcParserConsumer);
+            cmcParserConsumer = null;
+            closeConsumer(bybitParserConsumer);
+            bybitParserConsumer = null;
+            closeConsumer(bybitCryptoConsumer);
+            bybitCryptoConsumer = null;
             closeEnvironment();
             LOGGER.info("AmqpConsumer stopped");
         });
@@ -155,9 +155,9 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
         reactor.execute(() -> Promise.ofBlocking(executor, () ->
                         JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
                 .then(payload -> switch (type) {
-                    case CMC -> cmcParserCollector.save(payload, context.offset());
-                    case BYBIT -> bybitParserCollector.save(payload, context.offset());
-                    case BYBIT_STREAM -> bybitCryptoCollector.save(payload, context.offset());
+                    case CMC_PARSER -> cmcParserCollector.save(payload, context.offset());
+                    case BYBIT_PARSER -> bybitParserCollector.save(payload, context.offset());
+                    case BYBIT_CRYPTO -> bybitCryptoCollector.save(payload, context.offset());
                 })
                 .whenComplete((_, ex) -> {
                     if (ex != null) {
