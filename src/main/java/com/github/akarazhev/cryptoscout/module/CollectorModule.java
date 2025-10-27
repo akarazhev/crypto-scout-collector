@@ -30,7 +30,7 @@ import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
 import com.github.akarazhev.cryptoscout.collector.CmcParserCollector;
 import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
-import com.github.akarazhev.cryptoscout.collector.db.BybitCryptoRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import io.activej.inject.annotation.Eager;
@@ -73,16 +73,16 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private BybitCryptoRepository bybitCryptoRepository(final NioReactor reactor,
-                                                        final CollectorDataSource collectorDataSource) {
-        return BybitCryptoRepository.create(reactor, collectorDataSource);
+    private BybitSpotRepository bybitSpotRepository(final NioReactor reactor,
+                                                    final CollectorDataSource collectorDataSource) {
+        return BybitSpotRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
     private BybitCryptoCollector bybitCryptoCollector(final NioReactor reactor, final Executor executor,
                                                       final StreamOffsetsRepository streamOffsetsRepository,
-                                                      final BybitCryptoRepository bybitCryptoRepository) {
-        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitCryptoRepository);
+                                                      final BybitSpotRepository bybitSpotRepository) {
+        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitSpotRepository);
     }
 
     @Provides

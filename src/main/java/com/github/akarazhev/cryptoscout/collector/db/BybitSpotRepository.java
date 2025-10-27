@@ -67,16 +67,16 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.USD_INDEX_PRICE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
 
-public final class BybitCryptoRepository extends AbstractReactive implements ReactiveService {
+public final class BybitSpotRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
     private final int batchSize;
     private final String stream;
 
-    public static BybitCryptoRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
-        return new BybitCryptoRepository(reactor, collectorDataSource);
+    public static BybitSpotRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+        return new BybitSpotRepository(reactor, collectorDataSource);
     }
 
-    private BybitCryptoRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private BybitSpotRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
         this.batchSize = JdbcConfig.getBybitBatchSize();
@@ -93,11 +93,27 @@ public final class BybitCryptoRepository extends AbstractReactive implements Rea
         return Promise.complete();
     }
 
-    public int insertSpotKline15(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int insertKlines15(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        // TODO:
         return 0;
     }
 
-    public int insertSpotTickers(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
+    public int insertKlines60(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        // TODO:
+        return 0;
+    }
+
+    public int insertKlines240(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        // TODO:
+        return 0;
+    }
+
+    public int insertKlines1D(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        // TODO:
+        return 0;
+    }
+
+    public int insertTickers(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
         int count = 0;
         try (final var c = dataSource.getConnection()) {
             final boolean oldAutoCommit = c.getAutoCommit();
@@ -160,6 +176,16 @@ public final class BybitCryptoRepository extends AbstractReactive implements Rea
         }
 
         return count;
+    }
+
+    public int insertTrades(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
+        // TODO:
+        return 0;
+    }
+
+    public int insertOrderBooks200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        // TODO:
+        return 0;
     }
 
     private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
