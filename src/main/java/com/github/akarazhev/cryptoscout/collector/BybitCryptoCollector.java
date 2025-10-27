@@ -49,8 +49,8 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TOPIC;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_BTC_USDT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_ETH_USDT;
 
-public final class CryptoBybitCollector extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(CryptoBybitCollector.class);
+public final class BybitCryptoCollector extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(BybitCryptoCollector.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
     private final CryptoBybitRepository cryptoBybitRepository;
@@ -59,13 +59,13 @@ public final class CryptoBybitCollector extends AbstractReactive implements Reac
     private final long flushIntervalMs;
     private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
 
-    public static CryptoBybitCollector create(final NioReactor reactor, final Executor executor,
+    public static BybitCryptoCollector create(final NioReactor reactor, final Executor executor,
                                               final StreamOffsetsRepository streamOffsetsRepository,
                                               final CryptoBybitRepository cryptoBybitRepository) {
-        return new CryptoBybitCollector(reactor, executor, streamOffsetsRepository, cryptoBybitRepository);
+        return new BybitCryptoCollector(reactor, executor, streamOffsetsRepository, cryptoBybitRepository);
     }
 
-    private CryptoBybitCollector(final NioReactor reactor, final Executor executor,
+    private BybitCryptoCollector(final NioReactor reactor, final Executor executor,
                                  final StreamOffsetsRepository streamOffsetsRepository,
                                  final CryptoBybitRepository cryptoBybitRepository) {
         super(reactor);
@@ -74,20 +74,20 @@ public final class CryptoBybitCollector extends AbstractReactive implements Reac
         this.cryptoBybitRepository = cryptoBybitRepository;
         this.batchSize = JdbcConfig.getBybitBatchSize();
         this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
-        this.stream = AmqpConfig.getAmqpCryptoBybitStream();
+        this.stream = AmqpConfig.getAmqpBybitCryptoStream();
     }
 
     @Override
     public Promise<?> start() {
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
-        LOGGER.info("CryptoBybitCollector started");
+        LOGGER.info("BybitCryptoCollector started");
         return Promise.complete();
     }
 
     @Override
     public Promise<?> stop() {
         final var promise = flush();
-        LOGGER.info("CryptoBybitCollector stopped");
+        LOGGER.info("BybitCryptoCollector stopped");
         return promise;
     }
 

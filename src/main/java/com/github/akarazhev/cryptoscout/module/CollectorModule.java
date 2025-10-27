@@ -25,7 +25,7 @@
 package com.github.akarazhev.cryptoscout.module;
 
 import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
-import com.github.akarazhev.cryptoscout.collector.CryptoBybitCollector;
+import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.MetricsBybitCollector;
 import com.github.akarazhev.cryptoscout.collector.MetricsCmcCollector;
@@ -79,10 +79,10 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private CryptoBybitCollector cryptoBybitCollector(final NioReactor reactor, final Executor executor,
+    private BybitCryptoCollector bybitCryptoCollector(final NioReactor reactor, final Executor executor,
                                                       final StreamOffsetsRepository streamOffsetsRepository,
                                                       final CryptoBybitRepository cryptoBybitRepository) {
-        return CryptoBybitCollector.create(reactor, executor, streamOffsetsRepository, cryptoBybitRepository);
+        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, cryptoBybitRepository);
     }
 
     @Provides
@@ -103,10 +103,10 @@ public final class CollectorModule extends AbstractModule {
     @Eager
     private AmqpConsumer amqpConsumer(final NioReactor reactor, final Executor executor,
                                       final StreamOffsetsRepository streamOffsetsRepository,
-                                      final CryptoBybitCollector cryptoBybitCollector,
+                                      final BybitCryptoCollector bybitCryptoCollector,
                                       final MetricsBybitCollector metricsBybitCollector,
                                       final MetricsCmcCollector metricsCmcCollector) {
-        return AmqpConsumer.create(reactor, executor, streamOffsetsRepository, cryptoBybitCollector,
+        return AmqpConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
                 metricsBybitCollector, metricsCmcCollector);
     }
 }
