@@ -24,7 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
-import com.github.akarazhev.cryptoscout.collector.db.CryptoBybitRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitCryptoRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.config.JdbcConfig;
@@ -53,7 +53,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private final static Logger LOGGER = LoggerFactory.getLogger(BybitCryptoCollector.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
-    private final CryptoBybitRepository cryptoBybitRepository;
+    private final BybitCryptoRepository bybitCryptoRepository;
     private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
@@ -61,17 +61,17 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
 
     public static BybitCryptoCollector create(final NioReactor reactor, final Executor executor,
                                               final StreamOffsetsRepository streamOffsetsRepository,
-                                              final CryptoBybitRepository cryptoBybitRepository) {
-        return new BybitCryptoCollector(reactor, executor, streamOffsetsRepository, cryptoBybitRepository);
+                                              final BybitCryptoRepository bybitCryptoRepository) {
+        return new BybitCryptoCollector(reactor, executor, streamOffsetsRepository, bybitCryptoRepository);
     }
 
     private BybitCryptoCollector(final NioReactor reactor, final Executor executor,
                                  final StreamOffsetsRepository streamOffsetsRepository,
-                                 final CryptoBybitRepository cryptoBybitRepository) {
+                                 final BybitCryptoRepository bybitCryptoRepository) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
-        this.cryptoBybitRepository = cryptoBybitRepository;
+        this.bybitCryptoRepository = bybitCryptoRepository;
         this.batchSize = JdbcConfig.getBybitBatchSize();
         this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
         this.stream = AmqpConfig.getAmqpBybitCryptoStream();
@@ -153,7 +153,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             if (!spts.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
-                            cryptoBybitRepository.insertSpotTickers(spts, maxOffset), maxOffset);
+                            bybitCryptoRepository.insertSpotTickers(spts, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases

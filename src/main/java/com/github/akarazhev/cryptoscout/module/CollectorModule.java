@@ -29,7 +29,7 @@ import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.MetricsBybitCollector;
 import com.github.akarazhev.cryptoscout.collector.MetricsCmcCollector;
-import com.github.akarazhev.cryptoscout.collector.db.CryptoBybitRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitCryptoRepository;
 import com.github.akarazhev.cryptoscout.collector.db.MetricsBybitRepository;
 import com.github.akarazhev.cryptoscout.collector.db.MetricsCmcRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
@@ -73,16 +73,16 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private CryptoBybitRepository cryptoBybitRepository(final NioReactor reactor,
+    private BybitCryptoRepository bybitCryptoRepository(final NioReactor reactor,
                                                         final CollectorDataSource collectorDataSource) {
-        return CryptoBybitRepository.create(reactor, collectorDataSource);
+        return BybitCryptoRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
     private BybitCryptoCollector bybitCryptoCollector(final NioReactor reactor, final Executor executor,
                                                       final StreamOffsetsRepository streamOffsetsRepository,
-                                                      final CryptoBybitRepository cryptoBybitRepository) {
-        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, cryptoBybitRepository);
+                                                      final BybitCryptoRepository bybitCryptoRepository) {
+        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitCryptoRepository);
     }
 
     @Provides

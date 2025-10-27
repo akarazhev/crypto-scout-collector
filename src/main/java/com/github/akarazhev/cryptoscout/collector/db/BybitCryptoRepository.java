@@ -67,16 +67,16 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.USD_INDEX_PRICE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
 
-public final class CryptoBybitRepository extends AbstractReactive implements ReactiveService {
+public final class BybitCryptoRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
     private final int batchSize;
     private final String stream;
 
-    public static CryptoBybitRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
-        return new CryptoBybitRepository(reactor, collectorDataSource);
+    public static BybitCryptoRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+        return new BybitCryptoRepository(reactor, collectorDataSource);
     }
 
-    private CryptoBybitRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private BybitCryptoRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
         this.batchSize = JdbcConfig.getBybitBatchSize();
