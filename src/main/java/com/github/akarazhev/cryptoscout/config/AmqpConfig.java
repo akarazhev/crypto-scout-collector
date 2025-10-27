@@ -32,6 +32,8 @@ import com.rabbitmq.stream.Environment;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_QUEUE;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_COLLECTOR_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CRYPTO_SCOUT_EXCHANGE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_RABBITMQ_HOST;
@@ -83,6 +85,14 @@ public final class AmqpConfig {
 
     public static String getAmqpCollectorQueue() {
         return AppConfig.getAsString(AMQP_COLLECTOR_QUEUE);
+    }
+
+    public static String getAmqpChatbotQueue() {
+        return AppConfig.getAsString(AMQP_CHATBOT_QUEUE);
+    }
+
+    public static String getAmqpAnalystQueue() {
+        return AppConfig.getAsString(AMQP_ANALYST_QUEUE);
     }
 
     public static int getAmqpRabbitmqPort() {
