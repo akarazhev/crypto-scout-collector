@@ -28,6 +28,7 @@ import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
 import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
 import com.github.akarazhev.cryptoscout.collector.CmcParserCollector;
+import com.github.akarazhev.cryptoscout.collector.db.BybitLinearRepository;
 import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
@@ -76,6 +77,12 @@ public final class CollectorModule extends AbstractModule {
     private BybitSpotRepository bybitSpotRepository(final NioReactor reactor,
                                                     final CollectorDataSource collectorDataSource) {
         return BybitSpotRepository.create(reactor, collectorDataSource);
+    }
+
+    @Provides
+    private BybitLinearRepository bybitLinearRepository(final NioReactor reactor,
+                                                        final CollectorDataSource collectorDataSource) {
+        return BybitLinearRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
