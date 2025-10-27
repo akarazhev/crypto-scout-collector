@@ -22,7 +22,7 @@ Take the following roles:
 
 - As the expert java engineer review the current `crypto-scout-collector` project implementation and update it by
   saving `Crypto-Bybit` stream data message offset in the database after processing. The implementation of the stream
-  consumer is here: `AmqpConsumer`, processing the data is here: `CryptoBybitCollector`, saving the data is here:
+  consumer is here: `AmqpConsumer`, processing the data is here: `BybitCryptoCollector`, saving the data is here:
   `CryptoBybitRepository`.
 - As the expert java engineer recheck your proposal and make sure that they are correct and haven't missed any
   important points.

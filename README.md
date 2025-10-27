@@ -23,14 +23,14 @@ flowchart LR
     subgraph RabbitMQ[ RabbitMQ Streams ]
         S1[metrics-cmc-stream]
         S2[metrics-bybit-stream]
-        S3[crypto-bybit-stream]
+        S3[bybit-crypto-stream]
     end
 
     subgraph App[crypto-scout-collector -> ActiveJ]
         A1[AmqpConsumer]
         A2[MetricsCmcCollector]
         A3[MetricsBybitCollector]
-        A4[CryptoBybitCollector]
+        A4[BybitCryptoCollector]
         W[WebModule /health]
     end
 
@@ -128,7 +128,7 @@ Default configuration is in `src/main/resources/application.properties`:
     - `amqp.rabbitmq.password` (empty by default)
     - `amqp.rabbitmq.port` (default `5672`)
     - `amqp.stream.port` (default `5552`)
-    - `amqp.crypto.bybit.stream` (default `crypto-bybit-stream`)
+    - `amqp.bybit.crypto.stream` (default `bybit-crypto-stream`)
     - `amqp.metrics.bybit.stream` (default `metrics-bybit-stream`)
     - `amqp.metrics.cmc.stream` (default `metrics-cmc-stream`)
     - `amqp.collector.exchange`, `amqp.collector.queue`
@@ -172,9 +172,9 @@ configured hosts/ports.
 - **Bybit metrics stream (external offsets):** the `metrics-bybit-stream` uses the same DB-backed offset approach.
   - On startup, `AmqpConsumer` reads `metrics-bybit-stream` offset from DB and subscribes from `offset + 1`.
   - `MetricsBybitCollector` batches inserts and updates the max processed offset in one transaction.
-- **Bybit spot stream (external offsets):** `crypto-bybit-stream` also uses the DB-backed offset approach.
-  - On startup, `AmqpConsumer` reads `crypto-bybit-stream` offset from DB and subscribes from `offset + 1`.
-  - `CryptoBybitCollector` batches inserts and updates the max processed offset in one transaction.
+- **Bybit spot stream (external offsets):** `bybit-crypto-stream` also uses the DB-backed offset approach.
+  - On startup, `AmqpConsumer` reads `bybit-crypto-stream` offset from DB and subscribes from `offset + 1`.
+  - `BybitCryptoCollector` batches inserts and updates the max processed offset in one transaction.
   - Manual stream acknowledgments are no longer used.
 
 Migration note: `script/init.sql` creates `crypto_scout.stream_offsets` on first bootstrap. If your DB is already
