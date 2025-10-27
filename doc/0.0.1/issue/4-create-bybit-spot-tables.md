@@ -15,8 +15,8 @@ Take the following roles:
 ## Conditions
 
 - Use the best practices and design patterns.
+- Use the following technical stack: `timescale/timescaledb:latest-pg17`.
 - Do not hallucinate.
-- Use the following technical stack: `timescale/timescaledb:latest-pg17`
 
 ## Tasks
 
@@ -32,6 +32,45 @@ Take the following roles:
 - As the technical writer update the `4-create-bybit-spot-tables.md` file with your resolution.
 
 ## Sample of the data
+
+### Bybit spot klines
+
+```json
+{
+  "type": "snapshot",
+  "topic": "kline.15.ETHUSDT",
+  "data": [
+    {
+      "start": 1761591600000,
+      "end": 1761592499999,
+      "interval": "15",
+      "open": "4951.21",
+      "close": "4951.21",
+      "high": "4951.21",
+      "low": "4951.21",
+      "volume": "0",
+      "turnover": "0",
+      "confirm": false,
+      "timestamp": 1761591715966
+    }
+  ],
+  "ts": 1761591715966
+}
+```
+
+Parameters to save:
+
+- `ts`: number. The timestamp (ms) that the system generates the data.
+- `symbol`: string. Example: `ETHUSDT`.
+- `start`: number. The start timestamp (ms).
+- `end`: number. The end timestamp (ms).
+- `interval`: string. Kline interval.
+- `open`: string. Open price.
+- `close`: string. Close price.
+- `high`: string. Highest price.
+- `low`: string. Lowest price.
+- `volume`: string. Trade volume.
+- `turnover`: string. Turnover.
 
 ### Bybit spot public trade
 
