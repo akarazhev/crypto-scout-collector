@@ -130,7 +130,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         }
 
         return Promise.ofBlocking(executor, () -> {
-            final var spts = new ArrayList<Map<String, Object>>();
+            final var spotTickers = new ArrayList<Map<String, Object>>();
             long maxOffset = -1L;
             for (final var msg : snapshot) {
                 final var payload = msg.payload();
@@ -139,7 +139,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                     final var data = payload.getData();
                     final var topic = (String) data.get(TOPIC);
                     if (Objects.equals(topic, TICKERS_BTC_USDT) || Objects.equals(topic, TICKERS_ETH_USDT)) {
-                        spts.add(data);
+                        spotTickers.add(data);
                     }
                 } else if (Source.PML.equals(source)) {
                     // TODO: implement futures
@@ -150,10 +150,10 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 }
             }
 
-            if (!spts.isEmpty()) {
+            if (!spotTickers.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
-                            bybitCryptoRepository.insertSpotTickers(spts, maxOffset), maxOffset);
+                            bybitCryptoRepository.insertSpotTickers(spotTickers, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases

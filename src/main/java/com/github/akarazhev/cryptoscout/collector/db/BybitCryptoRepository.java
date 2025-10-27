@@ -93,28 +93,32 @@ public final class BybitCryptoRepository extends AbstractReactive implements Rea
         return Promise.complete();
     }
 
-    public int insertSpotTickers(final Iterable<Map<String, Object>> spts, final long offset) throws SQLException {
+    public int insertSpotKline15(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        return 0;
+    }
+
+    public int insertSpotTickers(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
         int count = 0;
         try (final var c = dataSource.getConnection()) {
             final boolean oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(String.format(SPOT_TICKERS_INSERT));
                  final var psOffset = c.prepareStatement(UPSERT)) {
-                for (final var spt : spts) {
-                    final var dObj = spt.get(DATA);
+                for (final var ticker : tickers) {
+                    final var dObj = ticker.get(DATA);
                     if (!(dObj instanceof Map<?, ?> map)) {
                         // skip malformed rows
                         continue;
                     }
 
-                    final var odt = (Long) spt.get(TS);
+                    final var odt = (Long) ticker.get(TS);
                     if (odt != null) {
                         ps.setObject(SPOT_TICKERS_TIMESTAMP, toOffsetDateTime(odt));
                     } else {
                         ps.setNull(SPOT_TICKERS_TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE);
                     }
 
-                    final var cs = (Long) spt.get(CS);
+                    final var cs = (Long) ticker.get(CS);
                     if (cs != null) {
                         ps.setObject(SPOT_TICKERS_CROSS_SEQUENCE, cs);
                     } else {
