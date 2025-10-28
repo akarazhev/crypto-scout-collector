@@ -10,8 +10,11 @@ policies, and a container image definition for the collector.
 - Database and backups: `podman-compose.yml` provisions TimescaleDB (`timescale/timescaledb:latest-pg17`) and a backup
   sidecar (`prodrigestivill/postgres-backup-local`) with env-driven scheduling and retention. Secrets are placed under
   `secret/`.
-- Schema and policies: `script/init.sql` creates schema `crypto_scout`, hypertables, indexes, compression, reorder, and
-  retention policies.
+- Schema and policies: SQL is split by concern:
+    - `script/init.sql` — core bootstrap (extensions, schema, search_path), `crypto_scout.stream_offsets`,
+      grants/default privileges.
+    - `script/bybit_spot_tables.sql` — Bybit Spot DDL and policies, including `crypto_scout.bybit_spot_tickers`.
+    - `script/bybit_parser_tables.sql` — `crypto_scout.bybit_lpl` (Bybit Launch Pool) DDL and policies.
 - Application: Java 25 (ActiveJ). Reads RabbitMQ Streams, batches inserts via HikariCP to TimescaleDB, exposes
   `GET /health`.
 - Documentation: `README.md` updated to reflect Java 25, compose service names, and Docker base; this report added under
@@ -31,22 +34,22 @@ backups.
       `java -jar crypto-scout-collector.jar`.
 
 - Initialization & schema
-    - `script/init.sql`: installs `timescaledb` and `pg_stat_statements`; creates schema `crypto_scout`;
-      creates/configures hypertables:
-        - `crypto_scout.cmc_fgi`
-        - `crypto_scout.bybit_spot_tickers`
-        - `crypto_scout.bybit_lpl`
-        - `crypto_scout.stream_offsets` (plain table for external offset tracking)
-    - `script/bybit_spot_tables.sql`: defines Bybit Spot tables and policies;
-      compose mounts it as `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`:
+    - `script/init.sql`: installs `timescaledb` and `pg_stat_statements`; creates schema `crypto_scout`, sets
+      `search_path`; defines `crypto_scout.stream_offsets`; grants and default privileges.
+    - `script/bybit_spot_tables.sql`: Bybit Spot tables and policies; compose mounts it as
+      `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`:
+        - `crypto_scout.bybit_spot_tickers` (spot tickers)
         - `crypto_scout.bybit_spot_kline_15m` (confirmed klines 15m)
         - `crypto_scout.bybit_spot_kline_60m` (confirmed klines 60m)
         - `crypto_scout.bybit_spot_kline_240m` (confirmed klines 240m)
         - `crypto_scout.bybit_spot_kline_1d` (confirmed klines 1d)
         - `crypto_scout.bybit_spot_public_trade` (1 row per trade)
         - `crypto_scout.bybit_spot_order_book_200` (1 row per book level)
-          Adds indexes, compression (7‑day threshold), reorder, and retention (7 days to 5 years depending on table).
-          Grants ownership to role `crypto_scout_db`.
+          Adds indexes, hypertables, compression (7‑day threshold), reorder, and retention policies.
+    - `script/cmc_parser_tables.sql`: `crypto_scout.cmc_fgi`; compose mounts it as
+      `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`.
+    - `script/bybit_parser_tables.sql`: `crypto_scout.bybit_lpl`; compose mounts it as
+      `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`.
 
 - Secrets & configuration (gitignored examples)
     - `secret/timescaledb.env.example` and `secret/timescaledb.env`: DB name/user/password, telemetry off, optional
@@ -109,9 +112,12 @@ Runtime characteristics:
 ## TimescaleDB, backups, and application container
 
 - DB image: `timescale/timescaledb:latest-pg17`.
-- Volumes: `./data/postgresql:/var/lib/postgresql/data`, `./script/init.sql` mounted read-only to
-  `/docker-entrypoint-initdb.d/init.sql`, and `./script/bybit_spot_tables.sql` mounted read-only to
-  `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`.
+- Volumes: `./data/postgresql:/var/lib/postgresql/data`, and SQL mounted read-only to
+  `/docker-entrypoint-initdb.d/` in lexical order:
+    - `./script/init.sql` → `/docker-entrypoint-initdb.d/init.sql`
+    - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`
+    - `./script/cmc_parser_tables.sql` → `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`
+    - `./script/bybit_parser_tables.sql` → `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`
 - Tuning (from `podman-compose.yml`): preload `timescaledb,pg_stat_statements`, `shared_buffers`, WAL settings, timezone
   UTC, `timescaledb.telemetry_level=off`, `pg_stat_statements.track=all`, IO timing, etc.
 - Healthcheck: `pg_isready -U $POSTGRES_USER -d $POSTGRES_DB`.
@@ -281,12 +287,19 @@ pick up `script/init.sql` changes.
     - New table `crypto_scout.stream_offsets`.
     - `AmqpConsumer` starts CMC consumer from DB offset and disables server-side tracking.
     - `CmcParserCollector` batches inserts and updates offset atomically.
+- Split bootstrap SQL:
+    - Moved `crypto_scout.bybit_spot_tickers` from `script/init.sql` to `script/bybit_spot_tables.sql`.
+    - Moved `crypto_scout.cmc_fgi` to `script/cmc_parser_tables.sql`.
+    - Moved `crypto_scout.bybit_lpl` to `script/bybit_parser_tables.sql`.
+    - Updated compose volumes and documentation to mount and describe the new scripts.
 
 ## References to source
 
 - `podman-compose.yml`
 - `script/init.sql`
 - `script/bybit_spot_tables.sql`
+- `script/cmc_parser_tables.sql`
+- `script/bybit_parser_tables.sql`
 - `secret/*.env`, `secret/README.md`
 - `src/main/resources/application.properties`, `logback.xml`
 - `src/main/java/com/github/akarazhev/cryptoscout/*`

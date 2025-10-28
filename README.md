@@ -10,11 +10,12 @@ structured, time-series data into TimescaleDB. The repository includes a product
 automated daily backups via a sidecar container.
 
 - Technologies: Java 25, ActiveJ, RabbitMQ Streams, PostgreSQL/TimescaleDB, HikariCP, SLF4J/Logback
-- DB provisioning and policies: `script/init.sql`
 - DB and backups containers: `podman-compose.yml` using `timescale/timescaledb:latest-pg17` and
   `prodrigestivill/postgres-backup-local`
 - App entrypoint: `com.github.akarazhev.cryptoscout.Collector`
 - Health endpoint: `GET /health` → `ok`
+- DB bootstrap and DDL scripts: `script/init.sql`, `script/bybit_spot_tables.sql`, `script/cmc_parser_tables.sql`,
+  `script/bybit_parser_tables.sql`
 
 ## Architecture
 
@@ -60,34 +61,32 @@ Key modules/classes:
 
 ## Database schema and policies
 
-The TimescaleDB schema is created and managed by `script/init.sql` (mounted into the container at
-`/docker-entrypoint-initdb.d/init.sql`). On first cluster initialization it will:
+The repository ships SQL split by concern. On fresh cluster initialization, scripts under `/docker-entrypoint-initdb.d/`
+are executed in lexical order:
 
-- Create schema: `crypto_scout` and set search_path.
-- Create hypertables:
-    - `crypto_scout.cmc_fgi` (FGI metrics)
-    - `crypto_scout.bybit_spot_tickers` (Bybit spot tickers)
-    - `crypto_scout.bybit_lpl` (Bybit Launch Pool data)
-    - `crypto_scout.bybit_spot_kline_15m` (Bybit spot klines — 15m; confirmed only)
-    - `crypto_scout.bybit_spot_kline_60m` (Bybit spot klines — 60m; confirmed only)
-    - `crypto_scout.bybit_spot_kline_240m` (Bybit spot klines — 240m; confirmed only)
-    - `crypto_scout.bybit_spot_kline_1d` (Bybit spot klines — 1d; confirmed only)
-    - `crypto_scout.bybit_spot_public_trade` (Bybit spot public trades; 1 row per trade)
-    - `crypto_scout.bybit_spot_order_book_200` (Bybit spot order book L200; 1 row per level)
-    - `crypto_scout.stream_offsets` (external consumer offsets)
-- Add indexes, compression settings, reorder and retention policies (e.g., 7-day compression window, retention 180–730
-  days depending on the table).
-- Grant privileges to the application DB role `crypto_scout_db`.
-
-Review `script/init.sql` before production rollouts to validate chunk sizes, compression and retention policies against
-your workload.
+- `script/init.sql` → installs extensions, creates schema `crypto_scout`, sets `search_path`, creates
+  `crypto_scout.stream_offsets`, and grants/default privileges.
+- `script/bybit_spot_tables.sql` → Bybit Spot tables and policies:
+    - `crypto_scout.bybit_spot_tickers` (spot tickers)
+    - `crypto_scout.bybit_spot_kline_{15m,60m,240m,1d}` (confirmed klines)
+    - `crypto_scout.bybit_spot_public_trade` (1 row per trade)
+    - `crypto_scout.bybit_spot_order_book_200` (1 row per book level)
+    - Indexes, hypertables, compression, reorder, and retention policies
+- `script/cmc_parser_tables.sql` → `crypto_scout.cmc_fgi` (FGI metrics) with indexes, hypertable, compression, reorder,
+  retention.
+- `script/bybit_parser_tables.sql` → `crypto_scout.bybit_lpl` (Bybit Launch Pool) with indexes, hypertable, compression,
+  reorder, retention.
 
 ## Containers: TimescaleDB + Backups
 
 The repository ships a `podman-compose.yml` with:
 
 - `crypto-scout-collector-db` — `timescale/timescaledb:latest-pg17`
-    - Mounts `./data/postgresql` for data and `./script/init.sql` for bootstrap.
+    - Mounts `./data/postgresql` for data and SQL scripts under `/docker-entrypoint-initdb.d/` in order:
+        - `./script/init.sql` → `/docker-entrypoint-initdb.d/init.sql`
+        - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`
+        - `./script/cmc_parser_tables.sql` → `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`
+        - `./script/bybit_parser_tables.sql` → `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`
     - Healthcheck via `pg_isready`.
     - Tuned Postgres/TimescaleDB settings and `pg_stat_statements` enabled.
 - `crypto-scout-collector-backup` — `prodrigestivill/postgres-backup-local:latest`
@@ -119,8 +118,10 @@ Notes:
 
 - `script/init.sql` runs only during initial cluster creation (empty data dir). Re-initialize `./data/postgresql` to
   re-run.
-- For existing databases, apply `script/bybit_spot_tables.sql` manually using `psql` to create new Bybit Spot tables and
-  policies, e.g. `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_spot_tables.sql`.
+- For existing databases, apply the DDL scripts manually using `psql`, for example:
+    - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_spot_tables.sql`
+    - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/cmc_parser_tables.sql`
+    - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_parser_tables.sql`
 - For stronger auth at bootstrap, include `POSTGRES_INITDB_ARGS=--auth=scram-sha-256` in `secret/timescaledb.env` before
   first start.
 
