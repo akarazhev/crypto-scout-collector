@@ -1,4 +1,4 @@
-# Issue 4: Create bybit linear tables
+# Issue 5: Create bybit linear tables
 
 In this `crypto-scout-collector-db` project we are going to create the following bybit linear tables to save the data
 received from the Bybit websocket: `bybit_linear_kline_60m`, `bybit_linear_tickers`, `bybit_linear_public_trade`,
@@ -1114,3 +1114,17 @@ Parameters to save:
 
 The `all liquidation` data must be saved in normalized form in the following table: `bybit_linear_all_liqudation`.
 
+## Resolution
+
+- **[SQL]** Added `script/bybit_linear_tables.sql` with hypertables:
+  - `crypto_scout.bybit_linear_kline_60m` (confirmed candles only)
+  - `crypto_scout.bybit_linear_tickers`
+  - `crypto_scout.bybit_linear_public_trade`
+  - `crypto_scout.bybit_linear_order_book_200`
+  - `crypto_scout.bybit_linear_all_liqudation`
+- **[Indexes]** Time-desc and `(symbol, time)` indexes where applicable.
+- **[Hypertables]** 1-day chunks on the time column.
+- **[Compression]** Enabled with segment-by symbol (and side where relevant) and time-desc order-by.
+- **[Retention]** Klines 730d; Tickers/Trades 180d; OrderBook 7d; Liquidations 730d.
+- **[Compose]** Mounted the script as `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql` in `podman-compose.yml`.
+- **[Docs]** Updated `README.md` and `collector-production-setup.md` to reference the new script and tables.
