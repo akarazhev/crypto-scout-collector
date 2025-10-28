@@ -55,7 +55,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_15m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    received_at TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT bybit_spot_kline_15m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_15m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -75,7 +74,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_60m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    received_at TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT bybit_spot_kline_60m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_60m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -95,7 +93,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_240m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    received_at TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT bybit_spot_kline_240m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_240m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -115,7 +112,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1d (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    received_at TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT bybit_spot_kline_1d_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_1d_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -172,7 +168,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_public_trade (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     trade_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    received_at TIMESTAMP WITH TIME ZONE NOT NULL,
     trade_id TEXT NOT NULL,
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
@@ -206,7 +201,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_order_book_200 (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     engine_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    received_at TIMESTAMP WITH TIME ZONE NOT NULL,
     side TEXT NOT NULL CHECK (side IN ('Bid','Ask')),
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
