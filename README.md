@@ -68,7 +68,13 @@ The TimescaleDB schema is created and managed by `script/init.sql` (mounted into
     - `crypto_scout.cmc_fgi` (FGI metrics)
     - `crypto_scout.bybit_spot_tickers` (Bybit spot tickers)
     - `crypto_scout.bybit_lpl` (Bybit Launch Pool data)
-    - `crypto_scout.stream_offsets` (external consumer offsets; used by CMC)
+    - `crypto_scout.bybit_spot_kline_15m` (Bybit spot klines — 15m; confirmed only)
+    - `crypto_scout.bybit_spot_kline_60m` (Bybit spot klines — 60m; confirmed only)
+    - `crypto_scout.bybit_spot_kline_240m` (Bybit spot klines — 240m; confirmed only)
+    - `crypto_scout.bybit_spot_kline_1d` (Bybit spot klines — 1d; confirmed only)
+    - `crypto_scout.bybit_spot_public_trade` (Bybit spot public trades; 1 row per trade)
+    - `crypto_scout.bybit_spot_order_book_200` (Bybit spot order book L200; 1 row per level)
+    - `crypto_scout.stream_offsets` (external consumer offsets)
 - Add indexes, compression settings, reorder and retention policies (e.g., 7-day compression window, retention 180–730
   days depending on the table).
 - Grant privileges to the application DB role `crypto_scout_db`.
@@ -113,6 +119,8 @@ Notes:
 
 - `script/init.sql` runs only during initial cluster creation (empty data dir). Re-initialize `./data/postgresql` to
   re-run.
+- For existing databases, apply `script/bybit_spot_tables.sql` manually using `psql` to create new Bybit Spot tables and
+  policies, e.g. `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_spot_tables.sql`.
 - For stronger auth at bootstrap, include `POSTGRES_INITDB_ARGS=--auth=scram-sha-256` in `secret/timescaledb.env` before
   first start.
 
@@ -166,16 +174,18 @@ configured hosts/ports.
 
 - **CMC stream (external offsets):** `AmqpConsumer` disables server-side offset tracking and uses a DB-backed offset in
   `crypto_scout.stream_offsets`.
-  - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if absent).
-  - `CmcParserCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
-  - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once semantics.
+    - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if
+      absent).
+    - `CmcParserCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
+    - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once
+      semantics.
 - **Bybit metrics stream (external offsets):** the `bybit-parser-stream` uses the same DB-backed offset approach.
-  - On startup, `AmqpConsumer` reads `bybit-parser-stream` offset from DB and subscribes from `offset + 1`.
-  - `BybitParserCollector` batches inserts and updates the max processed offset in one transaction.
+    - On startup, `AmqpConsumer` reads `bybit-parser-stream` offset from DB and subscribes from `offset + 1`.
+    - `BybitParserCollector` batches inserts and updates the max processed offset in one transaction.
 - **Bybit spot stream (external offsets):** `bybit-crypto-stream` also uses the DB-backed offset approach.
-  - On startup, `AmqpConsumer` reads `bybit-crypto-stream` offset from DB and subscribes from `offset + 1`.
-  - `BybitCryptoCollector` batches inserts and updates the max processed offset in one transaction.
-  - Manual stream acknowledgments are no longer used.
+    - On startup, `AmqpConsumer` reads `bybit-crypto-stream` offset from DB and subscribes from `offset + 1`.
+    - `BybitCryptoCollector` batches inserts and updates the max processed offset in one transaction.
+    - Manual stream acknowledgments are no longer used.
 
 Migration note: `script/init.sql` creates `crypto_scout.stream_offsets` on first bootstrap. If your DB is already
 initialized, apply the DDL manually or re-initialize the data directory to pick up the new table.

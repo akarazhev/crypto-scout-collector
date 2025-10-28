@@ -1963,13 +1963,34 @@ Parameters to save:
 - `a[0]`: string. Ask price.
 - `a[1]`: string. Ask size. The delta data has size=0, which means that all quotations for this price have been filled
   or cancelled.
-- `u`: integer. Update ID. Occasionally, you'll receive "u"=1, which is a snapshot data due to the restart of the 
-  service. So please overwrite your local orderbook. For level 1 of linear, inverse Perps and Futures, the snapshot 
-  data will be pushed again when there is no change in 3 seconds, and the "u" will be the same as that in the previous 
+- `u`: integer. Update ID. Occasionally, you'll receive "u"=1, which is a snapshot data due to the restart of the
+  service. So please overwrite your local orderbook. For level 1 of linear, inverse Perps and Futures, the snapshot
+  data will be pushed again when there is no change in 3 seconds, and the "u" will be the same as that in the previous
   message.
-- `seq`: integer. Cross sequence. You can use this field to compare different levels orderbook data, and for the smaller 
+- `seq`: integer. Cross sequence. You can use this field to compare different levels orderbook data, and for the smaller
   seq, then it means the data is generated earlier.
-- `cts`: number. The timestamp from the matching engine when this orderbook data is produced. It can be correlated with 
+- `cts`: number. The timestamp from the matching engine when this orderbook data is produced. It can be correlated with
   `T` from public trade channel.
 
 The `order book` data must be saved in normalized form in the following table: `bybit_spot_order_book_200`.
+
+- **Indexes**
+    - Kliness: `(start_time DESC)`, `(symbol, start_time DESC)`.
+    - Trades: `(trade_time DESC)`, `(symbol, trade_time DESC)`, `(cross_sequence)`.
+    - Order book: `(engine_time DESC)`, `(symbol, engine_time DESC)`, `(symbol, side, price)`.
+
+- **Compression, reorder, retention policies**
+    - Compression enabled with `segmentby` on symbol (and side for order book). Compression window: 7 days.
+    - Reorder by time-desc indexes for hot chunks.
+    - Retention:
+        - Klines: 15m→365d, 60m→730d, 240m→1095d, 1d→1825d.
+        - Trades: 180d.
+        - Order book L200: 7d.
+
+- **Docs updated**
+    - `README.md`: added new hypertables and migration note for `bybit_spot_tables.sql`.
+    - `doc/0.0.1/collector-production-setup.md`: inventory and DB section updated; compose mount documented.
+
+- **Notes**
+    - Types: prices/volume/turnover stored as `NUMERIC(20,8)`; adjust as needed per symbol precision.
+    - Ownership set to `crypto_scout_db`. Default privileges from `init.sql` continue to apply.

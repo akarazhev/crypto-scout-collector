@@ -37,8 +37,16 @@ backups.
         - `crypto_scout.bybit_spot_tickers`
         - `crypto_scout.bybit_lpl`
         - `crypto_scout.stream_offsets` (plain table for external offset tracking)
-          Adds indexes, compression policies (7‑day threshold), reorder, and retention (180–730 days). Grants privileges
-          to role `crypto_scout_db` and default privileges.
+    - `script/bybit_spot_tables.sql`: defines Bybit Spot tables and policies;
+      compose mounts it as `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`:
+        - `crypto_scout.bybit_spot_kline_15m` (confirmed klines 15m)
+        - `crypto_scout.bybit_spot_kline_60m` (confirmed klines 60m)
+        - `crypto_scout.bybit_spot_kline_240m` (confirmed klines 240m)
+        - `crypto_scout.bybit_spot_kline_1d` (confirmed klines 1d)
+        - `crypto_scout.bybit_spot_public_trade` (1 row per trade)
+        - `crypto_scout.bybit_spot_order_book_200` (1 row per book level)
+          Adds indexes, compression (7‑day threshold), reorder, and retention (7 days to 5 years depending on table).
+          Grants ownership to role `crypto_scout_db`.
 
 - Secrets & configuration (gitignored examples)
     - `secret/timescaledb.env.example` and `secret/timescaledb.env`: DB name/user/password, telemetry off, optional
@@ -102,7 +110,8 @@ Runtime characteristics:
 
 - DB image: `timescale/timescaledb:latest-pg17`.
 - Volumes: `./data/postgresql:/var/lib/postgresql/data`, `./script/init.sql` mounted read-only to
-  `/docker-entrypoint-initdb.d/init.sql`.
+  `/docker-entrypoint-initdb.d/init.sql`, and `./script/bybit_spot_tables.sql` mounted read-only to
+  `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`.
 - Tuning (from `podman-compose.yml`): preload `timescaledb,pg_stat_statements`, `shared_buffers`, WAL settings, timezone
   UTC, `timescaledb.telemetry_level=off`, `pg_stat_statements.track=all`, IO timing, etc.
 - Healthcheck: `pg_isready -U $POSTGRES_USER -d $POSTGRES_DB`.
@@ -133,14 +142,14 @@ Application container: `crypto-scout-collector`
     - `user: "10001:10001"`, `init: true`, `restart: unless-stopped`, `stop_signal: SIGTERM`, `stop_grace_period: 30s`
 - Networking: joins the external network `crypto-scout-bridge` to reach the DB service by name
   `crypto-scout-collector-db`.
-  - `crypto_scout.cmc_fgi` — primary key `(id, timestamp)`.
-  - `crypto_scout.bybit_spot_tickers` — primary key `(id, timestamp)`; indexes on `(timestamp)` and
-    `(symbol, timestamp)`.
-  - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
-  - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
+    - `crypto_scout.cmc_fgi` — primary key `(id, timestamp)`.
+    - `crypto_scout.bybit_spot_tickers` — primary key `(id, timestamp)`; indexes on `(timestamp)` and
+      `(symbol, timestamp)`.
+    - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
+    - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
 - External offset tracking for CMC, Bybit metrics, and Bybit spot streams:
-  - `AmqpConsumer` starts consumers from DB offset and disables server-side tracking.
-  - `CmcParserCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
+    - `AmqpConsumer` starts consumers from DB offset and disables server-side tracking.
+    - `CmcParserCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
 - Compression policies (segmentby/orderby) for all three tables (compress chunks older than 7 days).
 - Reorder policies align with time‑descending indexes.
 - Retention: ~2 years for `cmc_fgi` and `bybit_lpl`, 180 days for `bybit_spot_tickers`.
@@ -228,14 +237,14 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
 ## Offset handling
 
 - **CMC stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
-  - The consumer starts from `offset + 1` if present, otherwise from `first`.
-  - On flush, `CmcParserCollector` inserts data and updates the max processed offset in a single transaction.
+    - The consumer starts from `offset + 1` if present, otherwise from `first`.
+    - On flush, `CmcParserCollector` inserts data and updates the max processed offset in a single transaction.
 - **Bybit metrics stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
-  - The consumer starts from `offset + 1` if present, otherwise from `first`.
-  - On flush, `BybitParserCollector` inserts data and updates the max processed offset in a single transaction.
+    - The consumer starts from `offset + 1` if present, otherwise from `first`.
+    - On flush, `BybitParserCollector` inserts data and updates the max processed offset in a single transaction.
 - **Bybit spot stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
-  - The consumer starts from `offset + 1` if present, otherwise from `first`.
-  - On flush, `BybitCryptoCollector` inserts data and updates the max processed offset in a single transaction.
+    - The consumer starts from `offset + 1` if present, otherwise from `first`.
+    - On flush, `BybitCryptoCollector` inserts data and updates the max processed offset in a single transaction.
 
 If your DB was initialized before this change, apply the `stream_offsets` DDL manually or re-initialize the data dir to
 pick up `script/init.sql` changes.
@@ -269,14 +278,15 @@ pick up `script/init.sql` changes.
 - Added this production setup report at `doc/0.0.1/collector-production-setup.md` including the proposed GitHub short
   description.
 - Implemented external DB-backed offset tracking for CMC stream:
-  - New table `crypto_scout.stream_offsets`.
-  - `AmqpConsumer` starts CMC consumer from DB offset and disables server-side tracking.
-  - `CmcParserCollector` batches inserts and updates offset atomically.
+    - New table `crypto_scout.stream_offsets`.
+    - `AmqpConsumer` starts CMC consumer from DB offset and disables server-side tracking.
+    - `CmcParserCollector` batches inserts and updates offset atomically.
 
 ## References to source
 
 - `podman-compose.yml`
 - `script/init.sql`
+- `script/bybit_spot_tables.sql`
 - `secret/*.env`, `secret/README.md`
 - `src/main/resources/application.properties`, `logback.xml`
 - `src/main/java/com/github/akarazhev/cryptoscout/*`
