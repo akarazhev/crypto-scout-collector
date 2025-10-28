@@ -2,9 +2,9 @@
 
 In this `crypto-scout-collector-db` project we are going to create the following bybit spot tables to save the data
 received from the Bybit websocket: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`, `bybit_spot_kline_240m`,
-`bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`. Table schemas must be normalized and
-optimal to perform analysis and inserting data. Data removal and compression must be done with: `retention` and
-`compression` policies.
+`bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`. Table schemas must be in normalized form
+and optimal to perform analysis and efficient saving the data. Data removal and compression must be done with:
+`retention` and `compression` policies.
 
 ## Roles
 
@@ -27,9 +27,9 @@ Take the following roles:
 - As the `expert database engineer` review the current `init.sql` script implementation in `crypto-scout-collector-db`
   project and update it by defining the following tables: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`,
   `bybit_spot_kline_240m`, `bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`.
-- As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be
-  normalized and optimal to perform analysis and inserting data. Data removal and compression must be done with:
-  `retention` and `compression` policies.
+- As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be in
+  normalized form and optimal to perform analysis and efficient saving the data. Data removal and compression must be
+  done with: `retention` and `compression` policies.
 - As the `expert database engineer` recheck your proposal and make sure that they are correct and haven't missed any
   important points.
 - As the `expert database engineer` rely on the definition of the data section.
@@ -40,7 +40,7 @@ Take the following roles:
 
 ### Bybit spot klines data
 
-The kline data received from the Bybit websocket is the following:
+The `kline` data received from the Bybit websocket is the following:
 
 ```json
 {
@@ -101,13 +101,18 @@ Parameters to save:
 - `volume`: string. Trade volume.
 - `turnover`: string. Turnover.
 
-The kline data must be saved in the following tables:
+The `kline` data must be saved in the following tables:
+
 - `bybit_spot_kline_15m` - to save `15m interval` data.
 - `bybit_spot_kline_60m` - to save `60m interval` data.
 - `bybit_spot_kline_240m` - to save `240m interval` data.
 - `bybit_spot_kline_1d` - to save `1d interval` data.
 
-### Bybit spot public trade
+Only confirmed klines must be saved.
+
+### Bybit spot public trade data
+
+The `public trade` data received from the Bybit websocket is the following:
 
 ```json
 {
@@ -307,6 +312,8 @@ The kline data must be saved in the following tables:
 NOTE: For Futures and Spot, a single message may have up to 1024 trades. As such, multiple messages may be sent for the
 same `seq`.
 
+Parameters to save:
+
 - `ts`: number. The timestamp (ms) that the system generates the data
 - `data`: array. Object. Sorted by the time the trade was matched in ascending order:
 - `i`: string. Trade ID
@@ -319,7 +326,11 @@ same `seq`.
 - `BT`: boolean. Whether it is a block trade order or not
 - `RPI`: boolean. Whether it is a RPI trade or not
 
-### Bybit spot order book
+The `trade` data must be saved in normalized form in the following table: `bybit_spot_public_trade`.
+
+### Bybit spot order book data
+
+The `order book` data received from the Bybit websocket is the following:
 
 ```json
 {
@@ -1940,4 +1951,25 @@ same `seq`.
 ```
 
 Parameters to save:
-    
+
+- `ts`: number. The timestamp (ms) that the system generates the data.
+- `data`: map. Object.
+- `s`: string. Symbol name.
+- `b`: array. Bids. For snapshot stream. Sorted by price in descending order
+- `b[0]`: string. Bid price.
+- `b[1]`: string. Bid size. The delta data has size=0, which means that all quotations for this price have been filled
+  or cancelled.
+- `a`: array Asks. For snapshot stream. Sorted by price in ascending order.
+- `a[0]`: string. Ask price.
+- `a[1]`: string. Ask size. The delta data has size=0, which means that all quotations for this price have been filled
+  or cancelled.
+- `u`: integer. Update ID. Occasionally, you'll receive "u"=1, which is a snapshot data due to the restart of the 
+  service. So please overwrite your local orderbook. For level 1 of linear, inverse Perps and Futures, the snapshot 
+  data will be pushed again when there is no change in 3 seconds, and the "u" will be the same as that in the previous 
+  message.
+- `seq`: integer. Cross sequence. You can use this field to compare different levels orderbook data, and for the smaller 
+  seq, then it means the data is generated earlier.
+- `cts`: number. The timestamp from the matching engine when this orderbook data is produced. It can be correlated with 
+  `T` from public trade channel.
+
+The `order book` data must be saved in normalized form in the following table: `bybit_spot_order_book_200`.
