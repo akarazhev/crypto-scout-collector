@@ -1,7 +1,7 @@
 # Issue 4: Create bybit spot tables
 
 In this `crypto-scout-collector-db` project we are going to create the following bybit spot tables to save the data
-received from the Bybit API: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`, `bybit_spot_kline_240m`,
+received from the Bybit websocket: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`, `bybit_spot_kline_240m`,
 `bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`. Table schemas must be optimal for
 the analysis, inserting data. Retentions and compressions must be defined.
 
