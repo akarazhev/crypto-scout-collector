@@ -15,6 +15,7 @@ policies, and a container image definition for the collector.
       grants/default privileges.
     - `script/bybit_spot_tables.sql` — Bybit Spot DDL and policies, including `crypto_scout.bybit_spot_tickers`.
     - `script/bybit_parser_tables.sql` — `crypto_scout.bybit_lpl` (Bybit Launch Pool) DDL and policies.
+    - `script/bybit_linear_tables.sql` — Bybit Linear (Perps/Futures) DDL and policies.
 - Application: Java 25 (ActiveJ). Reads RabbitMQ Streams, batches inserts via HikariCP to TimescaleDB, exposes
   `GET /health`.
 - Documentation: `README.md` updated to reflect Java 25, compose service names, and Docker base; this report added under
@@ -50,6 +51,14 @@ backups.
       `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`.
     - `script/bybit_parser_tables.sql`: `crypto_scout.bybit_lpl`; compose mounts it as
       `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`.
+    - `script/bybit_linear_tables.sql`: Bybit Linear tables; compose mounts it as
+      `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql`:
+        - `crypto_scout.bybit_linear_tickers`
+        - `crypto_scout.bybit_linear_kline_60m` (confirmed klines)
+        - `crypto_scout.bybit_linear_public_trade` (1 row per trade)
+        - `crypto_scout.bybit_linear_order_book_200` (1 row per book level)
+        - `crypto_scout.bybit_linear_all_liqudation` (all-liquidations stream)
+          Adds indexes, hypertables, compression (7‑day threshold), reorder, and retention policies.
 
 - Secrets & configuration (gitignored examples)
     - `secret/timescaledb.env.example` and `secret/timescaledb.env`: DB name/user/password, telemetry off, optional
@@ -118,6 +127,7 @@ Runtime characteristics:
     - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`
     - `./script/cmc_parser_tables.sql` → `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`
     - `./script/bybit_parser_tables.sql` → `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`
+    - `./script/bybit_linear_tables.sql` → `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql`
 - Tuning (from `podman-compose.yml`): preload `timescaledb,pg_stat_statements`, `shared_buffers`, WAL settings, timezone
   UTC, `timescaledb.telemetry_level=off`, `pg_stat_statements.track=all`, IO timing, etc.
 - Healthcheck: `pg_isready -U $POSTGRES_USER -d $POSTGRES_DB`.
@@ -153,6 +163,12 @@ Application container: `crypto-scout-collector`
       `(symbol, timestamp)`.
     - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
     - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
+    - `crypto_scout.bybit_linear_tickers` — primary key `(id, timestamp)`; symbol/timestamp indexes.
+    - `crypto_scout.bybit_linear_kline_60m` — primary key `(id, start_time)`; unique `(symbol, start_time)`.
+    - `crypto_scout.bybit_linear_public_trade` — primary key `(id, trade_time)`; unique `(symbol, trade_id)`.
+    - `crypto_scout.bybit_linear_order_book_200` — primary key `(id, engine_time)`; indexes on `(symbol, engine_time)`
+      and `(symbol, side, price)`.
+    - `crypto_scout.bybit_linear_all_liqudation` — primary key `(id, event_time)`; indexes on `(symbol, event_time)`.
 - External offset tracking for CMC, Bybit metrics, and Bybit spot streams:
     - `AmqpConsumer` starts consumers from DB offset and disables server-side tracking.
     - `CmcParserCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
@@ -300,6 +316,7 @@ pick up `script/init.sql` changes.
 - `script/bybit_spot_tables.sql`
 - `script/cmc_parser_tables.sql`
 - `script/bybit_parser_tables.sql`
+- `script/bybit_linear_tables.sql`
 - `secret/*.env`, `secret/README.md`
 - `src/main/resources/application.properties`, `logback.xml`
 - `src/main/java/com/github/akarazhev/cryptoscout/*`
