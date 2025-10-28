@@ -19,6 +19,7 @@ services:
       - ./script/bybit_spot_tables.sql:/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql:ro
       - ./script/cmc_parser_tables.sql:/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql:ro
       - ./script/bybit_parser_tables.sql:/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql:ro
+      - ./script/bybit_linear_tables.sql:/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql:ro
     networks:
       - crypto-scout-bridge
     env_file:
