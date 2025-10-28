@@ -2,8 +2,9 @@
 
 In this `crypto-scout-collector-db` project we are going to create the following bybit spot tables to save the data
 received from the Bybit websocket: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`, `bybit_spot_kline_240m`,
-`bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`. Table schemas must be optimal for
-the analysis, inserting data. Retentions and compressions must be defined.
+`bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`. Table schemas must be normalized and
+optimal to perform analysis and inserting data. Data removal and compression must be done with: `retention` and
+`compression` policies.
 
 ## Roles
 
@@ -16,6 +17,9 @@ Take the following roles:
 
 - Use the best practices and design patterns.
 - Use the following technical stack: `timescale/timescaledb:latest-pg17`.
+- Use the same data schemas for `kline` data.
+- Use human-readable names for parameter names.
+- Normalize data schemas for optimal savings and analysts.
 - Do not hallucinate.
 
 ## Tasks
@@ -24,16 +28,19 @@ Take the following roles:
   project and update it by defining the following tables: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`,
   `bybit_spot_kline_240m`, `bybit_spot_kline_1d`, `bybit_spot_public_trade`, `bybit_spot_order_book_200`.
 - As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be
-  optimal for the analysis, inserting data. Retentions and compressions must be defined.
-- As the expert database engineer recheck your proposal and make sure that they are correct and haven't missed any
+  normalized and optimal to perform analysis and inserting data. Data removal and compression must be done with:
+  `retention` and `compression` policies.
+- As the `expert database engineer` recheck your proposal and make sure that they are correct and haven't missed any
   important points.
-- As the `expert database engineer` rely on the sample of the data section.
+- As the `expert database engineer` rely on the definition of the data section.
 - As the technical writer update the `README.md` and `collector-production-setup.md` files with your results.
 - As the technical writer update the `4-create-bybit-spot-tables.md` file with your resolution.
 
-## Sample of the data
+## Definition of the data
 
-### Bybit spot klines
+### Bybit spot klines data
+
+The kline data received from the Bybit websocket is the following:
 
 ```json
 {
@@ -58,19 +65,47 @@ Take the following roles:
 }
 ```
 
+```json
+{
+  "type": "snapshot",
+  "topic": "kline.60.BTCUSDT",
+  "data": [
+    {
+      "start": 1761634800000,
+      "end": 1761638399999,
+      "interval": "60",
+      "open": "115488.04",
+      "close": "115116",
+      "high": "115488.04",
+      "low": "114929.92",
+      "volume": "0.435693",
+      "turnover": "50076.34804012",
+      "confirm": false,
+      "timestamp": 1761637002902
+    }
+  ],
+  "ts": 1761637002902
+}
+```
+
 Parameters to save:
 
 - `ts`: number. The timestamp (ms) that the system generates the data.
 - `symbol`: string. Example: `ETHUSDT`.
 - `start`: number. The start timestamp (ms).
 - `end`: number. The end timestamp (ms).
-- `interval`: string. Kline interval.
 - `open`: string. Open price.
 - `close`: string. Close price.
 - `high`: string. Highest price.
 - `low`: string. Lowest price.
 - `volume`: string. Trade volume.
 - `turnover`: string. Turnover.
+
+The kline data must be saved in the following tables:
+- `bybit_spot_kline_15m` - to save `15m interval` data.
+- `bybit_spot_kline_60m` - to save `60m interval` data.
+- `bybit_spot_kline_240m` - to save `240m interval` data.
+- `bybit_spot_kline_1d` - to save `1d interval` data.
 
 ### Bybit spot public trade
 
