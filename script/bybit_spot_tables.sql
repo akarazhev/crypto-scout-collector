@@ -7,6 +7,39 @@ create SCHEMA IF NOT EXISTS crypto_scout;
 SET search_path TO public, crypto_scout;
 
 -- =========================
+-- SPOT TICKERS
+-- =========================
+
+create TABLE IF NOT EXISTS crypto_scout.bybit_spot_tickers (
+    id BIGSERIAL,
+    symbol TEXT NOT NULL,
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    cross_sequence BIGINT NOT NULL,
+    last_price NUMERIC(20, 2) NOT NULL,
+    high_price_24h NUMERIC(20, 2) NOT NULL,
+    low_price_24h NUMERIC(20, 2) NOT NULL,
+    prev_price_24h NUMERIC(20, 2) NOT NULL,
+    volume_24h NUMERIC(20, 8) NOT NULL,
+    turnover_24h NUMERIC(20, 4) NOT NULL,
+    price_24h_pcnt NUMERIC(10, 4) NOT NULL,
+    usd_index_price NUMERIC(20, 6),
+    CONSTRAINT bybit_spot_tickers_pkey PRIMARY KEY (id, timestamp)
+);
+alter table crypto_scout.bybit_spot_tickers OWNER TO crypto_scout_db;
+create index IF NOT EXISTS idx_bybit_spot_tickers_timestamp ON crypto_scout.bybit_spot_tickers(timestamp DESC);
+create index IF NOT EXISTS idx_bybit_spot_tickers_symbol_timestamp ON crypto_scout.bybit_spot_tickers(symbol, timestamp DESC);
+select public.create_hypertable('crypto_scout.bybit_spot_tickers', 'timestamp', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+
+alter table crypto_scout.bybit_spot_tickers set (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'symbol',
+    timescaledb.compress_orderby = 'timestamp DESC, id DESC'
+);
+select add_compression_policy('crypto_scout.bybit_spot_tickers', interval '7 days');
+select add_reorder_policy('crypto_scout.bybit_spot_tickers', 'idx_bybit_spot_tickers_timestamp');
+select add_retention_policy('crypto_scout.bybit_spot_tickers', interval '180 days');
+
+-- =========================
 -- KLINE TABLES (15m/60m/240m/1d)
 -- Schema is identical across intervals. Only confirmed klines should be inserted by the app.
 -- =========================
