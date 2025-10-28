@@ -15,7 +15,7 @@ automated daily backups via a sidecar container.
 - App entrypoint: `com.github.akarazhev.cryptoscout.Collector`
 - Health endpoint: `GET /health` → `ok`
 - DB bootstrap and DDL scripts: `script/init.sql`, `script/bybit_spot_tables.sql`, `script/cmc_parser_tables.sql`,
-  `script/bybit_parser_tables.sql`
+  `script/bybit_parser_tables.sql`, `script/bybit_linear_tables.sql`
 
 ## Architecture
 
@@ -76,6 +76,13 @@ are executed in lexical order:
   retention.
 - `script/bybit_parser_tables.sql` → `crypto_scout.bybit_lpl` (Bybit Launch Pool) with indexes, hypertable, compression,
   reorder, retention.
+- `script/bybit_linear_tables.sql` → Bybit Linear (Perps/Futures) tables and policies:
+    - `crypto_scout.bybit_linear_tickers`
+    - `crypto_scout.bybit_linear_kline_60m` (confirmed klines)
+    - `crypto_scout.bybit_linear_public_trade` (1 row per trade)
+    - `crypto_scout.bybit_linear_order_book_200` (1 row per book level)
+    - `crypto_scout.bybit_linear_all_liqudation` (all-liquidations stream)
+    - Indexes, hypertables, compression, reorder, and retention policies
 
 ## Containers: TimescaleDB + Backups
 
@@ -87,6 +94,7 @@ The repository ships a `podman-compose.yml` with:
         - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`
         - `./script/cmc_parser_tables.sql` → `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`
         - `./script/bybit_parser_tables.sql` → `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`
+        - `./script/bybit_linear_tables.sql` → `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql`
     - Healthcheck via `pg_isready`.
     - Tuned Postgres/TimescaleDB settings and `pg_stat_statements` enabled.
 - `crypto-scout-collector-backup` — `prodrigestivill/postgres-backup-local:latest`
@@ -122,6 +130,7 @@ Notes:
     - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_spot_tables.sql`
     - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/cmc_parser_tables.sql`
     - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_parser_tables.sql`
+    - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_linear_tables.sql`
 - For stronger auth at bootstrap, include `POSTGRES_INITDB_ARGS=--auth=scram-sha-256` in `secret/timescaledb.env` before
   first start.
 
