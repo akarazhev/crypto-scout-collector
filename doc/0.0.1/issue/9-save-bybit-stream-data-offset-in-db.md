@@ -13,7 +13,7 @@ Take the following roles:
 
 ## Conditions
 
-- User sample in the `Sample` section.
+- Use sample in the `Sample` section.
 - Use the best practices and design patterns.
 - Use the current technology stack.
 - Implementation must be production ready and to be optimized to process a lot of the data.
