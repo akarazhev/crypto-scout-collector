@@ -73,6 +73,10 @@ services:
       - -c
       - pg_stat_statements.max=10000
       - -c
+      - timescaledb.max_background_workers=32
+      - -c
+      - max_worker_processes=64
+      - -c
       - track_io_timing=on
       - -c
       - track_functions=pl

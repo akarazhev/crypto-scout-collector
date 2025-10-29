@@ -187,7 +187,7 @@ select public.create_hypertable('crypto_scout.bybit_spot_public_trade', 'trade_t
 alter table crypto_scout.bybit_spot_public_trade set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol',
-    timescaledb.compress_orderby = 'trade_time DESC, id DESC'
+    timescaledb.compress_orderby = 'trade_time DESC, trade_id DESC, id DESC'
 );
 select add_compression_policy('crypto_scout.bybit_spot_public_trade', interval '7 days');
 select add_reorder_policy('crypto_scout.bybit_spot_public_trade', 'idx_bybit_spot_public_trade_trade_time');
