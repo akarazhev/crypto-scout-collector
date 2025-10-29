@@ -49,6 +49,7 @@ public final class Constants {
             throw new UnsupportedOperationException();
         }
 
+        // Bybit LPL
         static final String LPL_INSERT = "INSERT INTO crypto_scout.bybit_lpl " +
                 "(return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
                 "stake_end_time, trade_begin_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -61,6 +62,8 @@ public final class Constants {
         static final int LPL_STAKE_BEGIN_TIME = 7;
         static final int LPL_STAKE_END_TIME = 8;
         static final int LPL_TRADE_BEGIN_TIME = 9;
+
+        // Spot tickers
         static final String SPOT_TICKERS_INSERT = "INSERT INTO crypto_scout.bybit_spot_tickers " +
                 "(symbol, timestamp, cross_sequence, last_price, high_price_24h, low_price_24h, prev_price_24h, " +
                 "volume_24h, turnover_24h, price_24h_pcnt, usd_index_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
@@ -75,6 +78,56 @@ public final class Constants {
         static final int SPOT_TICKERS_TURNOVER_24H = 9;
         static final int SPOT_TICKERS_PRICE_24H_PCNT = 10;
         static final int SPOT_TICKERS_USD_INDEX_PRICE = 11;
+
+        // Spot klines (confirmed): identical schema across intervals
+        static final String SPOT_KLINE_15M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_15m " +
+                "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String SPOT_KLINE_60M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_60m " +
+                "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String SPOT_KLINE_240M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_240m " +
+                "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String SPOT_KLINE_1D_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_1d " +
+                "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final int SPOT_KLINE_SYMBOL = 1;
+        static final int SPOT_KLINE_START_TIME = 2;
+        static final int SPOT_KLINE_END_TIME = 3;
+        static final int SPOT_KLINE_OPEN_PRICE = 4;
+        static final int SPOT_KLINE_CLOSE_PRICE = 5;
+        static final int SPOT_KLINE_HIGH_PRICE = 6;
+        static final int SPOT_KLINE_LOW_PRICE = 7;
+        static final int SPOT_KLINE_VOLUME = 8;
+        static final int SPOT_KLINE_TURNOVER = 9;
+
+        // Spot public trades
+        static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO crypto_scout.bybit_spot_public_trade " +
+                "(symbol, trade_time, trade_id, price, size, taker_side, cross_sequence, is_block_trade, is_rpi) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, trade_id, trade_time) DO NOTHING";
+        static final int SPOT_PUBLIC_TRADE_SYMBOL = 1;
+        static final int SPOT_PUBLIC_TRADE_TRADE_TIME = 2;
+        static final int SPOT_PUBLIC_TRADE_TRADE_ID = 3;
+        static final int SPOT_PUBLIC_TRADE_PRICE = 4;
+        static final int SPOT_PUBLIC_TRADE_SIZE = 5;
+        static final int SPOT_PUBLIC_TRADE_TAKER_SIDE = 6;
+        static final int SPOT_PUBLIC_TRADE_CROSS_SEQUENCE = 7;
+        static final int SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE = 8;
+        static final int SPOT_PUBLIC_TRADE_IS_RPI = 9;
+
+        // Spot order book 200 (one row per level)
+        static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_200 " +
+                "(symbol, engine_time, side, price, size, update_id, cross_sequence, is_snapshot) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        static final int SPOT_ORDER_BOOK_200_SYMBOL = 1;
+        static final int SPOT_ORDER_BOOK_200_ENGINE_TIME = 2;
+        static final int SPOT_ORDER_BOOK_200_SIDE = 3;
+        static final int SPOT_ORDER_BOOK_200_PRICE = 4;
+        static final int SPOT_ORDER_BOOK_200_SIZE = 5;
+        static final int SPOT_ORDER_BOOK_200_UPDATE_ID = 6;
+        static final int SPOT_ORDER_BOOK_200_CROSS_SEQUENCE = 7;
+        static final int SPOT_ORDER_BOOK_200_IS_SNAPSHOT = 8;
     }
 
     final static class Offsets {
