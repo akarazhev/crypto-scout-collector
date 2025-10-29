@@ -88,7 +88,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.asRo
 import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.getSymbol;
 import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toBigDecimal;
 import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOdt;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOffsetDateTime;
 import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.valueAsBoolean;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CS;
@@ -170,7 +169,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
 
                     final var odt = (Long) ticker.get(TS);
                     if (odt != null) {
-                        ps.setObject(SPOT_TICKERS_TIMESTAMP, toOffsetDateTime(odt));
+                        ps.setObject(SPOT_TICKERS_TIMESTAMP, toOdt(odt));
                     } else {
                         ps.setNull(SPOT_TICKERS_TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE);
                     }
@@ -229,11 +228,13 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var kline : klines) {
                     final var row = asRow(kline);
-                    if (row == null) continue;
+                    if (row == null) {
+                        continue;
+                    }
 
                     final var symbol = getSymbol((String) kline.get(TOPIC_FIELD));
-                    final var startTime = row.get(START);
-                    final var endTime = row.get(END);
+                    final var start = row.get(START);
+                    final var end = row.get(END);
                     final var open = toBigDecimal(row.get(OPEN));
                     final var close = toBigDecimal(row.get(CLOSE));
                     final var high = toBigDecimal(row.get(HIGH));
@@ -241,14 +242,14 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var volume = toBigDecimal(row.get(VOLUME));
                     final var turnover = toBigDecimal(row.get(TURNOVER));
 
-                    if (symbol == null || startTime == null || endTime == null || open == null || close == null ||
+                    if (symbol == null || start == null || end == null || open == null || close == null ||
                             high == null || low == null || volume == null || turnover == null) {
                         continue; // skip malformed rows
                     }
 
                     ps.setString(SPOT_KLINE_SYMBOL, symbol);
-                    ps.setObject(SPOT_KLINE_START_TIME, toOdt(startTime));
-                    ps.setObject(SPOT_KLINE_END_TIME, toOdt(endTime));
+                    ps.setObject(SPOT_KLINE_START_TIME, toOdt(start));
+                    ps.setObject(SPOT_KLINE_END_TIME, toOdt(end));
                     ps.setBigDecimal(SPOT_KLINE_OPEN_PRICE, open);
                     ps.setBigDecimal(SPOT_KLINE_CLOSE_PRICE, close);
                     ps.setBigDecimal(SPOT_KLINE_HIGH_PRICE, high);

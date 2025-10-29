@@ -37,14 +37,6 @@ final class ConversionUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static OffsetDateTime toOffsetDateTime(final Long epochMillis) {
-        if (epochMillis == null) {
-            return null;
-        }
-
-        return OffsetDateTime.ofInstant(Instant.ofEpochMilli(epochMillis), ZoneOffset.UTC);
-    }
-
     public static OffsetDateTime toOffsetDateTimeFromSeconds(final long epochSeconds) {
         return OffsetDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC);
     }
@@ -68,19 +60,11 @@ final class ConversionUtils {
     }
 
     public static OffsetDateTime toOdt(final Object value) {
-        if (value == null) {
-            return null;
-        }
-
-        if (value instanceof OffsetDateTime odt) {
-            return odt;
-        }
-
-        if (value instanceof Number n) {
-            return toOffsetDateTime(n.longValue());
-        }
-
-        return null;
+        return switch (value) {
+            case OffsetDateTime odt -> odt;
+            case Number n -> OffsetDateTime.ofInstant(Instant.ofEpochMilli(n.longValue()), ZoneOffset.UTC);
+            case null, default -> null;
+        };
     }
 
     public static Boolean valueAsBoolean(final Object v) {

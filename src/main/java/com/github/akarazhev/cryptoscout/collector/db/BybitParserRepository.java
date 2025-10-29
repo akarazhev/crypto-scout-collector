@@ -50,7 +50,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOffsetDateTime;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DESC;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN_ICON;
@@ -101,11 +101,11 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
                     ps.setString(LPL_WEBSITE, (String) lpl.get(WEBSITE));
                     ps.setString(LPL_WHITE_PAPER, (String) lpl.get(WHITE_PAPER));
                     ps.setString(LPL_RULES, (String) lpl.get(RULES));
-                    ps.setObject(LPL_STAKE_BEGIN_TIME, toOffsetDateTime((Long) lpl.get(STAKE_BEGIN_TIME)));
-                    ps.setObject(LPL_STAKE_END_TIME, toOffsetDateTime((Long) lpl.get(STAKE_END_TIME)));
+                    ps.setObject(LPL_STAKE_BEGIN_TIME, toOdt((Long) lpl.get(STAKE_BEGIN_TIME)));
+                    ps.setObject(LPL_STAKE_END_TIME, toOdt((Long) lpl.get(STAKE_END_TIME)));
                     final var tradeBegin = (Long) lpl.get(TRADE_BEGIN_TIME);
                     if (tradeBegin != null) {
-                        ps.setObject(LPL_TRADE_BEGIN_TIME, toOffsetDateTime(tradeBegin));
+                        ps.setObject(LPL_TRADE_BEGIN_TIME, toOdt(tradeBegin));
                     } else {
                         ps.setNull(LPL_TRADE_BEGIN_TIME, Types.TIMESTAMP_WITH_TIMEZONE);
                     }
