@@ -153,7 +153,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             if (!spotTickers.isEmpty()) {
                 if (maxOffset >= 0) {
                     LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
-                            bybitSpotRepository.insertTickers(spotTickers, maxOffset), maxOffset);
+                            bybitSpotRepository.saveTicker(spotTickers, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases

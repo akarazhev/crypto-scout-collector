@@ -93,27 +93,27 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return Promise.complete();
     }
 
-    public int insertKlines15(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline15m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         // TODO:
         return 0;
     }
 
-    public int insertKlines60(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline60m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         // TODO:
         return 0;
     }
 
-    public int insertKlines240(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline240m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         // TODO:
         return 0;
     }
 
-    public int insertKlines1D(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline1d(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         // TODO:
         return 0;
     }
 
-    public int insertTickers(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
+    public int saveTicker(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
         int count = 0;
         try (final var c = dataSource.getConnection()) {
             final boolean oldAutoCommit = c.getAutoCommit();
@@ -178,12 +178,12 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return count;
     }
 
-    public int insertTrades(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
+    public int savePublicTrade(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
         // TODO:
         return 0;
     }
 
-    public int insertOrderBooks200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         // TODO:
         return 0;
     }
