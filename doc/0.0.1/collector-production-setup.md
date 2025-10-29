@@ -21,6 +21,17 @@ policies, and a container image definition for the collector.
 - Documentation: `README.md` updated to reflect Java 25, compose service names, and Docker base; this report added under
   `doc/0.0.1/`.
 
+Spot data persistence:
+
+- `com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository` now supports:
+  - `saveTicker`
+  - `saveKline15m`, `saveKline60m`, `saveKline240m`, `saveKline1d`
+  - `savePublicTrade`, `saveOrderBook200`
+- Klines and public trades are idempotent via `ON CONFLICT DO NOTHING` using unique keys:
+  - Klines: `(symbol, start_time)`
+  - Public trades: `(symbol, trade_id, trade_time)`
+  - Order book 200 ingests one row per level without upsert (append-only).
+
 ## Proposed short GitHub description
 
 Event‑driven Java service that ingests crypto market metrics from RabbitMQ Streams into TimescaleDB, with automated

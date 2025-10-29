@@ -46,4 +46,37 @@ The sample of the method to save data is here:
 
 ## Definition of the data
 
-The `Bybit` spot data is defined in the `script/bybit_spot_tables.sql` script.
+The `Bybit`  spot data is defined in the `script/bybit_spot_tables.sql`  script.
+
+---
+
+## Resolution
+
+- **Code changes**
+  - Implemented `com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository` methods:
+    - `saveKline15m`, `saveKline60m`, `saveKline240m`, `saveKline1d`
+    - `savePublicTrade`, `saveOrderBook200`
+  - Added SQL constants and parameter indices in `com.github.akarazhev.cryptoscout.collector.db.Constants` for:
+    - `bybit_spot_kline_{15m,60m,240m,1d}` inserts with `ON CONFLICT (symbol, start_time) DO NOTHING`.
+    - `bybit_spot_public_trade` inserts with `ON CONFLICT (symbol, trade_id, trade_time) DO NOTHING`.
+    - `bybit_spot_order_book_200` inserts (append-only, one row per level).
+  - Reused the batching + transactional pattern from `saveTicker` with atomic stream offset upsert.
+
+- **DB schema alignment**
+  - Methods and SQL conform to `script/bybit_spot_tables.sql` definitions, including unique keys and index usage.
+
+- **Performance and idempotency**
+  - Batched inserts with `batchSize` from `JdbcConfig` and a single transaction per flush.
+  - Idempotency for klines and public trades via `ON CONFLICT DO NOTHING` on the corresponding unique keys.
+  - Offset is upserted in the same transaction to keep at-least-once guarantees.
+
+- **Docs updated**
+  - `doc/0.0.1/collector-production-setup.md`: added a summary of new spot persistence and idempotency.
+
+## Testing checklist
+
+- Publish sample messages for klines, public trades, and order book 200 to the `bybit-crypto-stream` and verify rows in:
+  - `crypto_scout.bybit_spot_kline_{15m,60m,240m,1d}`
+  - `crypto_scout.bybit_spot_public_trade`
+  - `crypto_scout.bybit_spot_order_book_200`
+- Confirm `crypto_scout.stream_offsets` advances after each batch.
