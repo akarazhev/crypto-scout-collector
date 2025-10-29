@@ -142,9 +142,9 @@ public final class BybitSpotRepository extends AbstractReactive implements React
     }
 
     public int saveTicker(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
-        int count = 0;
+        var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(String.format(SPOT_TICKERS_INSERT));
                  final var psOffset = c.prepareStatement(UPSERT)) {
@@ -206,10 +206,11 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return count;
     }
 
-    private int saveKlines(final Iterable<Map<String, Object>> klines, final long offset, final String insertSql) throws SQLException {
-        int count = 0;
+    private int saveKlines(final Iterable<Map<String, Object>> klines, final long offset, final String insertSql)
+            throws SQLException {
+        var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(insertSql);
                  final var psOffset = c.prepareStatement(UPSERT)) {
@@ -227,7 +228,8 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var volume = toBigDecimal(row.get("volume"));
                     final var turnover = toBigDecimal(row.get("turnover"));
 
-                    if (symbol == null || startTime == null || endTime == null || open == null || close == null || high == null || low == null || volume == null || turnover == null) {
+                    if (symbol == null || startTime == null || endTime == null || open == null || close == null ||
+                            high == null || low == null || volume == null || turnover == null) {
                         continue; // skip malformed rows
                     }
 
@@ -262,9 +264,9 @@ public final class BybitSpotRepository extends AbstractReactive implements React
     }
 
     public int savePublicTrade(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
-        int count = 0;
+        var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(SPOT_PUBLIC_TRADE_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
@@ -282,7 +284,8 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var isBlock = valueAsBoolean(row.get("is_block_trade"));
                     final var isRpi = valueAsBoolean(row.get("is_rpi"));
 
-                    if (symbol == null || tradeId == null || tradeTimeObj == null || price == null || size == null || takerSide == null || csObj == null || isBlock == null || isRpi == null) {
+                    if (symbol == null || tradeId == null || tradeTimeObj == null || price == null || size == null ||
+                            takerSide == null || csObj == null || isBlock == null || isRpi == null) {
                         continue; // skip malformed rows
                     }
 
@@ -317,9 +320,9 @@ public final class BybitSpotRepository extends AbstractReactive implements React
     }
 
     public int saveOrderBook200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
-        int count = 0;
+        var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(SPOT_ORDER_BOOK_200_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
@@ -336,7 +339,8 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var csObj = row.containsKey("cross_sequence") ? row.get("cross_sequence") : ob.get(CS);
                     final var isSnapshot = valueAsBoolean(row.get("is_snapshot"));
 
-                    if (symbol == null || engineTime == null || side == null || price == null || size == null || updateIdObj == null || csObj == null || isSnapshot == null) {
+                    if (symbol == null || engineTime == null || side == null || price == null || size == null ||
+                            updateIdObj == null || csObj == null || isSnapshot == null) {
                         continue; // skip malformed rows
                     }
 
