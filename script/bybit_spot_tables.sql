@@ -176,7 +176,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_public_trade (
     is_block_trade BOOLEAN NOT NULL,
     is_rpi BOOLEAN NOT NULL,
     CONSTRAINT bybit_spot_public_trade_pkey PRIMARY KEY (id, trade_time),
-    CONSTRAINT bybit_spot_public_trade_symbol_tradeid_uniq UNIQUE (symbol, trade_id)
+    CONSTRAINT bybit_spot_public_trade_symbol_tradeid_uniq UNIQUE (symbol, trade_id, trade_time)
 );
 alter table crypto_scout.bybit_spot_public_trade OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_public_trade_trade_time ON crypto_scout.bybit_spot_public_trade(trade_time DESC);
