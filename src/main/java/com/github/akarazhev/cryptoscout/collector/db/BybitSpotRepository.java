@@ -84,20 +84,33 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Utils.toBigDecimal;
-import static com.github.akarazhev.cryptoscout.collector.db.Utils.toOffsetDateTime;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.asRow;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.getSymbol;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toBigDecimal;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOdt;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOffsetDateTime;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.valueAsBoolean;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH_PRICE_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LAST_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW_PRICE_24H;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.OPEN;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PREV_PRICE_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PRICE_24H_PCNT;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.USD_INDEX_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 
 public final class BybitSpotRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -218,15 +231,15 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var row = asRow(kline);
                     if (row == null) continue;
 
-                    final var symbol = (String) row.get("symbol");
-                    final var startTime = row.get("start_time");
-                    final var endTime = row.get("end_time");
-                    final var open = toBigDecimal(row.get("open_price"));
-                    final var close = toBigDecimal(row.get("close_price"));
-                    final var high = toBigDecimal(row.get("high_price"));
-                    final var low = toBigDecimal(row.get("low_price"));
-                    final var volume = toBigDecimal(row.get("volume"));
-                    final var turnover = toBigDecimal(row.get("turnover"));
+                    final var symbol = getSymbol((String) kline.get(TOPIC_FIELD));
+                    final var startTime = row.get(START);
+                    final var endTime = row.get(END);
+                    final var open = toBigDecimal(row.get(OPEN));
+                    final var close = toBigDecimal(row.get(CLOSE));
+                    final var high = toBigDecimal(row.get(HIGH));
+                    final var low = toBigDecimal(row.get(LOW));
+                    final var volume = toBigDecimal(row.get(VOLUME));
+                    final var turnover = toBigDecimal(row.get(TURNOVER));
 
                     if (symbol == null || startTime == null || endTime == null || open == null || close == null ||
                             high == null || low == null || volume == null || turnover == null) {
@@ -377,28 +390,5 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         ps.setString(STREAM, stream);
         ps.setLong(LAST_OFFSET, offset);
         ps.executeUpdate();
-    }
-
-    private static Map<String, Object> asRow(final Map<String, Object> src) {
-        final var dObj = src.get(DATA);
-        if (dObj instanceof Map<?, ?> m) {
-            @SuppressWarnings("unchecked") final var d = (Map<String, Object>) m;
-            return d;
-        }
-        return src;
-    }
-
-    private static java.time.OffsetDateTime toOdt(final Object value) {
-        if (value == null) return null;
-        if (value instanceof java.time.OffsetDateTime odt) return odt;
-        if (value instanceof Number n) return toOffsetDateTime(n.longValue());
-        return null;
-    }
-
-    private static Boolean valueAsBoolean(final Object v) {
-        if (v instanceof Boolean b) return b;
-        if (v instanceof String s) return Boolean.parseBoolean(s);
-        if (v instanceof Number n) return n.intValue() != 0;
-        return null;
     }
 }

@@ -28,9 +28,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Map;
 
-final class Utils {
-    private Utils() {
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
+
+final class ConversionUtils {
+    private ConversionUtils() {
         throw new UnsupportedOperationException();
     }
 
@@ -53,5 +56,54 @@ final class Utils {
             case Number n -> new BigDecimal(n.toString());
             case null, default -> null;
         };
+    }
+
+    public static Map<String, Object> asRow(final Map<String, Object> src) {
+        final var dObj = src.get(DATA);
+        if (dObj instanceof Map<?, ?> m) {
+            @SuppressWarnings("unchecked") final var d = (Map<String, Object>) m;
+            return d;
+        }
+        return src;
+    }
+
+    public static OffsetDateTime toOdt(final Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        if (value instanceof OffsetDateTime odt) {
+            return odt;
+        }
+
+        if (value instanceof Number n) {
+            return toOffsetDateTime(n.longValue());
+        }
+
+        return null;
+    }
+
+    public static Boolean valueAsBoolean(final Object v) {
+        if (v instanceof Boolean b) {
+            return b;
+        }
+
+        if (v instanceof String s) {
+            return Boolean.parseBoolean(s);
+        }
+
+        if (v instanceof Number n) {
+            return n.intValue() != 0;
+        }
+
+        return null;
+    }
+
+    public static String getSymbol(final String topic) {
+        if (topic == null || !topic.contains(".")) {
+            return null;
+        }
+
+        return topic.substring(topic.lastIndexOf("."));
     }
 }

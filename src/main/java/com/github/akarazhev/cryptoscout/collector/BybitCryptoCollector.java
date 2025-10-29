@@ -45,7 +45,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TOPIC;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_BTC_USDT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_ETH_USDT;
 
@@ -137,7 +137,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 final var source = payload.getSource();
                 if (Source.PMST.equals(source)) {
                     final var data = payload.getData();
-                    final var topic = (String) data.get(TOPIC);
+                    final var topic = (String) data.get(TOPIC_FIELD);
                     if (Objects.equals(topic, TICKERS_BTC_USDT) || Objects.equals(topic, TICKERS_ETH_USDT)) {
                         spotTickers.add(data);
                     }

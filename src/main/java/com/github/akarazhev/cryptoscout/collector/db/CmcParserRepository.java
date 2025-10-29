@@ -47,8 +47,8 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_TI
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Utils.toBigDecimal;
-import static com.github.akarazhev.cryptoscout.collector.db.Utils.toOffsetDateTimeFromSeconds;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toBigDecimal;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOffsetDateTimeFromSeconds;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_PRICE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_VOLUME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
