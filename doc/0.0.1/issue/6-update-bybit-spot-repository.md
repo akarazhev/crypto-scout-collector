@@ -1,7 +1,7 @@
 # Issue 6: Update Bybit spot repository
 
 In this `crypto-scout-collector` project we are going to update the
-`src/main/java/com/github/akarazhev/cryptoscout/collector/db/BybitSpotRepository.java` implementation by adding the
+`com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository` implementation by adding the
 following methods:
 - `saveKline15m`
 - `saveKline60m`
@@ -42,7 +42,7 @@ Take the following roles:
 
 The sample of the method to save data is here:
 
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/db/BybitSpotRepository.java`.
+- `com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository.saveTicker`.
 
 ## Definition of the data
 
