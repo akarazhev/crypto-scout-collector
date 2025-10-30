@@ -51,6 +51,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_BTC
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_ETH_USDT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_BTC_USDT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_ETH_USDT;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRow;
 
 public final class BybitCryptoCollector extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(BybitCryptoCollector.class);
@@ -183,8 +184,9 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         return Objects.equals(topic, KLINE_15_BTC_USDT) || Objects.equals(topic, KLINE_15_ETH_USDT);
     }
 
-    private boolean isKlineConfirmed(final Map<String, Object> data) {
-        return data.containsKey(CONFIRM) && (Boolean) data.get(CONFIRM);
+    private boolean isKlineConfirmed(final Map<String, Object> kline) {
+        final var row = asRow(kline);
+        return row != null && row.containsKey(CONFIRM) && (Boolean) row.get(CONFIRM);
     }
     private boolean isSpotTicker(final String topic) {
         return Objects.equals(topic, TICKERS_BTC_USDT) || Objects.equals(topic, TICKERS_ETH_USDT);
