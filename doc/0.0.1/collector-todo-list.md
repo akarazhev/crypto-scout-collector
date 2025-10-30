@@ -1,8 +1,9 @@
-# TODO
+# crypto-scout-collector - TODO List
 
-- [ ] Implemented podman-compose
-- [ ] Update dockerfile
-- [ ] Check and fix logging
-- [ ] Review the project to make sure it is ready for production
-- [ ] review fo the back pressue
-- [ ] Test backups
+The below list of tasks which needs to be completed to release the `0.0.1` version:
+
+- [ ] Implement BybitSpotRepository.java
+- [ ] Update BybitCryptoCollector.java
+- [ ] Implement BybitLinearRepository.java
+- [ ] Update BybitCryptoCollector.java
+- [ ] Update retention policies & documentation
