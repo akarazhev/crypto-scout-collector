@@ -153,6 +153,65 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return saveKlines(klines, offset, SPOT_KLINE_1D_INSERT);
     }
 
+    private int saveKlines(final Iterable<Map<String, Object>> klines, final long offset, final String insertSql)
+            throws SQLException {
+        var count = 0;
+        try (final var c = dataSource.getConnection()) {
+            final var oldAutoCommit = c.getAutoCommit();
+            c.setAutoCommit(false);
+            try (final var ps = c.prepareStatement(insertSql);
+                 final var psOffset = c.prepareStatement(UPSERT)) {
+                for (final var kline : klines) {
+                    final var row = asRow(kline);
+                    if (row == null) {
+                        continue;
+                    }
+
+                    final var symbol = getSymbol((String) kline.get(TOPIC_FIELD));
+                    final var start = row.get(START);
+                    final var end = row.get(END);
+                    final var open = toBigDecimal(row.get(OPEN));
+                    final var close = toBigDecimal(row.get(CLOSE));
+                    final var high = toBigDecimal(row.get(HIGH));
+                    final var low = toBigDecimal(row.get(LOW));
+                    final var volume = toBigDecimal(row.get(VOLUME));
+                    final var turnover = toBigDecimal(row.get(TURNOVER));
+
+                    if (symbol == null || start == null || end == null || open == null || close == null ||
+                            high == null || low == null || volume == null || turnover == null) {
+                        continue; // skip malformed rows
+                    }
+
+                    ps.setString(SPOT_KLINE_SYMBOL, symbol);
+                    ps.setObject(SPOT_KLINE_START_TIME, toOdt(start));
+                    ps.setObject(SPOT_KLINE_END_TIME, toOdt(end));
+                    ps.setBigDecimal(SPOT_KLINE_OPEN_PRICE, open);
+                    ps.setBigDecimal(SPOT_KLINE_CLOSE_PRICE, close);
+                    ps.setBigDecimal(SPOT_KLINE_HIGH_PRICE, high);
+                    ps.setBigDecimal(SPOT_KLINE_LOW_PRICE, low);
+                    ps.setBigDecimal(SPOT_KLINE_VOLUME, volume);
+                    ps.setBigDecimal(SPOT_KLINE_TURNOVER, turnover);
+
+                    ps.addBatch();
+                    if (++count % batchSize == 0) {
+                        ps.executeBatch();
+                    }
+                }
+
+                ps.executeBatch();
+                updateOffset(psOffset, offset);
+                c.commit();
+            } catch (final Exception ex) {
+                c.rollback();
+                throw ex;
+            } finally {
+                c.setAutoCommit(oldAutoCommit);
+            }
+        }
+
+        return count;
+    }
+
     public int saveTicker(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
@@ -197,65 +256,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     } else {
                         ps.setNull(SPOT_TICKERS_USD_INDEX_PRICE, Types.NUMERIC);
                     }
-
-                    ps.addBatch();
-                    if (++count % batchSize == 0) {
-                        ps.executeBatch();
-                    }
-                }
-
-                ps.executeBatch();
-                updateOffset(psOffset, offset);
-                c.commit();
-            } catch (final Exception ex) {
-                c.rollback();
-                throw ex;
-            } finally {
-                c.setAutoCommit(oldAutoCommit);
-            }
-        }
-
-        return count;
-    }
-
-    private int saveKlines(final Iterable<Map<String, Object>> klines, final long offset, final String insertSql)
-            throws SQLException {
-        var count = 0;
-        try (final var c = dataSource.getConnection()) {
-            final var oldAutoCommit = c.getAutoCommit();
-            c.setAutoCommit(false);
-            try (final var ps = c.prepareStatement(insertSql);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
-                for (final var kline : klines) {
-                    final var row = asRow(kline);
-                    if (row == null) {
-                        continue;
-                    }
-
-                    final var symbol = getSymbol((String) kline.get(TOPIC_FIELD));
-                    final var start = row.get(START);
-                    final var end = row.get(END);
-                    final var open = toBigDecimal(row.get(OPEN));
-                    final var close = toBigDecimal(row.get(CLOSE));
-                    final var high = toBigDecimal(row.get(HIGH));
-                    final var low = toBigDecimal(row.get(LOW));
-                    final var volume = toBigDecimal(row.get(VOLUME));
-                    final var turnover = toBigDecimal(row.get(TURNOVER));
-
-                    if (symbol == null || start == null || end == null || open == null || close == null ||
-                            high == null || low == null || volume == null || turnover == null) {
-                        continue; // skip malformed rows
-                    }
-
-                    ps.setString(SPOT_KLINE_SYMBOL, symbol);
-                    ps.setObject(SPOT_KLINE_START_TIME, toOdt(start));
-                    ps.setObject(SPOT_KLINE_END_TIME, toOdt(end));
-                    ps.setBigDecimal(SPOT_KLINE_OPEN_PRICE, open);
-                    ps.setBigDecimal(SPOT_KLINE_CLOSE_PRICE, close);
-                    ps.setBigDecimal(SPOT_KLINE_HIGH_PRICE, high);
-                    ps.setBigDecimal(SPOT_KLINE_LOW_PRICE, low);
-                    ps.setBigDecimal(SPOT_KLINE_VOLUME, volume);
-                    ps.setBigDecimal(SPOT_KLINE_TURNOVER, turnover);
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {

@@ -45,7 +45,10 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CONFIRM;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_BTC_USDT;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_ETH_USDT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_BTC_USDT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_ETH_USDT;
 
@@ -80,15 +83,12 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     @Override
     public Promise<?> start() {
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
-        LOGGER.info("BybitCryptoCollector started");
         return Promise.complete();
     }
 
     @Override
     public Promise<?> stop() {
-        final var promise = flush();
-        LOGGER.info("BybitCryptoCollector stopped");
-        return promise;
+        return flush();
     }
 
     public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
@@ -130,6 +130,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         }
 
         return Promise.ofBlocking(executor, () -> {
+            final var spotKlines15m = new ArrayList<Map<String, Object>>();
             final var spotTickers = new ArrayList<Map<String, Object>>();
             long maxOffset = -1L;
             for (final var msg : snapshot) {
@@ -138,7 +139,11 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 if (Source.PMST.equals(source)) {
                     final var data = payload.getData();
                     final var topic = (String) data.get(TOPIC_FIELD);
-                    if (Objects.equals(topic, TICKERS_BTC_USDT) || Objects.equals(topic, TICKERS_ETH_USDT)) {
+                    if (isSpotKline15(topic)) {
+                        if (isKlineConfirmed(data)) {
+                            spotKlines15m.add(data);
+                        }
+                    } else if (isSpotTicker(topic)) {
                         spotTickers.add(data);
                     }
                 } else if (Source.PML.equals(source)) {
@@ -150,18 +155,38 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 }
             }
 
-            if (!spotTickers.isEmpty()) {
-                if (maxOffset >= 0) {
-                    LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
-                            bybitSpotRepository.saveTicker(spotTickers, maxOffset), maxOffset);
-                }
-            } else if (maxOffset >= 0) {
+            if (spotKlines15m.isEmpty() && spotTickers.isEmpty()) {
                 // No data to insert but we still may want to advance offset in rare cases
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.debug("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
+            } else {
+                if (!spotKlines15m.isEmpty()) {
+                    if (maxOffset >= 0) {
+                        LOGGER.info("Inserted {} spot klines (tx) and updated offset {}",
+                                bybitSpotRepository.saveKline15m(spotKlines15m, maxOffset), maxOffset);
+                    }
+                }
+
+                if (!spotTickers.isEmpty()) {
+                    if (maxOffset >= 0) {
+                        LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
+                                bybitSpotRepository.saveTicker(spotTickers, maxOffset), maxOffset);
+                    }
+                }
             }
 
             return null;
         });
+    }
+
+    private boolean isSpotKline15(final String topic) {
+        return Objects.equals(topic, KLINE_15_BTC_USDT) || Objects.equals(topic, KLINE_15_ETH_USDT);
+    }
+
+    private boolean isKlineConfirmed(final Map<String, Object> data) {
+        return data.containsKey(CONFIRM) && (Boolean) data.get(CONFIRM);
+    }
+    private boolean isSpotTicker(final String topic) {
+        return Objects.equals(topic, TICKERS_BTC_USDT) || Objects.equals(topic, TICKERS_ETH_USDT);
     }
 }
