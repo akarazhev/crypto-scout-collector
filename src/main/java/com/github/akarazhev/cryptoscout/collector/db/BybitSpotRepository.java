@@ -84,11 +84,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.asRow;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.getSymbol;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toBigDecimal;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOdt;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.valueAsBoolean;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
@@ -110,6 +105,11 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.USD_INDEX
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRow;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getSymbol;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
+import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
+import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBoolean;
 
 public final class BybitSpotRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -295,8 +295,8 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var size = toBigDecimal(row.get("size"));
                     final var takerSide = (String) row.get("taker_side");
                     final var csObj = row.containsKey("cross_sequence") ? row.get("cross_sequence") : trade.get(CS);
-                    final var isBlock = valueAsBoolean(row.get("is_block_trade"));
-                    final var isRpi = valueAsBoolean(row.get("is_rpi"));
+                    final var isBlock = toBoolean(row.get("is_block_trade"));
+                    final var isRpi = toBoolean(row.get("is_rpi"));
 
                     if (symbol == null || tradeId == null || tradeTimeObj == null || price == null || size == null ||
                             takerSide == null || csObj == null || isBlock == null || isRpi == null) {
@@ -351,7 +351,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var size = toBigDecimal(row.get("size"));
                     final var updateIdObj = row.get("update_id");
                     final var csObj = row.containsKey("cross_sequence") ? row.get("cross_sequence") : ob.get(CS);
-                    final var isSnapshot = valueAsBoolean(row.get("is_snapshot"));
+                    final var isSnapshot = toBoolean(row.get("is_snapshot"));
 
                     if (symbol == null || engineTime == null || side == null || price == null || size == null ||
                             updateIdObj == null || csObj == null || isSnapshot == null) {

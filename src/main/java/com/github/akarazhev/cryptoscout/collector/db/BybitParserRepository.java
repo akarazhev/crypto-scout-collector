@@ -50,7 +50,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DESC;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN_ICON;
@@ -60,6 +59,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.STAKE_END
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TRADE_BEGIN_TIME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.WEBSITE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.WHITE_PAPER;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 
 public final class BybitParserRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;

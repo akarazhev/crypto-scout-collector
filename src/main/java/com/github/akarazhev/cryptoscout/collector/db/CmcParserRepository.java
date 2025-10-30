@@ -47,14 +47,14 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_TI
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toBigDecimal;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_PRICE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_VOLUME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.NAME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.SCORE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
+import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
 
 public final class CmcParserRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
