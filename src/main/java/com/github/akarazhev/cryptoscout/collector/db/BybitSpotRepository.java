@@ -162,7 +162,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(insertSql);
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var kline : klines) {
-                    final var row = asRow(kline);
+                    final var row = asRow(DATA, kline);
                     if (row == null) {
                         continue;
                     }
@@ -285,7 +285,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(SPOT_PUBLIC_TRADE_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var trade : trades) {
-                    final var row = asRow(trade);
+                    final var row = asRow(DATA, trade);
                     if (row == null) continue;
 
                     final var symbol = (String) row.get("symbol");
@@ -341,7 +341,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(SPOT_ORDER_BOOK_200_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var ob : orderBooks) {
-                    final var row = asRow(ob);
+                    final var row = asRow(DATA, ob);
                     if (row == null) continue;
 
                     final var symbol = (String) row.get("symbol");

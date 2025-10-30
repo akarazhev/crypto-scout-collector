@@ -46,6 +46,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CONFIRM;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_BTC_USDT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_ETH_USDT;
@@ -185,7 +186,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     }
 
     private boolean isKlineConfirmed(final Map<String, Object> kline) {
-        final var row = asRow(kline);
+        final var row = asRow(DATA, kline);
         return row != null && row.containsKey(CONFIRM) && (Boolean) row.get(CONFIRM);
     }
     private boolean isSpotTicker(final String topic) {
