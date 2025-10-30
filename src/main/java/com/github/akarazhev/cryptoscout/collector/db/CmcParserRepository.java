@@ -48,7 +48,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LA
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toBigDecimal;
-import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOffsetDateTimeFromSeconds;
+import static com.github.akarazhev.cryptoscout.collector.db.ConversionUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_PRICE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_VOLUME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
@@ -104,7 +104,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
 
                             ps.setString(FGI_NAME, (String) dl.get(NAME));
                             final var ts = (String) dl.get(TIMESTAMP);
-                            ps.setObject(FGI_TIMESTAMP, toOffsetDateTimeFromSeconds(ts != null ? Long.parseLong(ts) : 0L));
+                            ps.setObject(FGI_TIMESTAMP, toOdt(ts != null ? Long.parseLong(ts) : 0L));
                             ps.setBigDecimal(FGI_BTC_PRICE, toBigDecimal(dl.get(BTC_PRICE)));
                             ps.setBigDecimal(FGI_BTC_VOLUME, toBigDecimal(dl.get(BTC_VOLUME)));
 

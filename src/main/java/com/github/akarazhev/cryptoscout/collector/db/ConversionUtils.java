@@ -37,10 +37,6 @@ final class ConversionUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static OffsetDateTime toOffsetDateTimeFromSeconds(final long epochSeconds) {
-        return OffsetDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneOffset.UTC);
-    }
-
     public static BigDecimal toBigDecimal(final Object value) {
         return switch (value) {
             case BigDecimal bd -> bd;
