@@ -38,9 +38,10 @@ import io.activej.reactor.nio.NioReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
@@ -48,10 +49,11 @@ import java.util.concurrent.Executor;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CONFIRM;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_BTC_USDT;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.KLINE_15_ETH_USDT;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_BTC_USDT;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Topic.TICKERS_ETH_USDT;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_15;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_240;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_60;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_D;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.TICKERS;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRow;
 
 public final class BybitCryptoCollector extends AbstractReactive implements ReactiveService {
@@ -132,20 +134,36 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         }
 
         return Promise.ofBlocking(executor, () -> {
-            final var spotKlines15m = new ArrayList<Map<String, Object>>();
+            var maxOffset = -1L;
+            // Spot data
+            final var spotKlines15 = new ArrayList<Map<String, Object>>();
+            final var spotKlines60 = new ArrayList<Map<String, Object>>();
+            final var spotKlines240 = new ArrayList<Map<String, Object>>();
+            final var spotKlines1d = new ArrayList<Map<String, Object>>();
             final var spotTickers = new ArrayList<Map<String, Object>>();
-            long maxOffset = -1L;
             for (final var msg : snapshot) {
                 final var payload = msg.payload();
                 final var source = payload.getSource();
                 if (Source.PMST.equals(source)) {
                     final var data = payload.getData();
                     final var topic = (String) data.get(TOPIC_FIELD);
-                    if (isSpotKline15(topic)) {
+                    if (topic.contains(KLINE_15)) {
                         if (isKlineConfirmed(data)) {
-                            spotKlines15m.add(data);
+                            spotKlines15.add(data);
                         }
-                    } else if (isSpotTicker(topic)) {
+                    } else if (topic.contains(KLINE_60)) {
+                        if (isKlineConfirmed(data)) {
+                            spotKlines60.add(data);
+                        }
+                    } else if (topic.contains(KLINE_240)) {
+                        if (isKlineConfirmed(data)) {
+                            spotKlines240.add(data);
+                        }
+                    } else if (topic.contains(KLINE_D)) {
+                        if (isKlineConfirmed(data)) {
+                            spotKlines1d.add(data);
+                        }
+                    } else if (topic.contains(TICKERS)) {
                         spotTickers.add(data);
                     }
                 } else if (Source.PML.equals(source)) {
@@ -156,40 +174,71 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                     maxOffset = msg.offset();
                 }
             }
-
-            if (spotKlines15m.isEmpty() && spotTickers.isEmpty()) {
-                // No data to insert but we still may want to advance offset in rare cases
+            // No data to insert but we still may want to advance offset in rare cases
+            if (spotKlines15.isEmpty() && spotKlines60.isEmpty() && spotKlines240.isEmpty() && spotKlines1d.isEmpty() &&
+                    spotTickers.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.debug("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
             } else {
-                if (!spotKlines15m.isEmpty()) {
-                    if (maxOffset >= 0) {
-                        LOGGER.info("Inserted {} spot klines (tx) and updated offset {}",
-                                bybitSpotRepository.saveKline15m(spotKlines15m, maxOffset), maxOffset);
-                    }
-                }
-
-                if (!spotTickers.isEmpty()) {
-                    if (maxOffset >= 0) {
-                        LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
-                                bybitSpotRepository.saveTicker(spotTickers, maxOffset), maxOffset);
-                    }
-                }
+                // Save data
+                saveKline15m(spotKlines15, maxOffset);
+                saveKline60m(spotKlines60, maxOffset);
+                saveKline240m(spotKlines240, maxOffset);
+                saveKline1d(spotKlines1d, maxOffset);
+                saveTicker(spotTickers, maxOffset);
             }
 
             return null;
         });
     }
 
-    private boolean isSpotKline15(final String topic) {
-        return Objects.equals(topic, KLINE_15_BTC_USDT) || Objects.equals(topic, KLINE_15_ETH_USDT);
-    }
-
     private boolean isKlineConfirmed(final Map<String, Object> kline) {
         final var row = asRow(DATA, kline);
         return row != null && row.containsKey(CONFIRM) && (Boolean) row.get(CONFIRM);
     }
-    private boolean isSpotTicker(final String topic) {
-        return Objects.equals(topic, TICKERS_BTC_USDT) || Objects.equals(topic, TICKERS_ETH_USDT);
+
+    private void saveKline15m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
+        if (!klines.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot 15m klines (tx) and updated offset {}",
+                        bybitSpotRepository.saveKline15m(klines, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveKline60m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
+        if (!klines.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot 60m klines (tx) and updated offset {}",
+                        bybitSpotRepository.saveKline60m(klines, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveKline240m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
+        if (!klines.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot 240m klines (tx) and updated offset {}",
+                        bybitSpotRepository.saveKline240m(klines, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveKline1d(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
+        if (!klines.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot 1d klines (tx) and updated offset {}",
+                        bybitSpotRepository.saveKline1d(klines, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveTicker(final List<Map<String, Object>> tickers, final long maxOffset) throws SQLException {
+        if (!tickers.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
+                        bybitSpotRepository.saveTicker(tickers, maxOffset), maxOffset);
+            }
+        }
     }
 }
