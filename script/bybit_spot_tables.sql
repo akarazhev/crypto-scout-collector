@@ -206,7 +206,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_order_book_200 (
     size NUMERIC(20, 8) NOT NULL,
     update_id BIGINT NOT NULL,
     cross_sequence BIGINT NOT NULL,
-    is_snapshot BOOLEAN NOT NULL,
     CONSTRAINT bybit_spot_order_book_200_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_spot_order_book_200 OWNER TO crypto_scout_db;
