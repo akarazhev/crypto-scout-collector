@@ -84,28 +84,38 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH_PRICE_24H;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.I;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LAST_PRICE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW_PRICE_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.OPEN;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.P;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PREV_PRICE_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PRICE_24H_PCNT;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RPI;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SEQ;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL_NAME;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TAKER_SIDE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.USD_INDEX_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRow;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRows;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getSymbol;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
@@ -235,7 +245,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var volume24h = toBigDecimal(row.get(VOLUME_24H));
                     final var turnover24h = toBigDecimal(row.get(TURNOVER_24H));
                     final var price24hPcnt = toBigDecimal(row.get(PRICE_24H_PCNT));
-                    final var usdIndexPrice = row.get(USD_INDEX_PRICE);
+                    final var usdIndexPrice = toBigDecimal(row.get(USD_INDEX_PRICE));
 
                     if (timestamp == null || crossSequence == null || symbol == null || lastPrice == null ||
                             highPrice24h == null || lowPrice24h == null || prevPrice24h == null || volume24h == null ||
@@ -255,7 +265,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     ps.setBigDecimal(SPOT_TICKERS_PRICE_24H_PCNT, price24hPcnt);
                     // may be null
                     if (usdIndexPrice != null) {
-                        ps.setBigDecimal(SPOT_TICKERS_USD_INDEX_PRICE, toBigDecimal(usdIndexPrice));
+                        ps.setBigDecimal(SPOT_TICKERS_USD_INDEX_PRICE, usdIndexPrice);
                     } else {
                         ps.setNull(SPOT_TICKERS_USD_INDEX_PRICE, Types.NUMERIC);
                     }
@@ -288,37 +298,39 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(SPOT_PUBLIC_TRADE_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var trade : trades) {
-                    final var row = asRow(DATA, trade);
-                    if (row == null) continue;
+                    final var rows = asRows(DATA, trade);
+                    if (rows != null) {
+                        for (final var row : rows) {
+                            final var symbol = (String) row.get(SYMBOL_NAME);
+                            final var tradeId = (String) row.get(I);
+                            final var tradeTime = row.get(T);
+                            final var price = toBigDecimal(row.get(P));
+                            final var size = toBigDecimal(row.get(V));
+                            final var takerSide = (String) row.get(TAKER_SIDE);
+                            final var seq = row.get(SEQ);
+                            final var isBlock = toBoolean(row.get(BT));
+                            final var isRpi = toBoolean(row.get(RPI));
 
-                    final var symbol = (String) row.get("symbol");
-                    final var tradeId = (String) row.get("trade_id");
-                    final var tradeTimeObj = row.get("trade_time");
-                    final var price = toBigDecimal(row.get("price"));
-                    final var size = toBigDecimal(row.get("size"));
-                    final var takerSide = (String) row.get("taker_side");
-                    final var csObj = row.containsKey("cross_sequence") ? row.get("cross_sequence") : trade.get(CS);
-                    final var isBlock = toBoolean(row.get("is_block_trade"));
-                    final var isRpi = toBoolean(row.get("is_rpi"));
+                            if (symbol == null || tradeId == null || tradeTime == null || price == null || size == null ||
+                                    takerSide == null || seq == null || isBlock == null || isRpi == null) {
+                                continue; // skip malformed rows
+                            }
 
-                    if (symbol == null || tradeId == null || tradeTimeObj == null || price == null || size == null ||
-                            takerSide == null || csObj == null || isBlock == null || isRpi == null) {
-                        continue; // skip malformed rows
-                    }
+                            ps.setString(SPOT_PUBLIC_TRADE_SYMBOL, symbol);
+                            ps.setObject(SPOT_PUBLIC_TRADE_TRADE_TIME, toOdt(tradeTime));
+                            ps.setString(SPOT_PUBLIC_TRADE_TRADE_ID, tradeId);
+                            ps.setBigDecimal(SPOT_PUBLIC_TRADE_PRICE, price);
+                            ps.setBigDecimal(SPOT_PUBLIC_TRADE_SIZE, size);
+                            ps.setString(SPOT_PUBLIC_TRADE_TAKER_SIDE, takerSide);
+                            ps.setLong(SPOT_PUBLIC_TRADE_CROSS_SEQUENCE, ((Number) seq).longValue());
+                            ps.setBoolean(SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE, isBlock);
+                            ps.setBoolean(SPOT_PUBLIC_TRADE_IS_RPI, isRpi);
 
-                    ps.setString(SPOT_PUBLIC_TRADE_SYMBOL, symbol);
-                    ps.setObject(SPOT_PUBLIC_TRADE_TRADE_TIME, toOdt(tradeTimeObj));
-                    ps.setString(SPOT_PUBLIC_TRADE_TRADE_ID, tradeId);
-                    ps.setBigDecimal(SPOT_PUBLIC_TRADE_PRICE, price);
-                    ps.setBigDecimal(SPOT_PUBLIC_TRADE_SIZE, size);
-                    ps.setString(SPOT_PUBLIC_TRADE_TAKER_SIDE, takerSide);
-                    ps.setLong(SPOT_PUBLIC_TRADE_CROSS_SEQUENCE, ((Number) csObj).longValue());
-                    ps.setBoolean(SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE, isBlock);
-                    ps.setBoolean(SPOT_PUBLIC_TRADE_IS_RPI, isRpi);
-
-                    ps.addBatch();
-                    if (++count % batchSize == 0) {
-                        ps.executeBatch();
+                            ps.addBatch();
+                            if (++count % batchSize == 0) {
+                                ps.executeBatch();
+                            }
+                        }
                     }
                 }
 
