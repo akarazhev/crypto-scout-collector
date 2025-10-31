@@ -48,6 +48,8 @@ import java.util.concurrent.Executor;
 
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CONFIRM;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SNAPSHOT;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TYPE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_15;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_240;
@@ -56,7 +58,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_D;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_200;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.PUBLIC_TRADE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.TICKERS;
-import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRow;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 
 public final class BybitCryptoCollector extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(BybitCryptoCollector.class);
@@ -172,7 +174,9 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                     } else if (topic.contains(PUBLIC_TRADE)) {
                         spotPublicTrades.add(data);
                     } else if (topic.contains(ORDER_BOOK_200)) {
-                        spotOrderBooks200.add(data);
+                        if (isOrderSnapshot(data)) {
+                            spotOrderBooks200.add(data);
+                        }
                     }
                 } else if (Source.PML.equals(source)) {
                     // TODO: implement futures
@@ -203,8 +207,12 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     }
 
     private boolean isKlineConfirmed(final Map<String, Object> kline) {
-        final var row = asRow(DATA, kline);
+        final var row = getFirstRow(DATA, kline);
         return row != null && row.containsKey(CONFIRM) && (Boolean) row.get(CONFIRM);
+    }
+
+    private boolean isOrderSnapshot(final Map<String, Object> order) {
+        return SNAPSHOT.equals(order.get(TYPE));
     }
 
     private void saveKline15m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
