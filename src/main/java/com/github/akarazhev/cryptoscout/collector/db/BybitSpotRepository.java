@@ -40,7 +40,6 @@ import java.util.Map;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_CROSS_SEQUENCE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_ENGINE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_IS_SNAPSHOT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SIZE;
@@ -87,6 +86,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UP
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH;
@@ -109,6 +109,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TAKER_SID
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_24H;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.U;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.USD_INDEX_PRICE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
@@ -357,19 +358,20 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var ob : orderBooks) {
                     final var row = asRow(DATA, ob);
-                    if (row == null) continue;
+                    if (row == null) {
+                        continue;
+                    }
 
-                    final var symbol = (String) row.get("symbol");
-                    final var engineTime = row.get("engine_time");
+                    final var symbol = (String) row.get(SYMBOL_NAME);
+                    final var engineTime = row.get(CTS);
                     final var side = (String) row.get("side");
                     final var price = toBigDecimal(row.get("price"));
                     final var size = toBigDecimal(row.get("size"));
-                    final var updateIdObj = row.get("update_id");
-                    final var csObj = row.containsKey("cross_sequence") ? row.get("cross_sequence") : ob.get(CS);
-                    final var isSnapshot = toBoolean(row.get("is_snapshot"));
+                    final var updateIdObj = row.get(U);
+                    final var seq = row.get(SEQ);
 
                     if (symbol == null || engineTime == null || side == null || price == null || size == null ||
-                            updateIdObj == null || csObj == null || isSnapshot == null) {
+                            updateIdObj == null || seq == null) {
                         continue; // skip malformed rows
                     }
 
@@ -379,8 +381,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, price);
                     ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, size);
                     ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateIdObj).longValue());
-                    ps.setLong(SPOT_ORDER_BOOK_200_CROSS_SEQUENCE, ((Number) csObj).longValue());
-                    ps.setBoolean(SPOT_ORDER_BOOK_200_IS_SNAPSHOT, isSnapshot);
+                    ps.setLong(SPOT_ORDER_BOOK_200_CROSS_SEQUENCE, ((Number) seq).longValue());
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {
