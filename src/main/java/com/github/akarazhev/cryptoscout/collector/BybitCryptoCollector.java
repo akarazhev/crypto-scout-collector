@@ -146,7 +146,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             final var spotKlines1d = new ArrayList<Map<String, Object>>();
             final var spotTickers = new ArrayList<Map<String, Object>>();
             final var spotPublicTrades = new ArrayList<Map<String, Object>>();
-            final var spotOrderBooks200 = new ArrayList<Map<String, Object>>();
+            final var spotOrders200 = new ArrayList<Map<String, Object>>();
             for (final var msg : snapshot) {
                 final var payload = msg.payload();
                 final var source = payload.getSource();
@@ -175,7 +175,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                         spotPublicTrades.add(data);
                     } else if (topic.contains(ORDER_BOOK_200)) {
                         if (isOrderSnapshot(data)) {
-                            spotOrderBooks200.add(data);
+                            spotOrders200.add(data);
                         }
                     }
                 } else if (Source.PML.equals(source)) {
@@ -188,7 +188,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             }
             // No data to insert but we still may want to advance offset in rare cases
             if (spotKlines15.isEmpty() && spotKlines60.isEmpty() && spotKlines240.isEmpty() && spotKlines1d.isEmpty() &&
-                    spotTickers.isEmpty() && spotPublicTrades.isEmpty() && spotOrderBooks200.isEmpty()) {
+                    spotTickers.isEmpty() && spotPublicTrades.isEmpty() && spotOrders200.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.debug("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
             } else {
@@ -199,7 +199,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 saveKline1d(spotKlines1d, maxOffset);
                 saveTicker(spotTickers, maxOffset);
                 savePublicTrade(spotPublicTrades, maxOffset);
-                saveOrderBook200(spotOrderBooks200, maxOffset);
+                saveOrderBook200(spotOrders200, maxOffset);
             }
 
             return null;
