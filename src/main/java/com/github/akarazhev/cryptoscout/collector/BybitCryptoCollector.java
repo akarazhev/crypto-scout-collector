@@ -53,6 +53,8 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_15
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_240;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_60;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_D;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_200;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.PUBLIC_TRADE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.TICKERS;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRow;
 
@@ -141,6 +143,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             final var spotKlines240 = new ArrayList<Map<String, Object>>();
             final var spotKlines1d = new ArrayList<Map<String, Object>>();
             final var spotTickers = new ArrayList<Map<String, Object>>();
+            final var spotPublicTrades = new ArrayList<Map<String, Object>>();
+            final var spotOrderBooks200 = new ArrayList<Map<String, Object>>();
             for (final var msg : snapshot) {
                 final var payload = msg.payload();
                 final var source = payload.getSource();
@@ -165,6 +169,10 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                         }
                     } else if (topic.contains(TICKERS)) {
                         spotTickers.add(data);
+                    } else if (topic.contains(PUBLIC_TRADE)) {
+                        spotPublicTrades.add(data);
+                    } else if (topic.contains(ORDER_BOOK_200)) {
+                        spotOrderBooks200.add(data);
                     }
                 } else if (Source.PML.equals(source)) {
                     // TODO: implement futures
@@ -176,16 +184,18 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             }
             // No data to insert but we still may want to advance offset in rare cases
             if (spotKlines15.isEmpty() && spotKlines60.isEmpty() && spotKlines240.isEmpty() && spotKlines1d.isEmpty() &&
-                    spotTickers.isEmpty()) {
+                    spotTickers.isEmpty() && spotPublicTrades.isEmpty() && spotOrderBooks200.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.debug("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
             } else {
-                // Save data
+                // Save spot data
                 saveKline15m(spotKlines15, maxOffset);
                 saveKline60m(spotKlines60, maxOffset);
                 saveKline240m(spotKlines240, maxOffset);
                 saveKline1d(spotKlines1d, maxOffset);
                 saveTicker(spotTickers, maxOffset);
+                savePublicTrade(spotPublicTrades, maxOffset);
+                saveOrderBook200(spotOrderBooks200, maxOffset);
             }
 
             return null;
@@ -238,6 +248,24 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             if (maxOffset >= 0) {
                 LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
                         bybitSpotRepository.saveTicker(tickers, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void savePublicTrade(final List<Map<String, Object>> publicTrades, final long maxOffset) throws SQLException {
+        if (!publicTrades.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot public trades (tx) and updated offset {}",
+                        bybitSpotRepository.savePublicTrade(publicTrades, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveOrderBook200(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot order books 200 (tx) and updated offset {}",
+                        bybitSpotRepository.saveOrderBook200(orderBooks, maxOffset), maxOffset);
             }
         }
     }
