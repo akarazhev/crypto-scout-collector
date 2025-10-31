@@ -118,8 +118,8 @@ public final class Constants {
 
         // Spot order book 200 (one row per level)
         static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_200 " +
-                "(symbol, engine_time, side, price, size, update_id, cross_sequence, is_snapshot) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_ORDER_BOOK_200_SYMBOL = 1;
         static final int SPOT_ORDER_BOOK_200_ENGINE_TIME = 2;
         static final int SPOT_ORDER_BOOK_200_SIDE = 3;
@@ -127,7 +127,6 @@ public final class Constants {
         static final int SPOT_ORDER_BOOK_200_SIZE = 5;
         static final int SPOT_ORDER_BOOK_200_UPDATE_ID = 6;
         static final int SPOT_ORDER_BOOK_200_CROSS_SEQUENCE = 7;
-        static final int SPOT_ORDER_BOOK_200_IS_SNAPSHOT = 8;
     }
 
     final static class Offsets {
