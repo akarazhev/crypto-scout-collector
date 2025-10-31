@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.List;
 import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_CROSS_SEQUENCE;
@@ -83,6 +84,8 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.B;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CS;
@@ -115,8 +118,9 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
-import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRow;
-import static com.github.akarazhev.jcryptolib.util.ParserUtils.asRows;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRows;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getSymbol;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
@@ -173,7 +177,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(insertSql);
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var kline : klines) {
-                    final var row = asRow(DATA, kline);
+                    final var row = getFirstRow(DATA, kline);
                     if (row == null) {
                         continue;
                     }
@@ -231,7 +235,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(String.format(SPOT_TICKERS_INSERT));
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var ticker : tickers) {
-                    final var row = asRow(DATA, ticker);
+                    final var row = getRow(DATA, ticker);
                     if (row == null) {
                         continue;
                     }
@@ -299,7 +303,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(SPOT_PUBLIC_TRADE_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var trade : trades) {
-                    final var rows = asRows(DATA, trade);
+                    final var rows = getRows(DATA, trade);
                     if (rows != null) {
                         for (final var row : rows) {
                             final var symbol = (String) row.get(SYMBOL_NAME);
@@ -356,36 +360,51 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(SPOT_ORDER_BOOK_200_INSERT);
                  final var psOffset = c.prepareStatement(UPSERT)) {
-                for (final var ob : orderBooks) {
-                    final var row = asRow(DATA, ob);
+                for (final var order : orderBooks) {
+                    final var row = getRow(DATA, order);
                     if (row == null) {
                         continue;
                     }
 
                     final var symbol = (String) row.get(SYMBOL_NAME);
-                    final var engineTime = row.get(CTS);
-                    final var side = (String) row.get("side");
-                    final var price = toBigDecimal(row.get("price"));
-                    final var size = toBigDecimal(row.get("size"));
-                    final var updateIdObj = row.get(U);
+                    final var engineTime = order.get(CTS);
+                    @SuppressWarnings("unchecked") final var bids = (List<List<String>>) row.get(B);
+                    @SuppressWarnings("unchecked") final var asks = (List<List<String>>) row.get(A);
+                    final var updateId = row.get(U);
                     final var seq = row.get(SEQ);
 
-                    if (symbol == null || engineTime == null || side == null || price == null || size == null ||
-                            updateIdObj == null || seq == null) {
+                    if (symbol == null || engineTime == null || updateId == null || seq == null) {
                         continue; // skip malformed rows
                     }
 
-                    ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
-                    ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
-                    ps.setString(SPOT_ORDER_BOOK_200_SIDE, side);
-                    ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, price);
-                    ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, size);
-                    ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateIdObj).longValue());
-                    ps.setLong(SPOT_ORDER_BOOK_200_CROSS_SEQUENCE, ((Number) seq).longValue());
+                    for (final var bid : bids) {
+                        ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
+                        ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
+                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "Bid");
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(bid.getFirst()));
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(bid.get(1)));
+                        ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
+                        ps.setLong(SPOT_ORDER_BOOK_200_CROSS_SEQUENCE, ((Number) seq).longValue());
 
-                    ps.addBatch();
-                    if (++count % batchSize == 0) {
-                        ps.executeBatch();
+                        ps.addBatch();
+                        if (++count % batchSize == 0) {
+                            ps.executeBatch();
+                        }
+                    }
+
+                    for (final var ask : asks) {
+                        ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
+                        ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
+                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "Ask");
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(ask.getFirst()));
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(ask.get(1)));
+                        ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
+                        ps.setLong(SPOT_ORDER_BOOK_200_CROSS_SEQUENCE, ((Number) seq).longValue());
+
+                        ps.addBatch();
+                        if (++count % batchSize == 0) {
+                            ps.executeBatch();
+                        }
                     }
                 }
 
