@@ -220,39 +220,42 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(String.format(SPOT_TICKERS_INSERT));
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var ticker : tickers) {
-                    final var dObj = ticker.get(DATA);
-                    if (!(dObj instanceof Map<?, ?> map)) {
-                        // skip malformed rows
+                    final var row = asRow(DATA, ticker);
+                    if (row == null) {
                         continue;
                     }
 
-                    final var odt = (Long) ticker.get(TS);
-                    if (odt != null) {
-                        ps.setObject(SPOT_TICKERS_TIMESTAMP, toOdt(odt));
-                    } else {
-                        ps.setNull(SPOT_TICKERS_TIMESTAMP, Types.TIMESTAMP_WITH_TIMEZONE);
+                    final var timestamp = ticker.get(TS);
+                    final var crossSequence = ticker.get(CS);
+                    final var symbol = (String) row.get(SYMBOL);
+                    final var lastPrice = toBigDecimal(row.get(LAST_PRICE));
+                    final var highPrice24h = toBigDecimal(row.get(HIGH_PRICE_24H));
+                    final var lowPrice24h = toBigDecimal(row.get(LOW_PRICE_24H));
+                    final var prevPrice24h = toBigDecimal(row.get(PREV_PRICE_24H));
+                    final var volume24h = toBigDecimal(row.get(VOLUME_24H));
+                    final var turnover24h = toBigDecimal(row.get(TURNOVER_24H));
+                    final var price24hPcnt = toBigDecimal(row.get(PRICE_24H_PCNT));
+                    final var usdIndexPrice = row.get(USD_INDEX_PRICE);
+
+                    if (timestamp == null || crossSequence == null || symbol == null || lastPrice == null ||
+                            highPrice24h == null || lowPrice24h == null || prevPrice24h == null || volume24h == null ||
+                            turnover24h == null || price24hPcnt == null) {
+                        continue; // skip malformed rows
                     }
 
-                    final var cs = (Long) ticker.get(CS);
-                    if (cs != null) {
-                        ps.setObject(SPOT_TICKERS_CROSS_SEQUENCE, cs);
-                    } else {
-                        ps.setNull(SPOT_TICKERS_CROSS_SEQUENCE, Types.BIGINT);
-                    }
-
-                    @SuppressWarnings("unchecked") final var d = (Map<String, Object>) map;
-                    ps.setString(SPOT_TICKERS_SYMBOL, (String) d.get(SYMBOL));
-                    ps.setBigDecimal(SPOT_TICKERS_LAST_PRICE, toBigDecimal(d.get(LAST_PRICE)));
-                    ps.setBigDecimal(SPOT_TICKERS_HIGH_PRICE_24H, toBigDecimal(d.get(HIGH_PRICE_24H)));
-                    ps.setBigDecimal(SPOT_TICKERS_LOW_PRICE_24H, toBigDecimal(d.get(LOW_PRICE_24H)));
-                    ps.setBigDecimal(SPOT_TICKERS_PREV_PRICE_24H, toBigDecimal(d.get(PREV_PRICE_24H)));
-                    ps.setBigDecimal(SPOT_TICKERS_VOLUME_24H, toBigDecimal(d.get(VOLUME_24H)));
-                    ps.setBigDecimal(SPOT_TICKERS_TURNOVER_24H, toBigDecimal(d.get(TURNOVER_24H)));
-                    ps.setBigDecimal(SPOT_TICKERS_PRICE_24H_PCNT, toBigDecimal(d.get(PRICE_24H_PCNT)));
+                    ps.setObject(SPOT_TICKERS_TIMESTAMP, toOdt(timestamp));
+                    ps.setObject(SPOT_TICKERS_CROSS_SEQUENCE, ((Number) crossSequence).longValue());
+                    ps.setString(SPOT_TICKERS_SYMBOL, symbol);
+                    ps.setBigDecimal(SPOT_TICKERS_LAST_PRICE, lastPrice);
+                    ps.setBigDecimal(SPOT_TICKERS_HIGH_PRICE_24H, highPrice24h);
+                    ps.setBigDecimal(SPOT_TICKERS_LOW_PRICE_24H, lowPrice24h);
+                    ps.setBigDecimal(SPOT_TICKERS_PREV_PRICE_24H, prevPrice24h);
+                    ps.setBigDecimal(SPOT_TICKERS_VOLUME_24H, volume24h);
+                    ps.setBigDecimal(SPOT_TICKERS_TURNOVER_24H, turnover24h);
+                    ps.setBigDecimal(SPOT_TICKERS_PRICE_24H_PCNT, price24hPcnt);
                     // may be null
-                    final var usd = d.get(USD_INDEX_PRICE);
-                    if (usd != null) {
-                        ps.setBigDecimal(SPOT_TICKERS_USD_INDEX_PRICE, toBigDecimal(usd));
+                    if (usdIndexPrice != null) {
+                        ps.setBigDecimal(SPOT_TICKERS_USD_INDEX_PRICE, toBigDecimal(usdIndexPrice));
                     } else {
                         ps.setNull(SPOT_TICKERS_USD_INDEX_PRICE, Types.NUMERIC);
                     }
