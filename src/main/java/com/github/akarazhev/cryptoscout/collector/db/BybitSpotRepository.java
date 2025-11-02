@@ -46,6 +46,8 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SIZE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_UPDATE_ID;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_INSERT;
@@ -150,6 +152,14 @@ public final class BybitSpotRepository extends AbstractReactive implements React
     @Override
     public Promise<?> stop() {
         return Promise.complete();
+    }
+
+    public int saveKline1m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        return saveKlines(klines, offset, SPOT_KLINE_1M_INSERT);
+    }
+
+    public int saveKline5m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        return saveKlines(klines, offset, SPOT_KLINE_5M_INSERT);
     }
 
     public int saveKline15m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
