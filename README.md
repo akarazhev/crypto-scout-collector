@@ -68,7 +68,7 @@ are executed in lexical order:
   `crypto_scout.stream_offsets`, and grants/default privileges.
 - `script/bybit_spot_tables.sql` → Bybit Spot tables and policies:
     - `crypto_scout.bybit_spot_tickers` (spot tickers)
-    - `crypto_scout.bybit_spot_kline_{15m,60m,240m,1d}` (confirmed klines)
+    - `crypto_scout.bybit_spot_kline_{1m,5m,15m,60m,240m,1d}` (confirmed klines)
     - `crypto_scout.bybit_spot_public_trade` (1 row per trade)
     - `crypto_scout.bybit_spot_order_book_200` (1 row per book level)
     - Indexes, hypertables, compression, reorder, and retention policies
