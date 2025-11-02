@@ -51,8 +51,10 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SNAPSHOT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TYPE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_1;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_15;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_240;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_5;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_60;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_D;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_200;
@@ -140,6 +142,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         return Promise.ofBlocking(executor, () -> {
             var maxOffset = -1L;
             // Spot data
+            final var spotKlines1 = new ArrayList<Map<String, Object>>();
+            final var spotKlines5 = new ArrayList<Map<String, Object>>();
             final var spotKlines15 = new ArrayList<Map<String, Object>>();
             final var spotKlines60 = new ArrayList<Map<String, Object>>();
             final var spotKlines240 = new ArrayList<Map<String, Object>>();
@@ -153,7 +157,15 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 if (Source.PMST.equals(source)) {
                     final var data = payload.getData();
                     final var topic = (String) data.get(TOPIC_FIELD);
-                    if (topic.contains(KLINE_15)) {
+                    if (topic.contains(KLINE_1)) {
+                        if (isKlineConfirmed(data)) {
+                            spotKlines1.add(data);
+                        }
+                    } else if (topic.contains(KLINE_5)) {
+                        if (isKlineConfirmed(data)) {
+                            spotKlines5.add(data);
+                        }
+                    } else if (topic.contains(KLINE_15)) {
                         if (isKlineConfirmed(data)) {
                             spotKlines15.add(data);
                         }
@@ -187,12 +199,15 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 }
             }
             // No data to insert but we still may want to advance offset in rare cases
-            if (spotKlines15.isEmpty() && spotKlines60.isEmpty() && spotKlines240.isEmpty() && spotKlines1d.isEmpty() &&
-                    spotTickers.isEmpty() && spotPublicTrades.isEmpty() && spotOrders200.isEmpty()) {
+            if (spotKlines1.isEmpty() && spotKlines5.isEmpty() && spotKlines15.isEmpty() && spotKlines60.isEmpty() &&
+                    spotKlines240.isEmpty() && spotKlines1d.isEmpty() && spotTickers.isEmpty() &&
+                    spotPublicTrades.isEmpty() && spotOrders200.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.debug("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
             } else {
                 // Save spot data
+                saveKline1m(spotKlines1, maxOffset);
+                saveKline5m(spotKlines5, maxOffset);
                 saveKline15m(spotKlines15, maxOffset);
                 saveKline60m(spotKlines60, maxOffset);
                 saveKline240m(spotKlines240, maxOffset);
@@ -213,6 +228,24 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
 
     private boolean isOrderSnapshot(final Map<String, Object> order) {
         return SNAPSHOT.equals(order.get(TYPE));
+    }
+
+    private void saveKline1m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
+        if (!klines.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot 1m klines (tx) and updated offset {}",
+                        bybitSpotRepository.saveKline1m(klines, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveKline5m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
+        if (!klines.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot 5m klines (tx) and updated offset {}",
+                        bybitSpotRepository.saveKline5m(klines, maxOffset), maxOffset);
+            }
+        }
     }
 
     private void saveKline15m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
