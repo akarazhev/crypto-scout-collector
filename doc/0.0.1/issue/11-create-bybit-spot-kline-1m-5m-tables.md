@@ -3,7 +3,7 @@
 In this `crypto-scout-collector-db` project we are going to create the following bybit spot tables to save the data
 received from the Bybit websocket: `bybit_spot_kline_1m`, `bybit_spot_kline_5m`. Table schemas must be in normalized
 form and optimal to perform analysis and efficient saving the data. Data removal and compression must be done with:
-`retention` and `compression` policies.
+`retention` and `compression` policies. New two tables must be created it the script: `bybit_spot_tables.sql`.
 
 ## Roles
 
@@ -24,8 +24,8 @@ Take the following roles:
 ## Tasks
 
 - As the `expert database engineer` review the current `bybit_spot_tables.sql` script implementation in
-  `crypto-scout-collector-db` project and update it by defining the following tables: `bybit_spot_kline_1m`,
-  `bybit_spot_kline_5m`.
+  `crypto-scout-collector-db` project and update it by creating the following tables: `bybit_spot_kline_1m`,
+  `bybit_spot_kline_5m` in the `bybit_spot_tables.sql` script.
 - As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be in
   normalized form and optimal to perform analysis and efficient saving the data. Data removal and compression must be
   done with: `retention` and `compression` policies.
