@@ -1,9 +1,11 @@
 # Issue 11: Create bybit spot kline 1m and 5m tables
 
-In this `crypto-scout-collector-db` project we are going to create the following bybit spot tables to save the data
+In this `crypto-scout-collector-db` project we are going to add the additional bybit spot tables to save the data
 received from the Bybit websocket: `bybit_spot_kline_1m`, `bybit_spot_kline_5m`. Table schemas must be in normalized
 form and optimal to perform analysis and efficient saving the data. Data removal and compression must be done with:
-`retention` and `compression` policies. New two tables must be created it the script: `bybit_spot_tables.sql`.
+`retention` and `compression` policies. New two tables must be created it the script: `bybit_spot_tables.sql` where 
+there are already existing tables: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`, `bybit_spot_kline_240m`,
+`bybit_spot_kline_1d`.
 
 ## Roles
 
@@ -19,13 +21,16 @@ Take the following roles:
 - Use the same data schemas for `kline` data.
 - Use human-readable names for parameter names.
 - Normalize data schemas for optimal savings and analysts.
+- Use as the template the existing tables: `bybit_spot_kline_15m`, `bybit_spot_kline_60m`, `bybit_spot_kline_240m`,
+`bybit_spot_kline_1d`.
 - Do not hallucinate.
 
 ## Tasks
 
 - As the `expert database engineer` review the current `bybit_spot_tables.sql` script implementation in
-  `crypto-scout-collector-db` project and update it by creating the following tables: `bybit_spot_kline_1m`,
-  `bybit_spot_kline_5m` in the `bybit_spot_tables.sql` script.
+  `crypto-scout-collector-db` project and update it by adding the following tables: `bybit_spot_kline_1m`,
+  `bybit_spot_kline_5m` in the `bybit_spot_tables.sql` script based on the existing tables: `bybit_spot_kline_15m`,
+  `bybit_spot_kline_60m`, `bybit_spot_kline_240m`, `bybit_spot_kline_1d`.
 - As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be in
   normalized form and optimal to perform analysis and efficient saving the data. Data removal and compression must be
   done with: `retention` and `compression` policies.
