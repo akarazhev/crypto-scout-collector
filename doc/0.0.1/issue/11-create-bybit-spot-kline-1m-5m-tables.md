@@ -38,7 +38,6 @@ Take the following roles:
   important points.
 - As the `expert database engineer` rely on the definition of the data section.
 - As the technical writer update the `README.md` and `collector-production-setup.md` files with your results.
-- As the technical writer update the `11-create-bybit-spot-kline-1m-5m-tables.md` file with your resolution.
 
 ## Definition of the data
 
