@@ -98,48 +98,48 @@ services:
     networks:
       - crypto-scout-bridge
 
-  crypto-scout-collector:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: crypto-scout-collector:0.0.1
-    container_name: crypto-scout-collector
-    cpus: "1.00"
-    memory: 1G
-    env_file:
-      - ./secret/collector.env
-    environment:
-      TZ: UTC
-    networks:
-      - crypto-scout-bridge
-    ports:
-      - "8083:8083"
-    depends_on:
-      - crypto-scout-collector-db
-      - crypto-scout-collector-backup
-    security_opt:
-      - no-new-privileges=true
-    read_only: true
-    tmpfs:
-      - /tmp:rw,size=64m,mode=1777,nodev,nosuid
-    cap_drop:
-      - ALL
-    user: "10001:10001"
-    init: true
-    pids_limit: 256
-    ulimits:
-      nofile:
-        soft: 4096
-        hard: 4096
-    restart: unless-stopped
-    stop_signal: SIGTERM
-    stop_grace_period: 30s
-    healthcheck:
-      test: [ "CMD-SHELL", "curl -f http://localhost:8083/health || exit 1" ]
-      interval: 10s
-      timeout: 3s
-      retries: 5
-      start_period: 30s
+#  crypto-scout-collector:
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    image: crypto-scout-collector:0.0.1
+#    container_name: crypto-scout-collector
+#    cpus: "1.00"
+#    memory: 1G
+#    env_file:
+#      - ./secret/collector.env
+#    environment:
+#      TZ: UTC
+#    networks:
+#      - crypto-scout-bridge
+#    ports:
+#      - "8083:8083"
+#    depends_on:
+#      - crypto-scout-collector-db
+#      - crypto-scout-collector-backup
+#    security_opt:
+#      - no-new-privileges=true
+#    read_only: true
+#    tmpfs:
+#      - /tmp:rw,size=64m,mode=1777,nodev,nosuid
+#    cap_drop:
+#      - ALL
+#    user: "10001:10001"
+#    init: true
+#    pids_limit: 256
+#    ulimits:
+#      nofile:
+#        soft: 4096
+#        hard: 4096
+#    restart: unless-stopped
+#    stop_signal: SIGTERM
+#    stop_grace_period: 30s
+#    healthcheck:
+#      test: [ "CMD-SHELL", "curl -f http://localhost:8083/health || exit 1" ]
+#      interval: 10s
+#      timeout: 3s
+#      retries: 5
+#      start_period: 30s
 
 networks:
   crypto-scout-bridge:

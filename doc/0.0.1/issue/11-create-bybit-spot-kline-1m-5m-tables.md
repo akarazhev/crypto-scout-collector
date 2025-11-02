@@ -1,8 +1,8 @@
 # Issue 11: Create bybit spot kline 1m and 5m tables
 
 In this `crypto-scout-collector-db` project we are going to create the following bybit spot tables to save the data
-received from the Bybit websocket: `bybit_spot_kline_1m`, `bybit_spot_kline_5m`. Table schemas must be in normalized form
-and optimal to perform analysis and efficient saving the data. Data removal and compression must be done with:
+received from the Bybit websocket: `bybit_spot_kline_1m`, `bybit_spot_kline_5m`. Table schemas must be in normalized
+form and optimal to perform analysis and efficient saving the data. Data removal and compression must be done with:
 `retention` and `compression` policies.
 
 ## Roles
@@ -23,8 +23,9 @@ Take the following roles:
 
 ## Tasks
 
-- As the `expert database engineer` review the current `init.sql` script implementation in `crypto-scout-collector-db`
-  project and update it by defining the following tables: `bybit_spot_kline_1m`, `bybit_spot_kline_5m`.
+- As the `expert database engineer` review the current `init.sql` and `bybit_spot_tables.sql` script implementation in
+  `crypto-scout-collector-db` project and update it by defining the following tables: `bybit_spot_kline_1m`,
+  `bybit_spot_kline_5m`.
 - As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be in
   normalized form and optimal to perform analysis and efficient saving the data. Data removal and compression must be
   done with: `retention` and `compression` policies.
