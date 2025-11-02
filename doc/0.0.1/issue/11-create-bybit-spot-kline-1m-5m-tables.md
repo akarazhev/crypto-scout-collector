@@ -23,7 +23,7 @@ Take the following roles:
 
 ## Tasks
 
-- As the `expert database engineer` review the current `init.sql` and `bybit_spot_tables.sql` script implementation in
+- As the `expert database engineer` review the current `bybit_spot_tables.sql` script implementation in
   `crypto-scout-collector-db` project and update it by defining the following tables: `bybit_spot_kline_1m`,
   `bybit_spot_kline_5m`.
 - As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be in
