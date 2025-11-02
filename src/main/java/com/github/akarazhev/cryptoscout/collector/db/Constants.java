@@ -80,6 +80,12 @@ public final class Constants {
         static final int SPOT_TICKERS_USD_INDEX_PRICE = 11;
 
         // Spot klines (confirmed): identical schema across intervals
+        static final String SPOT_KLINE_1M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_1m " +
+                "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String SPOT_KLINE_5M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_5m " +
+                "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
         static final String SPOT_KLINE_15M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_15m " +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
