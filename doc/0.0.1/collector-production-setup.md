@@ -51,6 +51,8 @@ backups.
     - `script/bybit_spot_tables.sql`: Bybit Spot tables and policies; compose mounts it as
       `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`:
         - `crypto_scout.bybit_spot_tickers` (spot tickers)
+        - `crypto_scout.bybit_spot_kline_1m` (confirmed klines 1m)
+        - `crypto_scout.bybit_spot_kline_5m` (confirmed klines 5m)
         - `crypto_scout.bybit_spot_kline_15m` (confirmed klines 15m)
         - `crypto_scout.bybit_spot_kline_60m` (confirmed klines 60m)
         - `crypto_scout.bybit_spot_kline_240m` (confirmed klines 240m)
