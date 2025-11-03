@@ -40,6 +40,8 @@ import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.ASK;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BID;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_CROSS_SEQUENCE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_ENGINE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_INSERT;
@@ -63,6 +65,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_TURNOVER;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_VOLUME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_CROSS_SEQUENCE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE;
@@ -365,12 +368,29 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return count;
     }
 
+    public int saveOrderBook1(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_1_INSERT);
+    }
+
+    public int saveOrderBook50(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_50_INSERT);
+    }
+
     public int saveOrderBook200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_200_INSERT);
+    }
+
+    public int saveOrderBook1000(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_1000_INSERT);
+    }
+
+    public int saveOrderBooks(final Iterable<Map<String, Object>> orderBooks, final long offset, final String insertSql)
+            throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
-            try (final var ps = c.prepareStatement(SPOT_ORDER_BOOK_200_INSERT);
+            try (final var ps = c.prepareStatement(insertSql);
                  final var psOffset = c.prepareStatement(UPSERT)) {
                 for (final var order : orderBooks) {
                     final var row = getRow(DATA, order);

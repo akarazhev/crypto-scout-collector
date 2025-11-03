@@ -57,7 +57,10 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_24
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_5;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_60;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_D;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_1;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_50;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_200;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_1000;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.PUBLIC_TRADE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.TICKERS;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
@@ -150,7 +153,10 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             final var spotKlines1d = new ArrayList<Map<String, Object>>();
             final var spotTickers = new ArrayList<Map<String, Object>>();
             final var spotPublicTrades = new ArrayList<Map<String, Object>>();
+            final var spotOrders1 = new ArrayList<Map<String, Object>>();
+            final var spotOrders50 = new ArrayList<Map<String, Object>>();
             final var spotOrders200 = new ArrayList<Map<String, Object>>();
+            final var spotOrders1000 = new ArrayList<Map<String, Object>>();
             for (final var msg : snapshot) {
                 final var payload = msg.payload();
                 final var source = payload.getSource();
@@ -185,9 +191,21 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                         spotTickers.add(data);
                     } else if (topic.contains(PUBLIC_TRADE)) {
                         spotPublicTrades.add(data);
+                    } else if (topic.contains(ORDER_BOOK_1)) {
+                        if (isOrderSnapshot(data)) {
+                            spotOrders1.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_50)) {
+                        if (isOrderSnapshot(data)) {
+                            spotOrders50.add(data);
+                        }
                     } else if (topic.contains(ORDER_BOOK_200)) {
                         if (isOrderSnapshot(data)) {
                             spotOrders200.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_1000)) {
+                        if (isOrderSnapshot(data)) {
+                            spotOrders1000.add(data);
                         }
                     }
                 } else if (Source.PML.equals(source)) {
@@ -214,7 +232,10 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 saveKline1d(spotKlines1d, maxOffset);
                 saveTicker(spotTickers, maxOffset);
                 savePublicTrade(spotPublicTrades, maxOffset);
+                saveOrderBook1(spotOrders1, maxOffset);
+                saveOrderBook50(spotOrders50, maxOffset);
                 saveOrderBook200(spotOrders200, maxOffset);
+                saveOrderBook1000(spotOrders1000, maxOffset);
             }
 
             return null;
@@ -302,11 +323,38 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         }
     }
 
+    private void saveOrderBook1(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot order books 1 (tx) and updated offset {}",
+                        bybitSpotRepository.saveOrderBook1(orderBooks, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveOrderBook50(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot order books 50 (tx) and updated offset {}",
+                        bybitSpotRepository.saveOrderBook50(orderBooks, maxOffset), maxOffset);
+            }
+        }
+    }
+
     private void saveOrderBook200(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 LOGGER.info("Inserted {} spot order books 200 (tx) and updated offset {}",
                         bybitSpotRepository.saveOrderBook200(orderBooks, maxOffset), maxOffset);
+            }
+        }
+    }
+
+    private void saveOrderBook1000(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                LOGGER.info("Inserted {} spot order books 1000 (tx) and updated offset {}",
+                        bybitSpotRepository.saveOrderBook1000(orderBooks, maxOffset), maxOffset);
             }
         }
     }

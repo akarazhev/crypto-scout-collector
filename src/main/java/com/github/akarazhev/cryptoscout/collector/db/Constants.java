@@ -127,7 +127,16 @@ public final class Constants {
         static final String BID = "bid";
 
         // Spot order book 200 (one row per level)
+        static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_1 " +
+                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_50 " +
+                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_200 " +
+                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+        static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_1000 " +
                 "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_ORDER_BOOK_200_SYMBOL = 1;
