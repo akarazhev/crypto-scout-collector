@@ -38,6 +38,8 @@ import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.ASK;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BID;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_CROSS_SEQUENCE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_ENGINE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_INSERT;
@@ -390,7 +392,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     for (final var bid : bids) {
                         ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
                         ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "bid");
+                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, BID);
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(bid.getFirst()));
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(bid.get(1)));
                         ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
@@ -405,7 +407,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     for (final var ask : asks) {
                         ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
                         ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "ask");
+                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, ASK);
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(ask.getFirst()));
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(ask.get(1)));
                         ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
