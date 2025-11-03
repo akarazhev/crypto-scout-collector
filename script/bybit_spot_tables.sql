@@ -255,7 +255,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_order_book_200 (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     engine_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    side TEXT NOT NULL CHECK (side IN ('Bid','Ask')),
+    side TEXT NOT NULL CHECK (side IN ('bid','ask')),
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
     update_id BIGINT NOT NULL,

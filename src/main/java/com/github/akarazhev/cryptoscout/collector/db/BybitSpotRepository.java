@@ -390,7 +390,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     for (final var bid : bids) {
                         ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
                         ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "Bid");
+                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "bid");
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(bid.getFirst()));
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(bid.get(1)));
                         ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
@@ -405,7 +405,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     for (final var ask : asks) {
                         ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
                         ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "Ask");
+                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, "ask");
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(ask.getFirst()));
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(ask.get(1)));
                         ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
