@@ -65,28 +65,59 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
         return Promise.complete();
     }
 
-    public int insertKlines60(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
-        // TODO:
+    public int saveKline1m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        return 0;
+
+    }
+
+    public int saveKline5m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         return 0;
     }
 
-    public int insertTickers(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
-        // TODO:
+    public int saveKline15m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         return 0;
     }
 
-    public int insertTrades(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
-        // TODO:
+    public int saveKline60m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         return 0;
     }
 
-    public int insertOrderBooks200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
-        // TODO:
+    public int saveKline240m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         return 0;
     }
 
-    public int insertAllLiquidations(final Iterable<Map<String, Object>> liquidations, final long offset) throws SQLException {
-        // TODO:
+    public int saveKline1d(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+        return 0;
+    }
+
+    public int saveTicker(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
+        return 0;
+    }
+
+    public int savePublicTrade(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
+        return 0;
+
+    }
+
+    public int saveOrderBook1(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        return 0;
+    }
+
+    public int saveOrderBook50(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        return 0;
+    }
+
+    public int saveOrderBook200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+        return 0;
+    }
+
+    public int saveOrderBook1000(final Iterable<Map<String, Object>> orderBooks, final long offset)
+            throws SQLException {
+        return 0;
+    }
+
+    public int saveAllLiquidation(final Iterable<Map<String, Object>> allLiquidations, final long offset)
+            throws SQLException {
         return 0;
     }
 
