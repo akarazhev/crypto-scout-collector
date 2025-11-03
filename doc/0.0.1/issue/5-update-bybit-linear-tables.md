@@ -1,8 +1,10 @@
-# Issue 5: Create bybit linear tables
+# Issue 5: Update bybit linear tables
 
-In this `crypto-scout-collector-db` project we are going to create the following bybit linear tables to save the data
-received from the Bybit websocket: `bybit_linear_kline_60m`, `bybit_linear_tickers`, `bybit_linear_public_trade`,
-`bybit_linear_order_book_200`, `bybit_linear_all_liqudation`. Table schemas must be in normalized form and optimal to
+In this `crypto-scout-collector-db` project we are going to check and update the following bybit linear tables to save
+the data received from the Bybit websocket: `bybit_linear_tickers`, `bybit_linear_kline_1m`, `bybit_linear_kline_5m`,
+`bybit_linear_kline_15m`, `bybit_linear_kline_60m`, `bybit_linear_kline_240m`, `bybit_linear_kline_1d`,
+`bybit_linear_public_trade`, `bybit_linear_order_book_1`, `bybit_linear_order_book_50`,`bybit_linear_order_book_200`,
+`bybit_linear_order_book_1000`, `bybit_linear_all_liqudation`. Table schemas must be in normalized form and optimal to
 perform analysis and efficient saving the data. Data removal and compression must be done with: `retention` and
 `compression` policies.
 
@@ -18,22 +20,16 @@ Take the following roles:
 - Use the best practices and design patterns.
 - Use the following technical stack: `timescale/timescaledb:latest-pg17`.
 - Use human-readable names for parameter names.
-- Normalize data schemas for optimal savings and analysts.
+- Be sure that all parameters are preset in the table schemas.
 - Do not hallucinate.
 
 ## Tasks
 
-- As the `expert database engineer` review the current script implementations: `init.sql`, `bybit_spot_tables.sql` in
-  `crypto-scout-collector-db` project and update it by defining the following tables: `bybit_linear_kline_60m`,
-  `bybit_linear_tickers`, `bybit_linear_public_trade`, `bybit_linear_order_book_200`, `bybit_linear_all_liqudation`.
-- As the `expert database engineer` define for tables indexes, retentions and compressions. Table schemas must be in
-  normalized form and optimal to perform analysis and efficient saving the data. Data removal and compression must be
-  done with: `retention` and `compression` policies.
+- As the `expert database engineer` review the current script implementations: `init.sql`, `bybit_linear_tables.sql` in
+  `crypto-scout-collector-db` project and update it by adding missing parameters for defined tables.
 - As the `expert database engineer` recheck your proposal and make sure that they are correct and haven't missed any
   important points.
 - As the `expert database engineer` rely on the definition of the data section.
-- As the technical writer update the `README.md` and `collector-production-setup.md` files with your results.
-- As the technical writer update the `5-create-bybit-linear-tables.md` file with your resolution.
 
 ## Definition of the data
 
@@ -43,7 +39,7 @@ The `kline` data received from the Bybit websocket is the following:
 
 ```json
 {
-  "topic": "kline.60.BTCUSDT",
+  "topic": "kline.15.BTCUSDT",
   "data": [
     {
       "start": 1761670800000,
@@ -89,6 +85,7 @@ The `kline` data received from the Bybit websocket is the following:
 
 Parameters to save:
 
+- `ts`: number. The timestamp (ms) that the system generates the data.
 - `symbol`: string. Example: `ETHUSDT`.
 - `start`: number. The start timestamp (ms).
 - `end`: number. The end timestamp (ms).
@@ -98,9 +95,15 @@ Parameters to save:
 - `low`: string. Lowest price.
 - `volume`: string. Trade volume.
 - `turnover`: string. Turnover.
-- `timestamp`: number. The timestamp (ms) of the last matched order in the candle.
 
-The `kline` data must be saved in the following table: `bybit_linear_kline_60m`. Only confirmed klines must be saved.
+The `kline` data must be saved in the following tables:
+
+- `bybit_linear_kline_15m` - to save `15m interval` data.
+- `bybit_linear_kline_60m` - to save `60m interval` data.
+- `bybit_linear_kline_240m` - to save `240m interval` data.
+- `bybit_linear_kline_1d` - to save `1d interval` data.
+
+Only confirmed klines must be saved.
 
 ### Bybit linear public trade data
 
@@ -1080,7 +1083,8 @@ Parameters to save:
 - `cts`: number. The timestamp from the matching engine when this orderbook data is produced. It can be correlated with
   `T` from public trade channel.
 
-The `order book` data must be saved in normalized form in the following table: `bybit_linear_order_book_200`.
+The `order book` data must be saved in normalized form in the following table: `bybit_linear_order_book_1`, 
+`bybit_linear_order_book_50`, `bybit_linear_order_book_200`, `bybit_linear_order_book_1000`.
 
 ### Bybit linear all liquidation data
 
@@ -1113,18 +1117,3 @@ Parameters to save:
 - `p`: string. Bankruptcy price.
 
 The `all liquidation` data must be saved in normalized form in the following table: `bybit_linear_all_liqudation`.
-
-## Resolution
-
-- **[SQL]** Added `script/bybit_linear_tables.sql` with hypertables:
-  - `crypto_scout.bybit_linear_kline_60m` (confirmed candles only)
-  - `crypto_scout.bybit_linear_tickers`
-  - `crypto_scout.bybit_linear_public_trade`
-  - `crypto_scout.bybit_linear_order_book_200`
-  - `crypto_scout.bybit_linear_all_liqudation`
-- **[Indexes]** Time-desc and `(symbol, time)` indexes where applicable.
-- **[Hypertables]** 1-day chunks on the time column.
-- **[Compression]** Enabled with segment-by symbol (and side where relevant) and time-desc order-by.
-- **[Retention]** Klines 730d; Tickers/Trades 180d; OrderBook 7d; Liquidations 730d.
-- **[Compose]** Mounted the script as `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql` in `podman-compose.yml`.
-- **[Docs]** Updated `README.md` and `collector-production-setup.md` to reference the new script and tables.
