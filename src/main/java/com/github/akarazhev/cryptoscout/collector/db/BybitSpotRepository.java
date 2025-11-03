@@ -384,7 +384,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_1000_INSERT);
     }
 
-    public int saveOrderBooks(final Iterable<Map<String, Object>> orderBooks, final long offset, final String insertSql)
+    private int saveOrderBooks(final Iterable<Map<String, Object>> orderBooks, final long offset, final String insertSql)
             throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
