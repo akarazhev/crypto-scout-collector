@@ -19,6 +19,61 @@ final class BybitSpotRepositoryTest {
 
     @Test
     public void shouldSaveKline1m() {
-        System.out.println("s");
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveKline5m() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveKline15m() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveKline60m() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveKline240m() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveKline1d() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveTicker() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSavePublicTrade() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveOrderBook1() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveOrderBook50() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveOrderBook200() {
+        // TODO: implement it
+    }
+
+    @Test
+    public void shouldSaveOrderBook1000() {
+        // TODO: implement it
     }
 }
