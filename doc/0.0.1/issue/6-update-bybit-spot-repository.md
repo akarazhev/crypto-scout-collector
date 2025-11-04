@@ -22,8 +22,8 @@ Take the following roles:
 
 - Use samples in the `Sample` section and `definition` of the data section.
 - Use the best practices and design patterns.
-- Use the current technology stack: - Use the current technological stack, that's: `ActiveJ 6.0`, `Java 25`,
-  `maven 3.9.1`, `podman 5.6.2`, `podman-compose 1.5.0`, `timescale/timescaledb:latest-pg17`.
+- Use the current technological stack, that's: `ActiveJ 6.0`, `Java 25`, `maven 3.9.1`, `podman 5.6.2`, 
+  `podman-compose 1.5.0`, `timescale/timescaledb:latest-pg17`.
 - Implementation must be production ready and to be optimized to process a lot of the data.
 - Do not hallucinate.
 
