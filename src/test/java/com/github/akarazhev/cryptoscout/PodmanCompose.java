@@ -19,7 +19,6 @@ public final class PodmanCompose {
     private static final String COMPOSE_FILE_NAME = "podman-compose.yml";
     private static final Path COMPOSE_DIR;
     private static final String DB_CONTAINER_NAME = "crypto-scout-collector-db";
-    private static final String NETWORK_NAME = System.getProperty("podman.network", "crypto-scout-bridge");
     private static final String JDBC_URL = System.getProperty("test.db.jdbc.url", "jdbc:postgresql://localhost:5432/crypto_scout");
     private static final String DB_USER = System.getProperty("test.db.user", "crypto_scout_db");
     private static final String DB_PASSWORD = System.getProperty("test.db.password", "crypto_scout_db");
@@ -54,7 +53,6 @@ public final class PodmanCompose {
 
     public static void up() {
         // Start containers
-        //TODO: ensureNetwork();
         runCommand(COMPOSE_DIR, UP_TIMEOUT, PODMAN_COMPOSE_CMD, "-f", COMPOSE_FILE_NAME, "up", "-d");
         // Wait for DB readiness
         waitForDatabaseReady(UP_TIMEOUT);
@@ -124,15 +122,6 @@ public final class PodmanCompose {
         // best-effort to show output on success in debug scenarios
         if (!output.isEmpty()) {
             System.out.println(output);
-        }
-    }
-
-    private static void ensureNetwork() {
-        try {
-            runCommand(COMPOSE_DIR, Duration.ofSeconds(15), PODMAN_CMD, "network", "inspect", NETWORK_NAME);
-        } catch (IllegalStateException e) {
-            // Not found, try to create
-            runCommand(COMPOSE_DIR, Duration.ofSeconds(30), PODMAN_CMD, "network", "create", NETWORK_NAME);
         }
     }
 
