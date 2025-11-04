@@ -1,5 +1,6 @@
 package com.github.akarazhev.cryptoscout.collector.db;
 
+import com.github.akarazhev.cryptoscout.BybitMockData;
 import com.github.akarazhev.cryptoscout.PodmanCompose;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,7 +19,8 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    public void shouldSaveKline1m() {
+    public void shouldSaveKline1m() throws Exception {
+        final var kline1m = BybitMockData.get(BybitMockData.DataType.KLINE_1);
         // TODO: implement it
     }
 

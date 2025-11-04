@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public final class PodmanCompose {
     private static final String PODMAN_COMPOSE_CMD = System.getProperty("podman.compose.cmd", "podman-compose");
     private static final String PODMAN_CMD = System.getProperty("podman.cmd", "podman");
-    private static final String COMPOSE_FILE_NAME = "podman/podman-compose.yml";
+    private static final String COMPOSE_FILE_NAME = "podman-compose.yml";
     private static final Path COMPOSE_DIR;
     private static final String DB_CONTAINER_NAME = "crypto-scout-collector-db";
     private static final String JDBC_URL =
