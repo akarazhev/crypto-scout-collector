@@ -9,7 +9,22 @@ import java.util.Map;
 public final class BybitMockData {
 
     public enum DataType {
-        KLINE_1("kline.1");
+        // Klines
+        KLINE_1("kline.1"),
+        KLINE_5("kline.5"),
+        KLINE_15("kline.15"),
+        KLINE_60("kline.60"),
+        KLINE_240("kline.240"),
+        KLINE_D("kline.D"),
+        // Ticker
+        TICKERS("tickers"),
+        // Public trade
+        PUBLIC_TRADE("publicTrade"),
+        // Order books
+        ORDER_BOOK_1("orderbook.1"),
+        ORDER_BOOK_50("orderbook.50"),
+        ORDER_BOOK_200("orderbook.200"),
+        ORDER_BOOK_1000("orderbook.1000");
 
         private final String type;
 

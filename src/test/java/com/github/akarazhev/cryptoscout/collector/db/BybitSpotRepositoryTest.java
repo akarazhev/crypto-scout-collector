@@ -20,62 +20,73 @@ final class BybitSpotRepositoryTest {
 
     @Test
     public void shouldSaveKline1m() throws Exception {
-        final var kline1m = BybitMockData.get(BybitMockData.DataType.KLINE_1);
+        final var data = BybitMockData.get(BybitMockData.DataType.KLINE_1);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveKline5m() {
+    public void shouldSaveKline5m() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.KLINE_5);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveKline15m() {
+    public void shouldSaveKline15m() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.KLINE_15);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveKline60m() {
+    public void shouldSaveKline60m() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.KLINE_60);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveKline240m() {
+    public void shouldSaveKline240m() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.KLINE_240);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveKline1d() {
+    public void shouldSaveKline1d() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.KLINE_D);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveTicker() {
+    public void shouldSaveTicker() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.TICKERS);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSavePublicTrade() {
+    public void shouldSavePublicTrade() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.PUBLIC_TRADE);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveOrderBook1() {
+    public void shouldSaveOrderBook1() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.ORDER_BOOK_1);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveOrderBook50() {
+    public void shouldSaveOrderBook50() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.ORDER_BOOK_50);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveOrderBook200() {
+    public void shouldSaveOrderBook200() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.ORDER_BOOK_200);
         // TODO: implement it
     }
 
     @Test
-    public void shouldSaveOrderBook1000() {
+    public void shouldSaveOrderBook1000() throws Exception {
+        final var data = BybitMockData.get(BybitMockData.DataType.ORDER_BOOK_1000);
         // TODO: implement it
     }
 }
