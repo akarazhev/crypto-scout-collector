@@ -13,9 +13,9 @@ Take the following roles:
 
 - Use the best practices and design patterns.
 - Use the current technological stack, that's: `ActiveJ 6.0`, `Java 25`, `maven 3.9.1`, `podman 5.6.2`,
-  `podman-compose 1.5.0`, `timescale/timescaledb:latest-pg17`.
-- Rely on the `sample` section. Keep implementation of `PodmanCompose.up()` and `PodmanCompose.down()` to use
-  `PodmanCompose` service.
+  `podman-compose 1.5.0`, `timescale/timescaledb:latest-pg17`, `JUnit 5.13.4`.
+- Rely on the `sample` section. Use implementation of the `PodmanCompose` service to manage containers and the
+  `BybitMockData` util to get mock data.
 - Implementation must be production ready.
 - Do not hallucinate.
 
