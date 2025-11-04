@@ -1,4 +1,4 @@
-_# Issue 12: Implement `PodmanCompose` service
+# Issue 12: Implement `PodmanCompose` service
 
 In this `crypto-scout-collector` project we are going to implement the `com.github.akarazhev.cryptoscout.PodmanCompose`
 service by finishing it.
