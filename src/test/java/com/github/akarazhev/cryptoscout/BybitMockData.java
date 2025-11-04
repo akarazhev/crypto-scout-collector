@@ -11,11 +11,14 @@ public final class BybitMockData {
     public enum DataType {
         KLINE_1("kline.1");
 
+        private final String type;
+
         DataType(final String type) {
+            this.type = type;
         }
 
         public String getPath() {
-            return "bybit-data/" + this.name().toLowerCase() + ".json";
+            return "bybit-data/" + type + ".json";
         }
     }
 
