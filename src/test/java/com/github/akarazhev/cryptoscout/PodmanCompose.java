@@ -16,15 +16,19 @@ import java.util.concurrent.TimeUnit;
 public final class PodmanCompose {
     private static final String PODMAN_COMPOSE_CMD = System.getProperty("podman.compose.cmd", "podman-compose");
     private static final String PODMAN_CMD = System.getProperty("podman.cmd", "podman");
-    private static final String COMPOSE_FILE_NAME = "podman-compose.yml";
+    private static final String COMPOSE_FILE_NAME = "podman/podman-compose.yml";
     private static final Path COMPOSE_DIR;
     private static final String DB_CONTAINER_NAME = "crypto-scout-collector-db";
-    private static final String JDBC_URL = System.getProperty("test.db.jdbc.url", "jdbc:postgresql://localhost:5432/crypto_scout");
+    private static final String JDBC_URL =
+            System.getProperty("test.db.jdbc.url", "jdbc:postgresql://localhost:5432/crypto_scout");
     private static final String DB_USER = System.getProperty("test.db.user", "crypto_scout_db");
     private static final String DB_PASSWORD = System.getProperty("test.db.password", "crypto_scout_db");
-    private static final Duration UP_TIMEOUT = Duration.ofMinutes(Long.getLong("podman.compose.up.timeout.min", 3L));
-    private static final Duration DOWN_TIMEOUT = Duration.ofMinutes(Long.getLong("podman.compose.down.timeout.min", 1L));
-    private static final Duration READY_RETRY_INTERVAL = Duration.ofSeconds(Long.getLong("podman.compose.ready.interval.sec", 2L));
+    private static final Duration UP_TIMEOUT =
+            Duration.ofMinutes(Long.getLong("podman.compose.up.timeout.min", 3L));
+    private static final Duration DOWN_TIMEOUT =
+            Duration.ofMinutes(Long.getLong("podman.compose.down.timeout.min", 1L));
+    private static final Duration READY_RETRY_INTERVAL =
+            Duration.ofSeconds(Long.getLong("podman.compose.ready.interval.sec", 2L));
 
     static {
         final var resourceUrl = PodmanCompose.class.getClassLoader().getResource(COMPOSE_FILE_NAME);
