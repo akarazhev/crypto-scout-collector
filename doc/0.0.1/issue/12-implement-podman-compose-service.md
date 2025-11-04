@@ -24,4 +24,4 @@ Take the following roles:
   project and update it by implementing the following methods: `up`, `down`. These methods should wait until the 
   containers are up and running or down.
 - As the `expert java engineer` recheck your proposal and make sure that they are correct and haven't missed any
-  important points._
+  important points.
