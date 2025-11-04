@@ -41,6 +41,7 @@
         <stream-client.version>1.2.0</stream-client.version>
         <postgresql.version>42.7.8</postgresql.version>
         <hikari.version>7.0.2</hikari.version>
+        <junit-jupiter.version>5.13.4</junit-jupiter.version>
     </properties>
     <dependencies>
         <dependency>
@@ -83,6 +84,14 @@
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>${hikari.version}</version>
+        </dependency>
+        <!-- Test dependencies -->
+        <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
