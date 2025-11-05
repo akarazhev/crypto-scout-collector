@@ -24,7 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector.db;
 
-import com.github.akarazhev.cryptoscout.test.BybitMockData;
+import com.github.akarazhev.cryptoscout.test.MockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
 import org.junit.jupiter.api.AfterAll;
@@ -78,56 +78,56 @@ final class BybitLinearRepositoryTest {
 
     @Test
     void shouldSaveKline1m() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.KLINE_1);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
         assertEquals(1, repository.saveKline1m(List.of(data), 100L));
         assertTableCount(BYBIT_LINEAR_KLINE_1M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline5m() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.KLINE_5);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
         assertEquals(1, repository.saveKline5m(List.of(data), 200L));
         assertTableCount(BYBIT_LINEAR_KLINE_5M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline15m() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.KLINE_15);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
         assertEquals(1, repository.saveKline15m(List.of(data), 300L));
         assertTableCount(BYBIT_LINEAR_KLINE_15M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline60m() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.KLINE_60);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
         assertEquals(1, repository.saveKline60m(List.of(data), 400L));
         assertTableCount(BYBIT_LINEAR_KLINE_60M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline240m() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.KLINE_240);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
         assertEquals(1, repository.saveKline240m(List.of(data), 500L));
         assertTableCount(BYBIT_LINEAR_KLINE_240M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline1d() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.KLINE_D);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
         assertEquals(1, repository.saveKline1d(List.of(data), 600L));
         assertTableCount(BYBIT_LINEAR_KLINE_1D_TABLE, 1);
     }
 
     @Test
     void shouldSaveTicker() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.TICKERS);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
         assertEquals(1, repository.saveTicker(List.of(data), 700L));
         assertTableCount(BYBIT_LINEAR_TICKERS_TABLE, 1);
     }
 
     @Test
     void shouldSavePublicTrade() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.PUBLIC_TRADE);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.PUBLIC_TRADE);
         final var expected = getPublicTradeCount(data);
         assertEquals(expected, repository.savePublicTrade(List.of(data), 800L));
         assertTableCount(BYBIT_LINEAR_PUBLIC_TRADE_TABLE, expected);
@@ -135,7 +135,7 @@ final class BybitLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook1() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.ORDER_BOOK_1);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(data);
         assertEquals(expected, repository.saveOrderBook1(List.of(data), 900L));
         assertTableCount(BYBIT_LINEAR_ORDER_BOOK_1_TABLE, expected);
@@ -143,7 +143,7 @@ final class BybitLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook50() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.ORDER_BOOK_50);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(data);
         assertEquals(expected, repository.saveOrderBook50(List.of(data), 1000L));
         assertTableCount(BYBIT_LINEAR_ORDER_BOOK_50_TABLE, expected);
@@ -151,7 +151,7 @@ final class BybitLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook200() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.ORDER_BOOK_200);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(data);
         assertEquals(expected, repository.saveOrderBook200(List.of(data), 1100L));
         assertTableCount(BYBIT_LINEAR_ORDER_BOOK_200_TABLE, expected);
@@ -159,7 +159,7 @@ final class BybitLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook1000() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.ORDER_BOOK_1000);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1000);
         final var expected = getOrderBookLevelsCount(data);
         assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1200L));
         assertTableCount(BYBIT_LINEAR_ORDER_BOOK_1000_TABLE, expected);
@@ -167,7 +167,7 @@ final class BybitLinearRepositoryTest {
 
     @Test
     void shouldSaveAllLiquidation() throws Exception {
-        final var data = BybitMockData.get(BybitMockData.Source.LINEAR, BybitMockData.Type.ALL_LIQUIDATION);
+        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ALL_LIQUIDATION);
         assertEquals(1, repository.saveAllLiquidation(List.of(data), 1300L));
         assertTableCount(BYBIT_LINEAR_ALL_LIQUIDATION_TABLE, 1);
     }
