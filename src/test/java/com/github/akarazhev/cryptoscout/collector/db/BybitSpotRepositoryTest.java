@@ -24,7 +24,6 @@
 
 package com.github.akarazhev.cryptoscout.collector.db;
 
-import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import com.github.akarazhev.cryptoscout.test.BybitMockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
@@ -32,10 +31,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -51,11 +47,10 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBI
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_50_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_TICKERS_TABLE;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.B;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
+import static com.github.akarazhev.cryptoscout.collector.db.DbTestUtils.assertTableCount;
+import static com.github.akarazhev.cryptoscout.collector.db.DbTestUtils.getOrderBookLevelsCount;
+import static com.github.akarazhev.cryptoscout.collector.db.DbTestUtils.getPublicTradeCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class BybitSpotRepositoryTest {
     private static ExecutorService executor;
@@ -167,32 +162,5 @@ final class BybitSpotRepositoryTest {
         final var expected = getOrderBookLevelsCount(data);
         assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1200L));
         assertTableCount(BYBIT_SPOT_ORDER_BOOK_1000_TABLE, expected);
-    }
-
-    private int getPublicTradeCount(final Map<String, Object> payload) {
-        @SuppressWarnings("unchecked") final var rows = (List<Map<String, Object>>) payload.get(DATA);
-        return rows == null ? 0 : rows.size();
-    }
-
-    private int getOrderBookLevelsCount(final Map<String, Object> payload) {
-        @SuppressWarnings("unchecked") final var row = (Map<String, Object>) payload.get(DATA);
-        if (row == null) {
-            return 0;
-        }
-
-        @SuppressWarnings("unchecked") final var bids = (List<List<String>>) row.get(B);
-        final var b = bids == null ? 0 : bids.size();
-        @SuppressWarnings("unchecked") final var asks = (List<List<String>>) row.get(A);
-        final var a = asks == null ? 0 : asks.size();
-        assertTrue(b > 0 || a > 0, "Orderbook should contain bids or asks");
-        return b + a;
-    }
-
-    private void assertTableCount(final String table, final long expected) throws SQLException {
-        try (final var c = DriverManager.getConnection(JdbcConfig.getUrl(), JdbcConfig.getUsername(), JdbcConfig.getPassword());
-             final var rs = c.createStatement().executeQuery("SELECT COUNT(*) FROM " + table)) {
-            assertTrue(rs.next());
-            assertEquals(expected, rs.getLong(1), "Unexpected row count for table: " + table);
-        }
     }
 }
