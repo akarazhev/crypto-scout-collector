@@ -33,6 +33,91 @@ Take the following roles:
 
 ## Definition of the data
 
+### Bybit linear tickers data
+
+The `ticker` data received from the Bybit websocket is the following:
+
+```json
+{
+  "topic": "tickers.BTCUSDT",
+  "type": "snapshot",
+  "data": {
+    "symbol": "BTCUSDT",
+    "tickDirection": "ZeroMinusTick",
+    "price24hPcnt": "-0.024473",
+    "lastPrice": "117497.80",
+    "prevPrice24h": "120445.50",
+    "highPrice24h": "122490.00",
+    "lowPrice24h": "117449.40",
+    "prevPrice1h": "118019.70",
+    "markPrice": "117491.30",
+    "indexPrice": "117550.76",
+    "openInterest": "70964.254",
+    "openInterestValue": "8337682455.99",
+    "turnover24h": "11696251845.9320",
+    "volume24h": "97432.6430",
+    "nextFundingTime": "1760140800000",
+    "fundingRate": "0.0001",
+    "bid1Price": "117497.80",
+    "bid1Size": "5.815",
+    "ask1Price": "117497.90",
+    "ask1Size": "12.156",
+    "preOpenPrice": "",
+    "preQty": "",
+    "curPreListingPhase": ""
+  },
+  "cs": 462754208618,
+  "ts": 1760121135490
+}
+```
+
+Parameters to save:
+
+- `topic`: string. Topic name.
+- `type`: string. Data type. snapshot,delta.
+- `cs`: integer. Cross sequence.
+- `ts`: number. The timestamp (ms) that the system generates the data.
+- `data`: array. Object.
+- `symbol`: string. Symbol name.
+- `tickDirection`: string. Tick direction.
+- `price24hPcnt`: string. Percentage change of market price in the last 24 hours.
+- `lastPrice`: string. Last price.
+- `prevPrice24h`: string. Market price 24 hours ago.
+- `highPrice24h`: string. The highest price in the last 24 hours.
+- `lowPrice24h`: string. The lowest price in the last 24 hours.
+- `prevPrice1h`: string. Market price an hour ago.
+- `markPrice`: string. Mark price.
+- `indexPrice`: string. Index price.
+- `openInterest`: string. Open interest size.
+- `openInterestValue`: string. Open interest value.
+- `turnover24h`: string. Turnover for 24h.
+- `volume24h`: string. Volume for 24h.
+- `nextFundingTime`: string. Next funding timestamp (ms).
+- `fundingRate`: string. Funding rate.
+- `bid1Price`: string. Best bid price.
+- `bid1Size`: string. Best bid size.
+- `ask1Price`: string. Best ask price.
+- `ask1Size`: string. Best ask size.
+- `deliveryTime`: datetime. Delivery date time (UTC+0), applicable to expired futures only.
+- `basisRate`: string. Basis rate. Unique field for inverse futures & USDT/USDC futures.
+- `deliveryFeeRate`: string. Delivery fee rate. Unique field for inverse futures & USDT/USDC futures.
+- `predictedDeliveryPrice`: string. Predicated delivery price. Unique field for inverse futures & USDT/USDC futures.
+- `preOpenPrice`: string. Estimated pre-market contract open price: 
+  - The value is meaningless when entering continuous trading phase 
+  - USDC Futures and Inverse Futures do not have this field
+- `preQty`: string. Estimated pre-market contract open qty:
+  - The value is meaningless when entering continuous trading phase
+  - USDC Futures and Inverse Futures do not have this field
+- `curPreListingPhase`: string. The current pre-market contract phase: 
+  - USDC Futures and Inverse Futures do not have this field.
+- `fundingIntervalHour`: string. Funding interval hour
+  - This value currently only supports whole hours
+  - Only for Perpetual,For Futures,this field will not return
+- `fundingCap`: string. Funding rate upper and lower limits
+  - Only for Perpetual,For Futures,this field will not return.
+- `basisRateYear`: string. Annual basis rate
+  - Only for Futures,For Perpetual,this field will not return.
+
 ### Bybit linear klines data
 
 The `kline` data received from the Bybit websocket is the following:
@@ -1083,7 +1168,7 @@ Parameters to save:
 - `cts`: number. The timestamp from the matching engine when this orderbook data is produced. It can be correlated with
   `T` from public trade channel.
 
-The `order book` data must be saved in normalized form in the following table: `bybit_linear_order_book_1`, 
+The `order book` data must be saved in normalized form in the following table: `bybit_linear_order_book_1`,
 `bybit_linear_order_book_50`, `bybit_linear_order_book_200`, `bybit_linear_order_book_1000`.
 
 ### Bybit linear all liquidation data
