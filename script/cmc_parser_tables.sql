@@ -15,8 +15,8 @@ create TABLE IF NOT EXISTS crypto_scout.cmc_fgi (
     score INTEGER NOT NULL,
     name TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    btc_price NUMERIC(20, 2) NOT NULL,
-    btc_volume NUMERIC(20, 2) NOT NULL,
+    btc_price NUMERIC(20, 8) NOT NULL,
+    btc_volume NUMERIC(20, 8) NOT NULL,
     CONSTRAINT fgi_pkey PRIMARY KEY (id, timestamp)
 );
 

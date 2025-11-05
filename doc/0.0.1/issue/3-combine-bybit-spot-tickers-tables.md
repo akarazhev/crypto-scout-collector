@@ -75,14 +75,14 @@ Take the following roles:
     - `symbol TEXT NOT NULL` (e.g., `BTCUSDT`, `ETHUSDT`)
     - `timestamp TIMESTAMPTZ NOT NULL`
     - `cross_sequence BIGINT NOT NULL`
-    - `last_price NUMERIC(20, 2) NOT NULL`
-    - `high_price_24h NUMERIC(20, 2) NOT NULL`
-    - `low_price_24h NUMERIC(20, 2) NOT NULL`
-    - `prev_price_24h NUMERIC(20, 2) NOT NULL`
+    - `last_price NUMERIC(20, 8) NOT NULL`
+    - `high_price_24h NUMERIC(20, 8) NOT NULL`
+    - `low_price_24h NUMERIC(20, 8) NOT NULL`
+    - `prev_price_24h NUMERIC(20, 8) NOT NULL`
     - `volume_24h NUMERIC(20, 8) NOT NULL`
-    - `turnover_24h NUMERIC(20, 4) NOT NULL`
-    - `price_24h_pcnt NUMERIC(10, 4) NOT NULL`
-    - `usd_index_price NUMERIC(20, 6)`
+    - `turnover_24h NUMERIC(20, 8) NOT NULL`
+    - `price_24h_pcnt NUMERIC(3, 4) NOT NULL`
+    - `usd_index_price NUMERIC(20, 8)`
 - **Primary key**: `(id, timestamp)`
 - **Hypertable**: partitioned by `timestamp` with 1-day chunks
 
