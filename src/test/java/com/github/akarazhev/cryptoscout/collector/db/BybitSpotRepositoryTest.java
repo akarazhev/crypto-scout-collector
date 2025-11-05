@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector.db;
 
+import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import com.github.akarazhev.cryptoscout.test.BybitMockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
@@ -32,11 +33,27 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_15M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_1M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_240M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_5M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_60M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_1000_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_1_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_200_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_50_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_PUBLIC_TRADE_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_TICKERS_TABLE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.B;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -49,11 +66,6 @@ final class BybitSpotRepositoryTest {
     @BeforeAll
     static void setup() {
         PodmanCompose.up();
-        // Ensure JDBC settings match test DB compose
-        System.setProperty("jdbc.datasource.url", "jdbc:postgresql://localhost:5432/crypto_scout");
-        System.setProperty("jdbc.datasource.username", "crypto_scout_db");
-        System.setProperty("jdbc.datasource.password", "crypto_scout_db");
-
         executor = Executors.newVirtualThreadPerTaskExecutor();
         reactor = Eventloop.builder().withCurrentThread().build();
         dataSource = CollectorDataSource.create(reactor, executor);
@@ -62,139 +74,125 @@ final class BybitSpotRepositoryTest {
 
     @AfterAll
     static void cleanup() {
-        PodmanCompose.down();
         reactor.post(() -> dataSource.stop().whenComplete(() -> reactor.breakEventloop()));
         reactor.run();
         executor.shutdown();
+        PodmanCompose.down();
     }
 
     @Test
     void shouldSaveKline1m() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.KLINE_1);
-        final var count = repository.saveKline1m(List.of(data), 100L);
-        assertEquals(1, count);
-        assertTableCount("crypto_scout.bybit_spot_kline_1m", 1);
+        assertEquals(1, repository.saveKline1m(List.of(data), 100L));
+        assertTableCount(BYBIT_SPOT_KLINE_1M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline5m() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.KLINE_5);
-        final var count = repository.saveKline5m(List.of(data), 200L);
-        assertEquals(1, count);
-        assertTableCount("crypto_scout.bybit_spot_kline_5m", 1);
+        assertEquals(1, repository.saveKline5m(List.of(data), 200L));
+        assertTableCount(BYBIT_SPOT_KLINE_5M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline15m() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.KLINE_15);
-        final var count = repository.saveKline15m(List.of(data), 300L);
-        assertEquals(1, count);
-        assertTableCount("crypto_scout.bybit_spot_kline_15m", 1);
+        assertEquals(1, repository.saveKline15m(List.of(data), 300L));
+        assertTableCount(BYBIT_SPOT_KLINE_15M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline60m() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.KLINE_60);
-        final var count = repository.saveKline60m(List.of(data), 400L);
-        assertEquals(1, count);
-        assertTableCount("crypto_scout.bybit_spot_kline_60m", 1);
+        assertEquals(1, repository.saveKline60m(List.of(data), 400L));
+        assertTableCount(BYBIT_SPOT_KLINE_60M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline240m() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.KLINE_240);
-        final var count = repository.saveKline240m(List.of(data), 500L);
-        assertEquals(1, count);
-        assertTableCount("crypto_scout.bybit_spot_kline_240m", 1);
+        assertEquals(1, repository.saveKline240m(List.of(data), 500L));
+        assertTableCount(BYBIT_SPOT_KLINE_240M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline1d() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.KLINE_D);
-        final var count = repository.saveKline1d(List.of(data), 600L);
-        assertEquals(1, count);
-        assertTableCount("crypto_scout.bybit_spot_kline_1d", 1);
+        assertEquals(1, repository.saveKline1d(List.of(data), 600L));
+        assertTableCount(BYBIT_SPOT_KLINE_1D_TABLE, 1);
     }
 
     @Test
     void shouldSaveTicker() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.TICKERS);
-        final var count = repository.saveTicker(List.of(data), 700L);
-        assertEquals(1, count);
-        assertTableCount("crypto_scout.bybit_spot_tickers", 1);
+        assertEquals(1, repository.saveTicker(List.of(data), 700L));
+        assertTableCount(BYBIT_SPOT_TICKERS_TABLE, 1);
     }
 
     @Test
     void shouldSavePublicTrade() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.PUBLIC_TRADE);
         final var expected = getPublicTradeCount(data);
-        final var count = repository.savePublicTrade(List.of(data), 800L);
-        assertEquals(expected, count);
-        assertTableCount("crypto_scout.bybit_spot_public_trade", expected);
+        assertEquals(expected, repository.savePublicTrade(List.of(data), 800L));
+        assertTableCount(BYBIT_SPOT_PUBLIC_TRADE_TABLE, expected);
     }
 
     @Test
     void shouldSaveOrderBook1() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(data);
-        final var count = repository.saveOrderBook1(List.of(data), 900L);
-        assertEquals(expected, count);
-        assertTableCount("crypto_scout.bybit_spot_order_book_1", expected);
+        assertEquals(expected, repository.saveOrderBook1(List.of(data), 900L));
+        assertTableCount(BYBIT_SPOT_ORDER_BOOK_1_TABLE, expected);
     }
 
     @Test
     void shouldSaveOrderBook50() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(data);
-        final var count = repository.saveOrderBook50(List.of(data), 1000L);
-        assertEquals(expected, count);
-        assertTableCount("crypto_scout.bybit_spot_order_book_50", expected);
+        assertEquals(expected, repository.saveOrderBook50(List.of(data), 1000L));
+        assertTableCount(BYBIT_SPOT_ORDER_BOOK_50_TABLE, expected);
     }
 
     @Test
     void shouldSaveOrderBook200() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(data);
-        final var count = repository.saveOrderBook200(List.of(data), 1100L);
-        assertEquals(expected, count);
-        assertTableCount("crypto_scout.bybit_spot_order_book_200", expected);
+        assertEquals(expected, repository.saveOrderBook200(List.of(data), 1100L));
+        assertTableCount(BYBIT_SPOT_ORDER_BOOK_200_TABLE, expected);
     }
 
     @Test
     void shouldSaveOrderBook1000() throws Exception {
         final var data = BybitMockData.get(BybitMockData.Source.SPOT, BybitMockData.Type.ORDER_BOOK_1000);
         final var expected = getOrderBookLevelsCount(data);
-        final var count = repository.saveOrderBook1000(List.of(data), 1200L);
-        assertEquals(expected, count);
-        assertTableCount("crypto_scout.bybit_spot_order_book_1000", expected);
+        assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1200L));
+        assertTableCount(BYBIT_SPOT_ORDER_BOOK_1000_TABLE, expected);
     }
 
     private int getPublicTradeCount(final Map<String, Object> payload) {
-        @SuppressWarnings("unchecked") final var rows = (List<Map<String, Object>>) payload.get("data");
+        @SuppressWarnings("unchecked") final var rows = (List<Map<String, Object>>) payload.get(DATA);
         return rows == null ? 0 : rows.size();
     }
 
     private int getOrderBookLevelsCount(final Map<String, Object> payload) {
-        @SuppressWarnings("unchecked") final var row = (Map<String, Object>) payload.get("data");
-        if (row == null) return 0;
-        @SuppressWarnings("unchecked") final var bids = (List<List<String>>) row.get("b");
+        @SuppressWarnings("unchecked") final var row = (Map<String, Object>) payload.get(DATA);
+        if (row == null) {
+            return 0;
+        }
+
+        @SuppressWarnings("unchecked") final var bids = (List<List<String>>) row.get(B);
         final var b = bids == null ? 0 : bids.size();
-        @SuppressWarnings("unchecked") final var asks = (List<List<String>>) row.get("b");
+        @SuppressWarnings("unchecked") final var asks = (List<List<String>>) row.get(A);
         final var a = asks == null ? 0 : asks.size();
         assertTrue(b > 0 || a > 0, "Orderbook should contain bids or asks");
         return b + a;
     }
 
-    private void assertTableCount(final String table, final long expected) throws Exception {
-        final var url = System.getProperty("jdbc.datasource.url", "jdbc:postgresql://localhost:5432/crypto_scout");
-        final var user = System.getProperty("jdbc.datasource.username", "crypto_scout_db");
-        final var pass = System.getProperty("jdbc.datasource.password", "crypto_scout_db");
-        try (final var c = DriverManager.getConnection(url, user, pass);
-             final var st = c.createStatement();
-             final var rs = st.executeQuery("SELECT COUNT(*) FROM " + table)) {
+    private void assertTableCount(final String table, final long expected) throws SQLException {
+        try (final var c = DriverManager.getConnection(JdbcConfig.getUrl(), JdbcConfig.getUsername(), JdbcConfig.getPassword());
+             final var rs = c.createStatement().executeQuery("SELECT COUNT(*) FROM " + table)) {
             assertTrue(rs.next());
-            final var actual = rs.getLong(1);
-            assertEquals(expected, actual, "Unexpected row count for table: " + table);
+            assertEquals(expected, rs.getLong(1), "Unexpected row count for table: " + table);
         }
     }
 }

@@ -49,6 +49,20 @@ public final class Constants {
             throw new UnsupportedOperationException();
         }
 
+        // Bybit tables
+        static final String BYBIT_SPOT_KLINE_1M_TABLE = "crypto_scout.bybit_spot_kline_1m";
+        static final String BYBIT_SPOT_KLINE_5M_TABLE = "crypto_scout.bybit_spot_kline_5m";
+        static final String BYBIT_SPOT_KLINE_15M_TABLE = "crypto_scout.bybit_spot_kline_15m";
+        static final String BYBIT_SPOT_KLINE_60M_TABLE = "crypto_scout.bybit_spot_kline_60m";
+        static final String BYBIT_SPOT_KLINE_240M_TABLE = "crypto_scout.bybit_spot_kline_240m";
+        static final String BYBIT_SPOT_KLINE_1D_TABLE = "crypto_scout.bybit_spot_kline_1d";
+        static final String BYBIT_SPOT_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_spot_public_trade";
+        static final String BYBIT_SPOT_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_spot_order_book_1";
+        static final String BYBIT_SPOT_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_spot_order_book_50";
+        static final String BYBIT_SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_spot_order_book_200";
+        static final String BYBIT_SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_spot_order_book_1000";
+        static final String BYBIT_SPOT_TICKERS_TABLE = "crypto_scout.bybit_spot_tickers";
+
         // Bybit LPL
         static final String LPL_INSERT = "INSERT INTO crypto_scout.bybit_lpl " +
                 "(return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
@@ -64,7 +78,7 @@ public final class Constants {
         static final int LPL_TRADE_BEGIN_TIME = 9;
 
         // Spot tickers
-        static final String SPOT_TICKERS_INSERT = "INSERT INTO crypto_scout.bybit_spot_tickers " +
+        static final String SPOT_TICKERS_INSERT = "INSERT INTO " + BYBIT_SPOT_TICKERS_TABLE +
                 "(symbol, timestamp, cross_sequence, last_price, high_price_24h, low_price_24h, prev_price_24h, " +
                 "volume_24h, turnover_24h, price_24h_pcnt, usd_index_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_TICKERS_SYMBOL = 1;
@@ -80,22 +94,22 @@ public final class Constants {
         static final int SPOT_TICKERS_USD_INDEX_PRICE = 11;
 
         // Spot klines (confirmed): identical schema across intervals
-        static final String SPOT_KLINE_1M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_1m " +
+        static final String SPOT_KLINE_1M_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_1M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_5M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_5m " +
+        static final String SPOT_KLINE_5M_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_5M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_15M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_15m " +
+        static final String SPOT_KLINE_15M_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_15M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_60M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_60m " +
+        static final String SPOT_KLINE_60M_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_60M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_240M_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_240m " +
+        static final String SPOT_KLINE_240M_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_240M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_1D_INSERT = "INSERT INTO crypto_scout.bybit_spot_kline_1d " +
+        static final String SPOT_KLINE_1D_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_1D_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
         static final int SPOT_KLINE_SYMBOL = 1;
@@ -109,7 +123,7 @@ public final class Constants {
         static final int SPOT_KLINE_TURNOVER = 9;
 
         // Spot public trades
-        static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO crypto_scout.bybit_spot_public_trade " +
+        static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_SPOT_PUBLIC_TRADE_TABLE +
                 "(symbol, trade_time, trade_id, price, size, taker_side, cross_sequence, is_block_trade, is_rpi) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, trade_id, trade_time) DO NOTHING";
         static final int SPOT_PUBLIC_TRADE_SYMBOL = 1;
@@ -127,16 +141,16 @@ public final class Constants {
         static final String BID = "bid";
 
         // Spot order book 200 (one row per level)
-        static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_1 " +
+        static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_50 " +
+        static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_50_TABLE +
                 "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_200 " +
+        static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_200_TABLE +
                 "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO crypto_scout.bybit_spot_order_book_1000 " +
+        static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_ORDER_BOOK_200_SYMBOL = 1;
