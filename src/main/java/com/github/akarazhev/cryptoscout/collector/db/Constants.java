@@ -160,6 +160,9 @@ public final class Constants {
         static final int SPOT_ORDER_BOOK_200_SIZE = 5;
         static final int SPOT_ORDER_BOOK_200_UPDATE_ID = 6;
         static final int SPOT_ORDER_BOOK_200_CROSS_SEQUENCE = 7;
+
+        // Select count
+        static final String SELECT_COUNT = "SELECT COUNT(*) FROM %s";
     }
 
     final static class Offsets {
