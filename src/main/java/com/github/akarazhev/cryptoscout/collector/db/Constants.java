@@ -49,7 +49,7 @@ public final class Constants {
             throw new UnsupportedOperationException();
         }
 
-        // Bybit tables
+        // Bybit spot tables
         static final String BYBIT_SPOT_KLINE_1M_TABLE = "crypto_scout.bybit_spot_kline_1m";
         static final String BYBIT_SPOT_KLINE_5M_TABLE = "crypto_scout.bybit_spot_kline_5m";
         static final String BYBIT_SPOT_KLINE_15M_TABLE = "crypto_scout.bybit_spot_kline_15m";
@@ -62,6 +62,20 @@ public final class Constants {
         static final String BYBIT_SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_spot_order_book_200";
         static final String BYBIT_SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_spot_order_book_1000";
         static final String BYBIT_SPOT_TICKERS_TABLE = "crypto_scout.bybit_spot_tickers";
+        // Bybit linear tables
+        static final String BYBIT_LINEAR_KLINE_1M_TABLE = "crypto_scout.bybit_linear_kline_1m";
+        static final String BYBIT_LINEAR_KLINE_5M_TABLE = "crypto_scout.bybit_linear_kline_5m";
+        static final String BYBIT_LINEAR_KLINE_15M_TABLE = "crypto_scout.bybit_linear_kline_15m";
+        static final String BYBIT_LINEAR_KLINE_60M_TABLE = "crypto_scout.bybit_linear_kline_60m";
+        static final String BYBIT_LINEAR_KLINE_240M_TABLE = "crypto_scout.bybit_linear_kline_240m";
+        static final String BYBIT_LINEAR_KLINE_1D_TABLE = "crypto_scout.bybit_linear_kline_1d";
+        static final String BYBIT_LINEAR_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_linear_public_trade";
+        static final String BYBIT_LINEAR_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_linear_order_book_1";
+        static final String BYBIT_LINEAR_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_linear_order_book_50";
+        static final String BYBIT_LINEAR_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_linear_order_book_200";
+        static final String BYBIT_LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_linear_order_book_1000";
+        static final String BYBIT_LINEAR_TICKERS_TABLE = "crypto_scout.bybit_linear_tickers";
+        static final String BYBIT_LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_linear_all_liqudation";
 
         // Bybit LPL
         static final String LPL_INSERT = "INSERT INTO crypto_scout.bybit_lpl " +
