@@ -151,7 +151,7 @@ public final class Constants {
         static final String ASK = "ask";
         static final String BID = "bid";
 
-        // Spot order book 200 (one row per level)
+        // Spot order books (one row per level)
         static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_50_TABLE +
@@ -160,11 +160,11 @@ public final class Constants {
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final int SPOT_ORDER_BOOK_200_SYMBOL = 1;
-        static final int SPOT_ORDER_BOOK_200_ENGINE_TIME = 2;
-        static final int SPOT_ORDER_BOOK_200_SIDE = 3;
-        static final int SPOT_ORDER_BOOK_200_PRICE = 4;
-        static final int SPOT_ORDER_BOOK_200_SIZE = 5;
+        static final int SPOT_ORDER_BOOK_SYMBOL = 1;
+        static final int SPOT_ORDER_BOOK_ENGINE_TIME = 2;
+        static final int SPOT_ORDER_BOOK_SIDE = 3;
+        static final int SPOT_ORDER_BOOK_PRICE = 4;
+        static final int SPOT_ORDER_BOOK_SIZE = 5;
 
         // Select count
         static final String SELECT_COUNT = "SELECT COUNT(*) FROM %s";

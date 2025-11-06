@@ -42,12 +42,12 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.ASK;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BID;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_ENGINE_TIME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_ENGINE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_PRICE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SIDE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SIZE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SIDE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SIZE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_INSERT;
@@ -395,11 +395,11 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     }
 
                     for (final var bid : bids) {
-                        ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
-                        ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, BID);
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(bid.getFirst()));
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(bid.get(1)));
+                        ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
+                        ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
+                        ps.setString(SPOT_ORDER_BOOK_SIDE, BID);
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_PRICE, toBigDecimal(bid.getFirst()));
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_SIZE, toBigDecimal(bid.get(1)));
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {
@@ -408,11 +408,11 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     }
 
                     for (final var ask : asks) {
-                        ps.setString(SPOT_ORDER_BOOK_200_SYMBOL, symbol);
-                        ps.setObject(SPOT_ORDER_BOOK_200_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_200_SIDE, ASK);
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(ask.getFirst()));
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(ask.get(1)));
+                        ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
+                        ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
+                        ps.setString(SPOT_ORDER_BOOK_SIDE, ASK);
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_PRICE, toBigDecimal(ask.getFirst()));
+                        ps.setBigDecimal(SPOT_ORDER_BOOK_SIZE, toBigDecimal(ask.get(1)));
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {
