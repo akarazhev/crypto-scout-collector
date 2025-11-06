@@ -97,13 +97,13 @@ public final class Constants {
                 "volume_24h, turnover_24h, price_24h_pcnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_TICKERS_SYMBOL = 1;
         static final int SPOT_TICKERS_TIMESTAMP = 2;
-        static final int SPOT_TICKERS_LAST_PRICE = 4;
-        static final int SPOT_TICKERS_HIGH_PRICE_24H = 5;
-        static final int SPOT_TICKERS_LOW_PRICE_24H = 6;
-        static final int SPOT_TICKERS_PREV_PRICE_24H = 7;
-        static final int SPOT_TICKERS_VOLUME_24H = 8;
-        static final int SPOT_TICKERS_TURNOVER_24H = 9;
-        static final int SPOT_TICKERS_PRICE_24H_PCNT = 10;
+        static final int SPOT_TICKERS_LAST_PRICE = 3;
+        static final int SPOT_TICKERS_HIGH_PRICE_24H = 4;
+        static final int SPOT_TICKERS_LOW_PRICE_24H = 5;
+        static final int SPOT_TICKERS_PREV_PRICE_24H = 6;
+        static final int SPOT_TICKERS_VOLUME_24H = 7;
+        static final int SPOT_TICKERS_TURNOVER_24H = 8;
+        static final int SPOT_TICKERS_PRICE_24H_PCNT = 9;
 
         // Spot klines (confirmed): identical schema across intervals
         static final String SPOT_KLINE_1M_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_1M_TABLE +
@@ -136,15 +136,14 @@ public final class Constants {
 
         // Spot public trades
         static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_SPOT_PUBLIC_TRADE_TABLE +
-                "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, trade_time) DO NOTHING";
+                "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_PUBLIC_TRADE_SYMBOL = 1;
         static final int SPOT_PUBLIC_TRADE_TRADE_TIME = 2;
-        static final int SPOT_PUBLIC_TRADE_PRICE = 4;
-        static final int SPOT_PUBLIC_TRADE_SIZE = 5;
-        static final int SPOT_PUBLIC_TRADE_TAKER_SIDE = 6;
-        static final int SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE = 8;
-        static final int SPOT_PUBLIC_TRADE_IS_RPI = 9;
+        static final int SPOT_PUBLIC_TRADE_PRICE = 3;
+        static final int SPOT_PUBLIC_TRADE_SIZE = 4;
+        static final int SPOT_PUBLIC_TRADE_TAKER_SIDE = 5;
+        static final int SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE = 6;
+        static final int SPOT_PUBLIC_TRADE_IS_RPI = 7;
 
         // Order book side
         static final String ASK = "ask";
