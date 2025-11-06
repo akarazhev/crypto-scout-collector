@@ -52,6 +52,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Assertions.assertTab
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getPublicTradeCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class BybitLinearRepositoryTest {
     private static ExecutorService executor;
@@ -137,6 +138,7 @@ final class BybitLinearRepositoryTest {
     void shouldSaveOrderBook1() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(data);
+        assertTrue(expected > 0);
         assertEquals(expected, repository.saveOrderBook1(List.of(data), 900L));
         assertTableCount(BYBIT_LINEAR_ORDER_BOOK_1_TABLE, expected);
     }
@@ -145,6 +147,7 @@ final class BybitLinearRepositoryTest {
     void shouldSaveOrderBook50() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(data);
+        assertTrue(expected > 0);
         assertEquals(expected, repository.saveOrderBook50(List.of(data), 1000L));
         assertTableCount(BYBIT_LINEAR_ORDER_BOOK_50_TABLE, expected);
     }
@@ -153,6 +156,7 @@ final class BybitLinearRepositoryTest {
     void shouldSaveOrderBook200() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(data);
+        assertTrue(expected > 0);
         assertEquals(expected, repository.saveOrderBook200(List.of(data), 1100L));
         assertTableCount(BYBIT_LINEAR_ORDER_BOOK_200_TABLE, expected);
     }

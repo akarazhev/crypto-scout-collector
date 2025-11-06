@@ -46,10 +46,8 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CONFIRM;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SNAPSHOT;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TYPE;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isKlineConfirmed;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isOrderSnapshot;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_1;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_15;
@@ -63,7 +61,6 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BO
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_1000;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.PUBLIC_TRADE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.TICKERS;
-import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 
 public final class BybitCryptoCollector extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(BybitCryptoCollector.class);
@@ -221,7 +218,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                     spotKlines240.isEmpty() && spotKlines1d.isEmpty() && spotTickers.isEmpty() &&
                     spotPublicTrades.isEmpty() && spotOrders200.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
-                LOGGER.debug("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
+                LOGGER.warn("Upserted Bybit spot stream offset {} (no data batch)", maxOffset);
             } else {
                 // Save spot data
                 saveKline1m(spotKlines1, maxOffset);
@@ -242,20 +239,11 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         });
     }
 
-    private boolean isKlineConfirmed(final Map<String, Object> kline) {
-        final var row = getFirstRow(DATA, kline);
-        return row != null && row.containsKey(CONFIRM) && (Boolean) row.get(CONFIRM);
-    }
-
-    private boolean isOrderSnapshot(final Map<String, Object> order) {
-        return SNAPSHOT.equals(order.get(TYPE));
-    }
-
     private void saveKline1m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot 1m klines (tx) and updated offset {}",
-                        bybitSpotRepository.saveKline1m(klines, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveKline1m(klines, maxOffset);
+                LOGGER.info("Inserted {} spot 1m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -263,8 +251,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveKline5m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot 5m klines (tx) and updated offset {}",
-                        bybitSpotRepository.saveKline5m(klines, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveKline5m(klines, maxOffset);
+                LOGGER.info("Inserted {} spot 5m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -272,8 +260,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveKline15m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot 15m klines (tx) and updated offset {}",
-                        bybitSpotRepository.saveKline15m(klines, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveKline15m(klines, maxOffset);
+                LOGGER.info("Inserted {} spot 15m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -281,8 +269,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveKline60m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot 60m klines (tx) and updated offset {}",
-                        bybitSpotRepository.saveKline60m(klines, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveKline60m(klines, maxOffset);
+                LOGGER.info("Inserted {} spot 60m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -290,8 +278,9 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveKline240m(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot 240m klines (tx) and updated offset {}",
-                        bybitSpotRepository.saveKline240m(klines, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveKline240m(klines, maxOffset);
+                LOGGER.info("Inserted {} spot 240m klines (tx) and updated offset {}", count, maxOffset);
+                ;
             }
         }
     }
@@ -299,8 +288,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveKline1d(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot 1d klines (tx) and updated offset {}",
-                        bybitSpotRepository.saveKline1d(klines, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveKline1d(klines, maxOffset);
+                LOGGER.info("Inserted {} spot 1d klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -308,8 +297,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveTicker(final List<Map<String, Object>> tickers, final long maxOffset) throws SQLException {
         if (!tickers.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}",
-                        bybitSpotRepository.saveTicker(tickers, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveTicker(tickers, maxOffset);
+                LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -317,8 +306,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void savePublicTrade(final List<Map<String, Object>> publicTrades, final long maxOffset) throws SQLException {
         if (!publicTrades.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot public trades (tx) and updated offset {}",
-                        bybitSpotRepository.savePublicTrade(publicTrades, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.savePublicTrade(publicTrades, maxOffset);
+                LOGGER.info("Inserted {} spot public trades (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -326,8 +315,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveOrderBook1(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot order books 1 (tx) and updated offset {}",
-                        bybitSpotRepository.saveOrderBook1(orderBooks, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveOrderBook1(orderBooks, maxOffset);
+                LOGGER.info("Inserted {} spot order books 1 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -335,8 +324,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveOrderBook50(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot order books 50 (tx) and updated offset {}",
-                        bybitSpotRepository.saveOrderBook50(orderBooks, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveOrderBook50(orderBooks, maxOffset);
+                LOGGER.info("Inserted {} spot order books 50 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -344,8 +333,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveOrderBook200(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot order books 200 (tx) and updated offset {}",
-                        bybitSpotRepository.saveOrderBook200(orderBooks, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveOrderBook200(orderBooks, maxOffset);
+                LOGGER.info("Inserted {} spot order books 200 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -353,8 +342,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private void saveOrderBook1000(final List<Map<String, Object>> orderBooks, final long maxOffset) throws SQLException {
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
-                LOGGER.info("Inserted {} spot order books 1000 (tx) and updated offset {}",
-                        bybitSpotRepository.saveOrderBook1000(orderBooks, maxOffset), maxOffset);
+                final var count = bybitSpotRepository.saveOrderBook1000(orderBooks, maxOffset);
+                LOGGER.info("Inserted {} spot order books 1000 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
