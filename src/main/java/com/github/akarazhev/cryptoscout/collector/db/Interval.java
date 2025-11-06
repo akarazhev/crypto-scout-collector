@@ -26,24 +26,25 @@ package com.github.akarazhev.cryptoscout.collector.db;
 
 public final class Interval {
     private final int value;
-    private final Type type;
+    private final Unit unit;
 
-    public enum Type {
-        DAY
+    public enum Unit {
+        DAY, YEAR
     }
 
-    public static Interval of(final int value, final Type type) {
-        return new Interval(value, type);
+    public static Interval of(final int value, final Unit unit) {
+        return new Interval(value, unit);
     }
 
-    private Interval(final int value, final Type type) {
+    private Interval(final int value, final Unit unit) {
         this.value = value;
-        this.type = type;
+        this.unit = unit;
     }
 
     public String getInterval() {
-        return switch (type) {
-            case DAY -> "'" + value + " day'";
+        return switch (unit) {
+            case DAY -> "' " + value + (value > 1 ? " days'" : " day'");
+            case YEAR -> "' " + value + (value > 1 ? " years'" : " year'");
         };
     }
 }

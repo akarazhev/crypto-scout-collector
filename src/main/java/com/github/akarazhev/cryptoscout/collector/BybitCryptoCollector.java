@@ -40,9 +40,11 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
@@ -71,6 +73,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
+    private final Map<String, Map<String, Object>> snapshots = new ConcurrentHashMap<>();
 
     public static BybitCryptoCollector create(final NioReactor reactor, final Executor executor,
                                               final StreamOffsetsRepository streamOffsetsRepository,
@@ -125,17 +128,17 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             return Promise.complete();
         }
 
-        final var snapshot = new ArrayList<OffsetPayload>();
+        final var items = new LinkedList<OffsetPayload>();
         while (true) {
             final var item = buffer.poll();
             if (item == null) {
                 break;
             }
 
-            snapshot.add(item);
+            items.add(item);
         }
 
-        if (snapshot.isEmpty()) {
+        if (items.isEmpty()) {
             return Promise.complete();
         }
 
@@ -154,8 +157,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             final var spotOrders50 = new ArrayList<Map<String, Object>>();
             final var spotOrders200 = new ArrayList<Map<String, Object>>();
             final var spotOrders1000 = new ArrayList<Map<String, Object>>();
-            for (final var msg : snapshot) {
-                final var payload = msg.payload();
+            for (final var item : items) {
+                final var payload = item.payload();
                 final var source = payload.getSource();
                 if (Source.PMST.equals(source)) {
                     final var data = payload.getData();
@@ -209,8 +212,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                     // TODO: implement futures
                 }
 
-                if (msg.offset() > maxOffset) {
-                    maxOffset = msg.offset();
+                if (item.offset() > maxOffset) {
+                    maxOffset = item.offset();
                 }
             }
             // No data to insert but we still may want to advance offset in rare cases
