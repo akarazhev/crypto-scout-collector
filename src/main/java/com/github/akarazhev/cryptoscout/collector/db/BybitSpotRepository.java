@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -161,6 +162,11 @@ public final class BybitSpotRepository extends AbstractReactive implements React
 
     public int saveKline1m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, SPOT_KLINE_1M_INSERT);
+    }
+
+    public Iterable<Map<String, Object>> getKline1m(final String[] symbols, final OffsetDateTime from) throws SQLException {
+        // TODO: implement it
+        return null;
     }
 
     public int saveKline5m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {

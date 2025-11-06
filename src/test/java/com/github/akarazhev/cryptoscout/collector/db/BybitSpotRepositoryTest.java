@@ -47,9 +47,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBI
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_50_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_TICKERS_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.DbTestUtils.assertTableCount;
-import static com.github.akarazhev.cryptoscout.collector.db.DbTestUtils.getOrderBookLevelsCount;
-import static com.github.akarazhev.cryptoscout.collector.db.DbTestUtils.getPublicTradeCount;
+import static com.github.akarazhev.cryptoscout.collector.db.Assertions.assertTableCount;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getPublicTradeCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class BybitSpotRepositoryTest {
