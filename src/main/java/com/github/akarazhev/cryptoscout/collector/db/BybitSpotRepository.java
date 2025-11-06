@@ -34,7 +34,6 @@ import io.activej.reactor.nio.NioReactor;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -151,12 +150,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
 
     public int saveKline1m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, SPOT_KLINE_1M_INSERT);
-    }
-
-    public Iterable<Map<String, Object>> getKline1m(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
     }
 
     public int saveKline5m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
@@ -436,5 +429,77 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         ps.setString(STREAM, stream);
         ps.setLong(LAST_OFFSET, offset);
         ps.executeUpdate();
+    }
+
+    public Iterable<Map<String, Object>> getKline1m(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getKline5m(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getKline15m(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getKline60m(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getKline240m(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getKline1d(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getTicker(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getPublicTrade(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getOrderBook1(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getOrderBook50(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getOrderBook200(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
+    }
+
+    public Iterable<Map<String, Object>> getOrderBook1000(final String[] symbols, final Interval from)
+            throws SQLException {
+        // TODO: implement it
+        return null;
     }
 }
