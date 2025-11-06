@@ -153,7 +153,8 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return saveKlines(klines, offset, SPOT_KLINE_1M_INSERT);
     }
 
-    public Iterable<Map<String, Object>> getKline1m(final String[] symbols, final OffsetDateTime from) throws SQLException {
+    public Iterable<Map<String, Object>> getKline1m(final String[] symbols, final Interval from)
+            throws SQLException {
         // TODO: implement it
         return null;
     }
