@@ -58,7 +58,7 @@ The `Bybit`  spot data is defined in the `script/bybit_spot_tables.sql`  script.
     - `savePublicTrade`, `saveOrderBook200`
   - Added SQL constants and parameter indices in `com.github.akarazhev.cryptoscout.collector.db.Constants` for:
     - `bybit_spot_kline_{15m,60m,240m,1d}` inserts with `ON CONFLICT (symbol, start_time) DO NOTHING`.
-    - `bybit_spot_public_trade` inserts with `ON CONFLICT (symbol, trade_id, trade_time) DO NOTHING`.
+    - `bybit_spot_public_trade` inserts with `ON CONFLICT (symbol, trade_time) DO NOTHING`.
     - `bybit_spot_order_book_200` inserts (append-only, one row per level).
   - Reused the batching + transactional pattern from `saveTicker` with atomic stream offset upsert.
 

@@ -226,15 +226,13 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_public_trade (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     trade_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    trade_id TEXT NOT NULL,
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
     taker_side TEXT NOT NULL CHECK (taker_side IN ('Buy','Sell')),
     tick_direction TEXT,
     is_block_trade BOOLEAN NOT NULL,
     is_rpi BOOLEAN NOT NULL,
-    CONSTRAINT bybit_linear_public_trade_pkey PRIMARY KEY (id, trade_time),
-    CONSTRAINT bybit_linear_public_trade_symbol_tradeid_uniq UNIQUE (symbol, trade_id, trade_time)
+    CONSTRAINT bybit_linear_public_trade_pkey PRIMARY KEY (id, trade_time)
 );
 alter table crypto_scout.bybit_linear_public_trade OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_linear_public_trade_trade_time ON crypto_scout.bybit_linear_public_trade(trade_time DESC);
@@ -244,7 +242,7 @@ select public.create_hypertable('crypto_scout.bybit_linear_public_trade', 'trade
 alter table crypto_scout.bybit_linear_public_trade set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol',
-    timescaledb.compress_orderby = 'trade_time DESC, trade_id DESC, id DESC'
+    timescaledb.compress_orderby = 'trade_time DESC, id DESC'
 );
 select add_compression_policy('crypto_scout.bybit_linear_public_trade', interval '7 days');
 select add_reorder_policy('crypto_scout.bybit_linear_public_trade', 'idx_bybit_linear_public_trade_trade_time');

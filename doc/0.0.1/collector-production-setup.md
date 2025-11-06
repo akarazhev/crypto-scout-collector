@@ -29,7 +29,7 @@ Spot data persistence:
   - `savePublicTrade`, `saveOrderBook200`
 - Klines and public trades are idempotent via `ON CONFLICT DO NOTHING` using unique keys:
   - Klines: `(symbol, start_time)`
-  - Public trades: `(symbol, trade_id, trade_time)`
+  - Public trades: `(symbol, trade_time)`
   - Order book 200 ingests one row per level without upsert (append-only).
 
 ## Proposed short GitHub description
@@ -178,7 +178,7 @@ Application container: `crypto-scout-collector`
     - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
     - `crypto_scout.bybit_linear_tickers` — primary key `(id, timestamp)`; symbol/timestamp indexes.
     - `crypto_scout.bybit_linear_kline_60m` — primary key `(id, start_time)`; unique `(symbol, start_time)`.
-    - `crypto_scout.bybit_linear_public_trade` — primary key `(id, trade_time)`; unique `(symbol, trade_id)`.
+    - `crypto_scout.bybit_linear_public_trade` — primary key `(id, trade_time)`; unique `(symbol, trade_time)`.
     - `crypto_scout.bybit_linear_order_book_200` — primary key `(id, engine_time)`; indexes on `(symbol, engine_time)`
       and `(symbol, side, price)`.
     - `crypto_scout.bybit_linear_all_liqudation` — primary key `(id, event_time)`; indexes on `(symbol, event_time)`.

@@ -136,11 +136,10 @@ public final class Constants {
 
         // Spot public trades
         static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_SPOT_PUBLIC_TRADE_TABLE +
-                "(symbol, trade_time, trade_id, price, size, taker_side, is_block_trade, is_rpi) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, trade_id, trade_time) DO NOTHING";
+                "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, trade_time) DO NOTHING";
         static final int SPOT_PUBLIC_TRADE_SYMBOL = 1;
         static final int SPOT_PUBLIC_TRADE_TRADE_TIME = 2;
-        static final int SPOT_PUBLIC_TRADE_TRADE_ID = 3;
         static final int SPOT_PUBLIC_TRADE_PRICE = 4;
         static final int SPOT_PUBLIC_TRADE_SIZE = 5;
         static final int SPOT_PUBLIC_TRADE_TAKER_SIDE = 6;

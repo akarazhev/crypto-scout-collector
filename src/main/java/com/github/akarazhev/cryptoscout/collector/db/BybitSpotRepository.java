@@ -71,7 +71,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_SIZE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TAKER_SIDE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TRADE_ID;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TRADE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_HIGH_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_INSERT;
@@ -95,7 +94,6 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH_PRICE_24H;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.I;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LAST_PRICE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW_PRICE_24H;
@@ -310,7 +308,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     if (rows != null) {
                         for (final var row : rows) {
                             final var symbol = (String) row.get(SYMBOL_NAME);
-                            final var tradeId = (String) row.get(I);
                             final var tradeTime = row.get(T);
                             final var price = toBigDecimal(row.get(P));
                             final var size = toBigDecimal(row.get(V));
@@ -318,14 +315,13 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                             final var isBlock = toBoolean(row.get(BT));
                             final var isRpi = toBoolean(row.get(RPI));
 
-                            if (symbol == null || tradeId == null || tradeTime == null || price == null || size == null ||
-                                    takerSide == null || isBlock == null || isRpi == null) {
+                            if (symbol == null || tradeTime == null || price == null || size == null || takerSide == null
+                                    || isBlock == null || isRpi == null) {
                                 continue; // skip malformed rows
                             }
 
                             ps.setString(SPOT_PUBLIC_TRADE_SYMBOL, symbol);
                             ps.setObject(SPOT_PUBLIC_TRADE_TRADE_TIME, toOdt(tradeTime));
-                            ps.setString(SPOT_PUBLIC_TRADE_TRADE_ID, tradeId);
                             ps.setBigDecimal(SPOT_PUBLIC_TRADE_PRICE, price);
                             ps.setBigDecimal(SPOT_PUBLIC_TRADE_SIZE, size);
                             ps.setString(SPOT_PUBLIC_TRADE_TAKER_SIDE, takerSide);
