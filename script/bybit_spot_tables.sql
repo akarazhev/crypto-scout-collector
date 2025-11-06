@@ -14,7 +14,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_tickers (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    cross_sequence BIGINT NOT NULL,
     last_price NUMERIC(20, 8) NOT NULL,
     high_price_24h NUMERIC(20, 8) NOT NULL,
     low_price_24h NUMERIC(20, 8) NOT NULL,
@@ -22,7 +21,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_tickers (
     volume_24h NUMERIC(20, 8) NOT NULL,
     turnover_24h NUMERIC(20, 8) NOT NULL,
     price_24h_pcnt NUMERIC(3, 4) NOT NULL,
-    usd_index_price NUMERIC(20, 8),
     CONSTRAINT bybit_spot_tickers_pkey PRIMARY KEY (id, timestamp)
 );
 alter table crypto_scout.bybit_spot_tickers OWNER TO crypto_scout_db;
@@ -226,7 +224,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_public_trade (
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
     taker_side TEXT NOT NULL CHECK (taker_side IN ('Buy','Sell')),
-    cross_sequence BIGINT NOT NULL,
     is_block_trade BOOLEAN NOT NULL,
     is_rpi BOOLEAN NOT NULL,
     CONSTRAINT bybit_spot_public_trade_pkey PRIMARY KEY (id, trade_time),
@@ -235,7 +232,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_public_trade (
 alter table crypto_scout.bybit_spot_public_trade OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_public_trade_trade_time ON crypto_scout.bybit_spot_public_trade(trade_time DESC);
 create index IF NOT EXISTS idx_bybit_spot_public_trade_symbol_time ON crypto_scout.bybit_spot_public_trade(symbol, trade_time DESC);
-create index IF NOT EXISTS idx_bybit_spot_public_trade_seq ON crypto_scout.bybit_spot_public_trade(cross_sequence);
 select public.create_hypertable('crypto_scout.bybit_spot_public_trade', 'trade_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 alter table crypto_scout.bybit_spot_public_trade set (
@@ -259,8 +255,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_order_book_1 (
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
-    update_id BIGINT NOT NULL,
-    cross_sequence BIGINT NOT NULL,
     CONSTRAINT bybit_spot_order_book_1_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_spot_order_book_1 OWNER TO crypto_scout_db;
@@ -276,8 +270,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_order_book_50 (
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
-    update_id BIGINT NOT NULL,
-    cross_sequence BIGINT NOT NULL,
     CONSTRAINT bybit_spot_order_book_50_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_spot_order_book_50 OWNER TO crypto_scout_db;
@@ -293,8 +285,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_order_book_200 (
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
-    update_id BIGINT NOT NULL,
-    cross_sequence BIGINT NOT NULL,
     CONSTRAINT bybit_spot_order_book_200_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_spot_order_book_200 OWNER TO crypto_scout_db;
@@ -310,8 +300,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_order_book_1000 (
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
     price NUMERIC(20, 8) NOT NULL,
     size NUMERIC(20, 8) NOT NULL,
-    update_id BIGINT NOT NULL,
-    cross_sequence BIGINT NOT NULL,
     CONSTRAINT bybit_spot_order_book_1000_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_spot_order_book_1000 OWNER TO crypto_scout_db;

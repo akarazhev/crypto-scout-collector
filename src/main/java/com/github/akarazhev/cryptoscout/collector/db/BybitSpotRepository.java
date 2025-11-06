@@ -34,7 +34,6 @@ import io.activej.reactor.nio.NioReactor;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -43,14 +42,12 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.ASK;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BID;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_CROSS_SEQUENCE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_ENGINE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SIZE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SYMBOL;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_UPDATE_ID;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_INSERT;
@@ -67,7 +64,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_TURNOVER;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_VOLUME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_CROSS_SEQUENCE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_IS_RPI;
@@ -77,7 +73,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TAKER_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TRADE_ID;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TRADE_TIME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_CROSS_SEQUENCE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_HIGH_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_LAST_PRICE;
@@ -87,7 +82,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TURNOVER_24H;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_USD_INDEX_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_VOLUME_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
@@ -96,7 +90,6 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.B;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
@@ -111,7 +104,6 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.P;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PREV_PRICE_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PRICE_24H_PCNT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RPI;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SEQ;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL_NAME;
@@ -121,7 +113,6 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.U;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.USD_INDEX_PRICE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
@@ -262,7 +253,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     }
 
                     final var timestamp = ticker.get(TS);
-                    final var crossSequence = ticker.get(CS);
                     final var symbol = (String) row.get(SYMBOL);
                     final var lastPrice = toBigDecimal(row.get(LAST_PRICE));
                     final var highPrice24h = toBigDecimal(row.get(HIGH_PRICE_24H));
@@ -271,16 +261,14 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var volume24h = toBigDecimal(row.get(VOLUME_24H));
                     final var turnover24h = toBigDecimal(row.get(TURNOVER_24H));
                     final var price24hPcnt = toBigDecimal(row.get(PRICE_24H_PCNT));
-                    final var usdIndexPrice = toBigDecimal(row.get(USD_INDEX_PRICE));
 
-                    if (timestamp == null || crossSequence == null || symbol == null || lastPrice == null ||
-                            highPrice24h == null || lowPrice24h == null || prevPrice24h == null || volume24h == null ||
-                            turnover24h == null || price24hPcnt == null) {
+                    if (timestamp == null || symbol == null || lastPrice == null || highPrice24h == null ||
+                            lowPrice24h == null || prevPrice24h == null || volume24h == null || turnover24h == null ||
+                            price24hPcnt == null) {
                         continue; // skip malformed rows
                     }
 
                     ps.setObject(SPOT_TICKERS_TIMESTAMP, toOdt(timestamp));
-                    ps.setObject(SPOT_TICKERS_CROSS_SEQUENCE, ((Number) crossSequence).longValue());
                     ps.setString(SPOT_TICKERS_SYMBOL, symbol);
                     ps.setBigDecimal(SPOT_TICKERS_LAST_PRICE, lastPrice);
                     ps.setBigDecimal(SPOT_TICKERS_HIGH_PRICE_24H, highPrice24h);
@@ -289,12 +277,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     ps.setBigDecimal(SPOT_TICKERS_VOLUME_24H, volume24h);
                     ps.setBigDecimal(SPOT_TICKERS_TURNOVER_24H, turnover24h);
                     ps.setBigDecimal(SPOT_TICKERS_PRICE_24H_PCNT, price24hPcnt);
-                    // may be null
-                    if (usdIndexPrice != null) {
-                        ps.setBigDecimal(SPOT_TICKERS_USD_INDEX_PRICE, usdIndexPrice);
-                    } else {
-                        ps.setNull(SPOT_TICKERS_USD_INDEX_PRICE, Types.NUMERIC);
-                    }
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {
@@ -333,12 +315,11 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                             final var price = toBigDecimal(row.get(P));
                             final var size = toBigDecimal(row.get(V));
                             final var takerSide = (String) row.get(TAKER_SIDE);
-                            final var seq = row.get(SEQ);
                             final var isBlock = toBoolean(row.get(BT));
                             final var isRpi = toBoolean(row.get(RPI));
 
                             if (symbol == null || tradeId == null || tradeTime == null || price == null || size == null ||
-                                    takerSide == null || seq == null || isBlock == null || isRpi == null) {
+                                    takerSide == null || isBlock == null || isRpi == null) {
                                 continue; // skip malformed rows
                             }
 
@@ -348,7 +329,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                             ps.setBigDecimal(SPOT_PUBLIC_TRADE_PRICE, price);
                             ps.setBigDecimal(SPOT_PUBLIC_TRADE_SIZE, size);
                             ps.setString(SPOT_PUBLIC_TRADE_TAKER_SIDE, takerSide);
-                            ps.setLong(SPOT_PUBLIC_TRADE_CROSS_SEQUENCE, ((Number) seq).longValue());
                             ps.setBoolean(SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE, isBlock);
                             ps.setBoolean(SPOT_PUBLIC_TRADE_IS_RPI, isRpi);
 
@@ -409,9 +389,8 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     @SuppressWarnings("unchecked") final var bids = (List<List<String>>) row.get(B);
                     @SuppressWarnings("unchecked") final var asks = (List<List<String>>) row.get(A);
                     final var updateId = row.get(U);
-                    final var seq = row.get(SEQ);
 
-                    if (symbol == null || engineTime == null || updateId == null || seq == null) {
+                    if (symbol == null || engineTime == null || updateId == null) {
                         continue; // skip malformed rows
                     }
 
@@ -421,8 +400,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                         ps.setString(SPOT_ORDER_BOOK_200_SIDE, BID);
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(bid.getFirst()));
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(bid.get(1)));
-                        ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
-                        ps.setLong(SPOT_ORDER_BOOK_200_CROSS_SEQUENCE, ((Number) seq).longValue());
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {
@@ -436,8 +413,6 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                         ps.setString(SPOT_ORDER_BOOK_200_SIDE, ASK);
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_PRICE, toBigDecimal(ask.getFirst()));
                         ps.setBigDecimal(SPOT_ORDER_BOOK_200_SIZE, toBigDecimal(ask.get(1)));
-                        ps.setLong(SPOT_ORDER_BOOK_200_UPDATE_ID, ((Number) updateId).longValue());
-                        ps.setLong(SPOT_ORDER_BOOK_200_CROSS_SEQUENCE, ((Number) seq).longValue());
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {

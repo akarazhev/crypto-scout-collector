@@ -93,11 +93,10 @@ public final class Constants {
 
         // Spot tickers
         static final String SPOT_TICKERS_INSERT = "INSERT INTO " + BYBIT_SPOT_TICKERS_TABLE +
-                "(symbol, timestamp, cross_sequence, last_price, high_price_24h, low_price_24h, prev_price_24h, " +
-                "volume_24h, turnover_24h, price_24h_pcnt, usd_index_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, timestamp, last_price, high_price_24h, low_price_24h, prev_price_24h, " +
+                "volume_24h, turnover_24h, price_24h_pcnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_TICKERS_SYMBOL = 1;
         static final int SPOT_TICKERS_TIMESTAMP = 2;
-        static final int SPOT_TICKERS_CROSS_SEQUENCE = 3;
         static final int SPOT_TICKERS_LAST_PRICE = 4;
         static final int SPOT_TICKERS_HIGH_PRICE_24H = 5;
         static final int SPOT_TICKERS_LOW_PRICE_24H = 6;
@@ -105,7 +104,6 @@ public final class Constants {
         static final int SPOT_TICKERS_VOLUME_24H = 8;
         static final int SPOT_TICKERS_TURNOVER_24H = 9;
         static final int SPOT_TICKERS_PRICE_24H_PCNT = 10;
-        static final int SPOT_TICKERS_USD_INDEX_PRICE = 11;
 
         // Spot klines (confirmed): identical schema across intervals
         static final String SPOT_KLINE_1M_INSERT = "INSERT INTO " + BYBIT_SPOT_KLINE_1M_TABLE +
@@ -138,15 +136,14 @@ public final class Constants {
 
         // Spot public trades
         static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_SPOT_PUBLIC_TRADE_TABLE +
-                "(symbol, trade_time, trade_id, price, size, taker_side, cross_sequence, is_block_trade, is_rpi) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, trade_id, trade_time) DO NOTHING";
+                "(symbol, trade_time, trade_id, price, size, taker_side, is_block_trade, is_rpi) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, trade_id, trade_time) DO NOTHING";
         static final int SPOT_PUBLIC_TRADE_SYMBOL = 1;
         static final int SPOT_PUBLIC_TRADE_TRADE_TIME = 2;
         static final int SPOT_PUBLIC_TRADE_TRADE_ID = 3;
         static final int SPOT_PUBLIC_TRADE_PRICE = 4;
         static final int SPOT_PUBLIC_TRADE_SIZE = 5;
         static final int SPOT_PUBLIC_TRADE_TAKER_SIDE = 6;
-        static final int SPOT_PUBLIC_TRADE_CROSS_SEQUENCE = 7;
         static final int SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE = 8;
         static final int SPOT_PUBLIC_TRADE_IS_RPI = 9;
 
@@ -156,24 +153,18 @@ public final class Constants {
 
         // Spot order book 200 (one row per level)
         static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1_TABLE +
-                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_50_TABLE +
-                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_200_TABLE +
-                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1000_TABLE +
-                "(symbol, engine_time, side, price, size, update_id, cross_sequence) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final int SPOT_ORDER_BOOK_200_SYMBOL = 1;
         static final int SPOT_ORDER_BOOK_200_ENGINE_TIME = 2;
         static final int SPOT_ORDER_BOOK_200_SIDE = 3;
         static final int SPOT_ORDER_BOOK_200_PRICE = 4;
         static final int SPOT_ORDER_BOOK_200_SIZE = 5;
-        static final int SPOT_ORDER_BOOK_200_UPDATE_ID = 6;
-        static final int SPOT_ORDER_BOOK_200_CROSS_SEQUENCE = 7;
 
         // Select count
         static final String SELECT_COUNT = "SELECT COUNT(*) FROM %s";

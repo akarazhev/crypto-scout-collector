@@ -1976,7 +1976,7 @@ The `order book` data must be saved in normalized form in the following table: `
 
 - **Indexes**
     - Kliness: `(start_time DESC)`, `(symbol, start_time DESC)`.
-    - Trades: `(trade_time DESC)`, `(symbol, trade_time DESC)`, `(cross_sequence)`.
+    - Trades: `(trade_time DESC)`, `(symbol, trade_time DESC)`.
     - Order book: `(engine_time DESC)`, `(symbol, engine_time DESC)`, `(symbol, side, price)`.
 
 - **Compression, reorder, retention policies**

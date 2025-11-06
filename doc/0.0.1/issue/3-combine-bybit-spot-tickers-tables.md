@@ -74,7 +74,6 @@ Take the following roles:
     - `id BIGSERIAL`
     - `symbol TEXT NOT NULL` (e.g., `BTCUSDT`, `ETHUSDT`)
     - `timestamp TIMESTAMPTZ NOT NULL`
-    - `cross_sequence BIGINT NOT NULL`
     - `last_price NUMERIC(20, 8) NOT NULL`
     - `high_price_24h NUMERIC(20, 8) NOT NULL`
     - `low_price_24h NUMERIC(20, 8) NOT NULL`
@@ -82,7 +81,6 @@ Take the following roles:
     - `volume_24h NUMERIC(20, 8) NOT NULL`
     - `turnover_24h NUMERIC(20, 8) NOT NULL`
     - `price_24h_pcnt NUMERIC(3, 4) NOT NULL`
-    - `usd_index_price NUMERIC(20, 8)`
 - **Primary key**: `(id, timestamp)`
 - **Hypertable**: partitioned by `timestamp` with 1-day chunks
 
@@ -113,7 +111,6 @@ Take the following roles:
 ### Field mapping from sample JSON
 
 - `ts` → `timestamp` (epoch millis → timestamptz)
-- `cs` → `cross_sequence`
 - `data.symbol` → `symbol`
 - `data.lastPrice` → `last_price`
 - `data.highPrice24h` → `high_price_24h`
@@ -122,7 +119,6 @@ Take the following roles:
 - `data.volume24h` → `volume_24h`
 - `data.turnover24h` → `turnover_24h`
 - `data.price24hPcnt` → `price_24h_pcnt`
-- `data.usdIndexPrice` → `usd_index_price`
 
 ### Notes
 
