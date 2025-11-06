@@ -29,7 +29,7 @@ public final class Interval {
     private final Unit unit;
 
     public enum Unit {
-        DAY, YEAR
+        MINUTE, HOUR, DAY, MONTH, YEAR
     }
 
     public static Interval of(final int value, final Unit unit) {
@@ -43,7 +43,10 @@ public final class Interval {
 
     public String getInterval() {
         return switch (unit) {
+            case MINUTE -> "' " + value + (value > 1 ? " minutes'" : " minute'");
+            case HOUR -> "' " + value + (value > 1 ? " hours'" : " hour'");
             case DAY -> "' " + value + (value > 1 ? " days'" : " day'");
+            case MONTH -> "' " + value + (value > 1 ? " months'" : " month'");
             case YEAR -> "' " + value + (value > 1 ? " years'" : " year'");
         };
     }
