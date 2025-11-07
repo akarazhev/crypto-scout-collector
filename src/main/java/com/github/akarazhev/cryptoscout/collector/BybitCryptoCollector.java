@@ -49,7 +49,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isKlineConfirmed;
-import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isOrderSnapshot;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isSnapshot;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_1;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_15;
@@ -192,19 +192,19 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                     } else if (topic.contains(PUBLIC_TRADE)) {
                         spotPublicTrades.add(data);
                     } else if (topic.contains(ORDER_BOOK_1)) {
-                        if (isOrderSnapshot(data)) {
+                        if (isSnapshot(data)) {
                             spotOrders1.add(data);
                         }
                     } else if (topic.contains(ORDER_BOOK_50)) {
-                        if (isOrderSnapshot(data)) {
+                        if (isSnapshot(data)) {
                             spotOrders50.add(data);
                         }
                     } else if (topic.contains(ORDER_BOOK_200)) {
-                        if (isOrderSnapshot(data)) {
+                        if (isSnapshot(data)) {
                             spotOrders200.add(data);
                         }
                     } else if (topic.contains(ORDER_BOOK_1000)) {
-                        if (isOrderSnapshot(data)) {
+                        if (isSnapshot(data)) {
                             spotOrders1000.add(data);
                         }
                     }

@@ -13,13 +13,13 @@ import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 
 public final class PayloadParser {
 
-    public static boolean isKlineConfirmed(final Map<String, Object> kline) {
-        final var row = getFirstRow(DATA, kline);
+    public static boolean isKlineConfirmed(final Map<String, Object> payload) {
+        final var row = getFirstRow(DATA, payload);
         return row != null && row.containsKey(CONFIRM) && (Boolean) row.get(CONFIRM);
     }
 
-    public static boolean isOrderSnapshot(final Map<String, Object> order) {
-        return SNAPSHOT.equals(order.get(TYPE));
+    public static boolean isSnapshot(final Map<String, Object> payload) {
+        return SNAPSHOT.equals(payload.get(TYPE));
     }
 
     public static int getPublicTradeCount(final Map<String, Object> payload) {
