@@ -53,7 +53,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_1m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    last_trade_time TIMESTAMP WITH TIME ZONE,
     CONSTRAINT bybit_linear_kline_1m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_linear_kline_1m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -73,7 +72,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_5m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    last_trade_time TIMESTAMP WITH TIME ZONE,
     CONSTRAINT bybit_linear_kline_5m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_linear_kline_5m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -93,7 +91,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_15m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    last_trade_time TIMESTAMP WITH TIME ZONE,
     CONSTRAINT bybit_linear_kline_15m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_linear_kline_15m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -113,7 +110,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_60m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    last_trade_time TIMESTAMP WITH TIME ZONE,
     CONSTRAINT bybit_linear_kline_60m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_linear_kline_60m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -133,7 +129,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_240m (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    last_trade_time TIMESTAMP WITH TIME ZONE,
     CONSTRAINT bybit_linear_kline_240m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_linear_kline_240m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
@@ -153,7 +148,6 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_1d (
     low_price NUMERIC(20, 8) NOT NULL,
     volume NUMERIC(20, 8) NOT NULL,
     turnover NUMERIC(20, 8) NOT NULL,
-    last_trade_time TIMESTAMP WITH TIME ZONE,
     CONSTRAINT bybit_linear_kline_1d_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_linear_kline_1d_symbol_start_uniq UNIQUE (symbol, start_time)
 );
