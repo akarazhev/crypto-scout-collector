@@ -188,9 +188,13 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                             spotKlines1d.add(data);
                         }
                     } else if (topic.contains(TICKERS)) {
-                        spotTickers.add(data);
+                        if (isSnapshot(data)) {
+                            spotTickers.add(data);
+                        }
                     } else if (topic.contains(PUBLIC_TRADE)) {
-                        spotPublicTrades.add(data);
+                        if (isSnapshot(data)) {
+                            spotPublicTrades.add(data);
+                        }
                     } else if (topic.contains(ORDER_BOOK_1)) {
                         if (isSnapshot(data)) {
                             spotOrders1.add(data);
