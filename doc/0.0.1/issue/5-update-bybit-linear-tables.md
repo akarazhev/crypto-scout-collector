@@ -37,44 +37,83 @@ Take the following roles:
 
 The `ticker` data received from the Bybit websocket is the following:
 
+Linear Perpetual:
 ```json
 {
   "topic": "tickers.BTCUSDT",
   "type": "snapshot",
   "data": {
     "symbol": "BTCUSDT",
-    "tickDirection": "ZeroMinusTick",
-    "price24hPcnt": "-0.024473",
-    "lastPrice": "117497.80",
-    "prevPrice24h": "120445.50",
-    "highPrice24h": "122490.00",
-    "lowPrice24h": "117449.40",
-    "prevPrice1h": "118019.70",
-    "markPrice": "117491.30",
-    "indexPrice": "117550.76",
-    "openInterest": "70964.254",
-    "openInterestValue": "8337682455.99",
-    "turnover24h": "11696251845.9320",
-    "volume24h": "97432.6430",
-    "nextFundingTime": "1760140800000",
-    "fundingRate": "0.0001",
-    "bid1Price": "117497.80",
-    "bid1Size": "5.815",
-    "ask1Price": "117497.90",
-    "ask1Size": "12.156",
+    "tickDirection": "MinusTick",
+    "price24hPcnt": "-0.158315",
+    "lastPrice": "66666.60",
+    "prevPrice24h": "79206.20",
+    "highPrice24h": "79266.30",
+    "lowPrice24h": "65076.90",
+    "prevPrice1h": "66666.60",
+    "markPrice": "66666.60",
+    "indexPrice": "115418.19",
+    "openInterest": "492373.72",
+    "openInterestValue": "32824881841.75",
+    "turnover24h": "4936790807.6521",
+    "volume24h": "73191.3870",
+    "fundingIntervalHour": "8",
+    "fundingCap": "0.005",
+    "nextFundingTime": "1760342400000",
+    "fundingRate": "-0.005",
+    "bid1Price": "66666.60",
+    "bid1Size": "23789.165",
+    "ask1Price": "66666.70",
+    "ask1Size": "23775.469",
     "preOpenPrice": "",
     "preQty": "",
     "curPreListingPhase": ""
   },
-  "cs": 462754208618,
-  "ts": 1760121135490
+  "cs": 9532239429,
+  "ts": 1760325052630
+}
+```
+
+Linear Futures:
+```json
+{
+  "topic": "tickers.BTC-26DEC25",
+  "type": "snapshot",
+  "data": {
+    "symbol": "BTC-26DEC25",
+    "tickDirection": "ZeroMinusTick",
+    "price24hPcnt": "0",
+    "lastPrice": "109401.50",
+    "prevPrice24h": "109401.50",
+    "highPrice24h": "109401.50",
+    "lowPrice24h": "109401.50",
+    "prevPrice1h": "109401.50",
+    "markPrice": "121144.63",
+    "indexPrice": "114132.51",
+    "openInterest": "6.622",
+    "openInterestValue": "802219.74",
+    "turnover24h": "0.0000",
+    "volume24h": "0.0000",
+    "deliveryTime": "2025-12-26T08:00:00Z",
+    "basisRate": "0.06129209",
+    "deliveryFeeRate": "0",
+    "predictedDeliveryPrice": "0.00",
+    "basis": "-4730.84",
+    "basisRateYear": "0.30655351",
+    "nextFundingTime": "",
+    "fundingRate": "",
+    "bid1Price": "111254.50",
+    "bid1Size": "0.176",
+    "ask1Price": "131001.00",
+    "ask1Size": "0.580"
+  },
+  "cs": 31337927919,
+  "ts": 1760409119857
 }
 ```
 
 Parameters to save:
 
-- `topic`: string. Topic name.
-- `type`: string. Data type. snapshot,delta.
 - `cs`: integer. Cross sequence.
 - `ts`: number. The timestamp (ms) that the system generates the data.
 - `data`: array. Object.
