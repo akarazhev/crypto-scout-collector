@@ -88,8 +88,10 @@ public final class CollectorModule extends AbstractModule {
     @Provides
     private BybitCryptoCollector bybitCryptoCollector(final NioReactor reactor, final Executor executor,
                                                       final StreamOffsetsRepository streamOffsetsRepository,
-                                                      final BybitSpotRepository bybitSpotRepository) {
-        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitSpotRepository);
+                                                      final BybitSpotRepository bybitSpotRepository,
+                                                      final BybitLinearRepository bybitLinearRepository) {
+        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitSpotRepository,
+                bybitLinearRepository);
     }
 
     @Provides
