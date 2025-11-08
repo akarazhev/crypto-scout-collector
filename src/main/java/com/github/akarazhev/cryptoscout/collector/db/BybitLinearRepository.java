@@ -34,6 +34,7 @@ import io.activej.reactor.nio.NioReactor;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +81,30 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_LAST_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_LOW_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_PREV_PRICE_24H;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_PREV_PRICE_1H;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_MARK_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_INDEX_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_OPEN_INTEREST;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_OPEN_INTEREST_VALUE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_PRICE_24H_PCNT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_FUNDING_INTERVAL_HOUR;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_FUNDING_CAP;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_NEXT_FUNDING_TIME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_FUNDING_RATE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_BID1_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_BID1_SIZE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_ASK1_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_ASK1_SIZE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_DELIVERY_TIME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_BASIS_RATE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_DELIVERY_FEE_RATE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_BASIS;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_BASIS_RATE_YEAR;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_PRE_OPEN_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_PRE_QTY;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_CUR_PRE_LISTING_PHASE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_TICK_DIRECTION;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_TURNOVER_24H;
@@ -105,6 +129,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW_PRICE
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.OPEN;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.P;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PREV_PRICE_24H;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PREV_PRICE_1H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PRICE_24H_PCNT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RPI;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SIDE;
@@ -113,12 +138,34 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL_NAME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TICK_DIRECTION;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.MARK_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.INDEX_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.OPEN_INTEREST;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.OPEN_INTEREST_VALUE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.U;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.FUNDING_INTERVAL_HOUR;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.FUNDING_CAP;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.NEXT_FUNDING_TIME;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.FUNDING_RATE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BID1_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BID1_SIZE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.ASK1_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.ASK1_SIZE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DELIVERY_TIME;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BASIS_RATE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DELIVERY_FEE_RATE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PREDICTED_DELIVERY_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BASIS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BASIS_RATE_YEAR;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PRE_OPEN_PRICE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PRE_QTY;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CUR_PRE_LISTING_PHASE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
@@ -192,30 +239,126 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     }
 
                     final var timestamp = ticker.get(TS);
+                    // Linear perpetual
                     final var symbol = (String) row.get(SYMBOL);
+                    final var tickDirection = (String) row.get(TICK_DIRECTION);
+                    final var price24hPcnt = toBigDecimal(row.get(PRICE_24H_PCNT));
                     final var lastPrice = toBigDecimal(row.get(LAST_PRICE));
+                    final var prevPrice24h = toBigDecimal(row.get(PREV_PRICE_24H));
                     final var highPrice24h = toBigDecimal(row.get(HIGH_PRICE_24H));
                     final var lowPrice24h = toBigDecimal(row.get(LOW_PRICE_24H));
-                    final var prevPrice24h = toBigDecimal(row.get(PREV_PRICE_24H));
-                    final var volume24h = toBigDecimal(row.get(VOLUME_24H));
+                    final var prevPrice1h = toBigDecimal(row.get(PREV_PRICE_1H));
+                    final var markPrice = toBigDecimal(row.get(MARK_PRICE));
+                    final var indexPrice = toBigDecimal(row.get(INDEX_PRICE));
+                    final var openInterest = toBigDecimal(row.get(OPEN_INTEREST));
+                    final var openInterestValue = toBigDecimal(row.get(OPEN_INTEREST_VALUE));
                     final var turnover24h = toBigDecimal(row.get(TURNOVER_24H));
-                    final var price24hPcnt = toBigDecimal(row.get(PRICE_24H_PCNT));
+                    final var volume24h = toBigDecimal(row.get(VOLUME_24H));
+                    final var fundingIntervalHour = toBigDecimal(row.get(FUNDING_INTERVAL_HOUR));
+                    final var fundingCap = toBigDecimal(row.get(FUNDING_CAP));
+                    final var nextFundingTime = row.get(NEXT_FUNDING_TIME);
+                    final var fundingRate = toBigDecimal(row.get(FUNDING_RATE));
+                    final var bid1Price = toBigDecimal(row.get(BID1_PRICE));
+                    final var bid1Size = toBigDecimal(row.get(BID1_SIZE));
+                    final var ask1Price = toBigDecimal(row.get(ASK1_PRICE));
+                    final var ask1Size = toBigDecimal(row.get(ASK1_SIZE));
+                    final var preOpenPrice = toBigDecimal(row.get(PRE_OPEN_PRICE)); // can be null
+                    final var preQty = toBigDecimal(row.get(PRE_QTY)); // cen be null
+                    final var curPreListingPhase = (String) row.get(CUR_PRE_LISTING_PHASE); // can be empty
+                    // Linear futures
+                    final var deliveryTime = row.get(DELIVERY_TIME); // can be null
+                    final var basisRate = toBigDecimal(row.get(BASIS_RATE)); // can be null
+                    final var deliveryFeeRate = toBigDecimal(row.get(DELIVERY_FEE_RATE)); // can be null
+                    final var predictedDeliveryPrice = toBigDecimal(row.get(PREDICTED_DELIVERY_PRICE)); // can be null
+                    final var basis = toBigDecimal(row.get(BASIS)); // can be null
+                    final var basisRateYear = toBigDecimal(row.get(BASIS_RATE_YEAR)); // can be null
 
-                    if (timestamp == null || symbol == null || lastPrice == null || highPrice24h == null ||
-                            lowPrice24h == null || prevPrice24h == null || volume24h == null || turnover24h == null ||
-                            price24hPcnt == null) {
+                    if (timestamp == null || symbol == null || tickDirection == null || price24hPcnt == null ||
+                            lastPrice == null || prevPrice24h == null || highPrice24h == null || lowPrice24h == null ||
+                            prevPrice1h == null || markPrice == null || indexPrice == null || openInterest == null ||
+                            openInterestValue == null || turnover24h == null || volume24h == null ||
+                            fundingIntervalHour == null || fundingCap == null || nextFundingTime == null ||
+                            fundingRate == null || bid1Price == null || bid1Size == null || ask1Price == null ||
+                            ask1Size == null) {
                         continue; // skip malformed rows
                     }
 
-                    ps.setString(LINEAR_TICKERS_SYMBOL, symbol);
                     ps.setObject(LINEAR_TICKERS_TIMESTAMP, toOdt(timestamp));
+                    ps.setString(LINEAR_TICKERS_SYMBOL, symbol);
+                    ps.setString(LINEAR_TICKERS_TICK_DIRECTION, tickDirection);
+                    ps.setBigDecimal(LINEAR_TICKERS_PRICE_24H_PCNT, price24hPcnt);
                     ps.setBigDecimal(LINEAR_TICKERS_LAST_PRICE, lastPrice);
+                    ps.setBigDecimal(LINEAR_TICKERS_PREV_PRICE_24H, prevPrice24h);
                     ps.setBigDecimal(LINEAR_TICKERS_HIGH_PRICE_24H, highPrice24h);
                     ps.setBigDecimal(LINEAR_TICKERS_LOW_PRICE_24H, lowPrice24h);
-                    ps.setBigDecimal(LINEAR_TICKERS_PREV_PRICE_24H, prevPrice24h);
-                    ps.setBigDecimal(LINEAR_TICKERS_VOLUME_24H, volume24h);
+                    ps.setBigDecimal(LINEAR_TICKERS_PREV_PRICE_1H, prevPrice1h);
+                    ps.setBigDecimal(LINEAR_TICKERS_MARK_PRICE, markPrice);
+                    ps.setBigDecimal(LINEAR_TICKERS_INDEX_PRICE, indexPrice);
+                    ps.setBigDecimal(LINEAR_TICKERS_OPEN_INTEREST, openInterest);
+                    ps.setBigDecimal(LINEAR_TICKERS_OPEN_INTEREST_VALUE, openInterestValue);
                     ps.setBigDecimal(LINEAR_TICKERS_TURNOVER_24H, turnover24h);
-                    ps.setBigDecimal(LINEAR_TICKERS_PRICE_24H_PCNT, price24hPcnt);
+                    ps.setBigDecimal(LINEAR_TICKERS_VOLUME_24H, volume24h);
+                    ps.setBigDecimal(LINEAR_TICKERS_FUNDING_INTERVAL_HOUR, fundingIntervalHour);
+                    ps.setBigDecimal(LINEAR_TICKERS_FUNDING_CAP, fundingCap);
+                    ps.setObject(LINEAR_TICKERS_NEXT_FUNDING_TIME, toOdt(nextFundingTime));
+                    ps.setBigDecimal(LINEAR_TICKERS_FUNDING_RATE, fundingRate);
+                    ps.setBigDecimal(LINEAR_TICKERS_BID1_PRICE, bid1Price);
+                    ps.setBigDecimal(LINEAR_TICKERS_BID1_SIZE, bid1Size);
+                    ps.setBigDecimal(LINEAR_TICKERS_ASK1_PRICE, ask1Price);
+                    ps.setBigDecimal(LINEAR_TICKERS_ASK1_SIZE, ask1Size);
+                    if (preOpenPrice != null) {
+                        ps.setBigDecimal(LINEAR_TICKERS_PRE_OPEN_PRICE, preOpenPrice);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_PRE_OPEN_PRICE, Types.NUMERIC);
+                    }
+
+                    if (preQty != null) {
+                        ps.setBigDecimal(LINEAR_TICKERS_PRE_QTY, preQty);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_PRE_QTY, Types.NUMERIC);
+                    }
+
+                    if (curPreListingPhase != null && !curPreListingPhase.isBlank()) {
+                        ps.setString(LINEAR_TICKERS_CUR_PRE_LISTING_PHASE, curPreListingPhase);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_CUR_PRE_LISTING_PHASE, Types.VARCHAR);
+                    }
+
+                    if (deliveryTime != null) {
+                        ps.setObject(LINEAR_TICKERS_DELIVERY_TIME, toOdt(deliveryTime));
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_DELIVERY_TIME, Types.TIMESTAMP);
+                    }
+
+                    if (basisRate != null) {
+                        ps.setBigDecimal(LINEAR_TICKERS_BASIS_RATE, basisRate);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_BASIS_RATE, Types.NUMERIC);
+                    }
+
+                    if (deliveryFeeRate != null) {
+                        ps.setBigDecimal(LINEAR_TICKERS_DELIVERY_FEE_RATE, deliveryFeeRate);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_DELIVERY_FEE_RATE, Types.NUMERIC);
+                    }
+
+                    if (predictedDeliveryPrice != null) {
+                        ps.setBigDecimal(LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE, predictedDeliveryPrice);
+                    }  else {
+                        ps.setNull(LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE, Types.NUMERIC);
+                    }
+
+                    if (basis != null) {
+                        ps.setBigDecimal(LINEAR_TICKERS_BASIS, basis);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_BASIS, Types.NUMERIC);
+                    }
+
+                    if (basisRateYear != null) {
+                        ps.setBigDecimal(LINEAR_TICKERS_BASIS_RATE_YEAR, basisRateYear);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_BASIS_RATE_YEAR, Types.NUMERIC);
+                    }
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {

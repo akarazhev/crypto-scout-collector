@@ -166,17 +166,45 @@ public final class Constants {
 
         // Linear tickers
         static final String LINEAR_TICKERS_INSERT = "INSERT INTO " + BYBIT_LINEAR_TICKERS_TABLE +
-                "(symbol, timestamp, last_price, high_price_24h, low_price_24h, prev_price_24h, " +
-                "volume_24h, turnover_24h, price_24h_pcnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, timestamp, tick_direction, price_24h_pcnt, last_price, prev_price_24h, " +
+                "high_price_24h, low_price_24h, prev_price_1h, mark_price, index_price, open_interest, " +
+                "open_interest_value, turnover_24h, volume_24h, funding_interval_hour, funding_cap, " +
+                "next_funding_time, funding_rate, bid1_price, bid1_size, ask1_price, ask1_size, " +
+                "delivery_time, basis_rate, delivery_fee_rate, predicted_delivery_price, basis, " +
+                "basis_rate_year, pre_open_price, pre_qty, cur_pre_listing_phase) VALUES (" +
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         static final int LINEAR_TICKERS_SYMBOL = 1;
         static final int LINEAR_TICKERS_TIMESTAMP = 2;
-        static final int LINEAR_TICKERS_LAST_PRICE = 3;
-        static final int LINEAR_TICKERS_HIGH_PRICE_24H = 4;
-        static final int LINEAR_TICKERS_LOW_PRICE_24H = 5;
+        static final int LINEAR_TICKERS_TICK_DIRECTION = 3;
+        static final int LINEAR_TICKERS_PRICE_24H_PCNT = 4;
+        static final int LINEAR_TICKERS_LAST_PRICE = 5;
         static final int LINEAR_TICKERS_PREV_PRICE_24H = 6;
-        static final int LINEAR_TICKERS_VOLUME_24H = 7;
-        static final int LINEAR_TICKERS_TURNOVER_24H = 8;
-        static final int LINEAR_TICKERS_PRICE_24H_PCNT = 9;
+        static final int LINEAR_TICKERS_HIGH_PRICE_24H = 7;
+        static final int LINEAR_TICKERS_LOW_PRICE_24H = 8;
+        static final int LINEAR_TICKERS_PREV_PRICE_1H = 9;
+        static final int LINEAR_TICKERS_MARK_PRICE = 10;
+        static final int LINEAR_TICKERS_INDEX_PRICE = 11;
+        static final int LINEAR_TICKERS_OPEN_INTEREST = 12;
+        static final int LINEAR_TICKERS_OPEN_INTEREST_VALUE = 13;
+        static final int LINEAR_TICKERS_TURNOVER_24H = 14;
+        static final int LINEAR_TICKERS_VOLUME_24H = 15;
+        static final int LINEAR_TICKERS_FUNDING_INTERVAL_HOUR = 16;
+        static final int LINEAR_TICKERS_FUNDING_CAP = 17;
+        static final int LINEAR_TICKERS_NEXT_FUNDING_TIME = 18;
+        static final int LINEAR_TICKERS_FUNDING_RATE = 19;
+        static final int LINEAR_TICKERS_BID1_PRICE = 20;
+        static final int LINEAR_TICKERS_BID1_SIZE = 21;
+        static final int LINEAR_TICKERS_ASK1_PRICE = 22;
+        static final int LINEAR_TICKERS_ASK1_SIZE = 23;
+        static final int LINEAR_TICKERS_DELIVERY_TIME = 24;
+        static final int LINEAR_TICKERS_BASIS_RATE = 25;
+        static final int LINEAR_TICKERS_DELIVERY_FEE_RATE = 26;
+        static final int LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE = 27;
+        static final int LINEAR_TICKERS_BASIS = 28;
+        static final int LINEAR_TICKERS_BASIS_RATE_YEAR = 29;
+        static final int LINEAR_TICKERS_PRE_OPEN_PRICE = 30;
+        static final int LINEAR_TICKERS_PRE_QTY = 31;
+        static final int LINEAR_TICKERS_CUR_PRE_LISTING_PHASE = 32;
 
         // Spot public trades
         static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_SPOT_PUBLIC_TRADE_TABLE +
