@@ -320,7 +320,7 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     final var rows = getRows(DATA, allLiquidation);
                     if (rows != null) {
                         for (final var row : rows) {
-                            final var timestamp = row.get(TS);
+                            final var timestamp = row.get(T);
                             final var symbol = (String) row.get(SYMBOL_NAME);
                             final var positionSide = (String) row.get(SIDE);
                             final var executedSize = toBigDecimal(row.get(V));

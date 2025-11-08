@@ -49,7 +49,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBI
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_TICKERS_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
-import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getPublicTradeCount;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getRowsCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -128,7 +128,7 @@ final class BybitSpotRepositoryTest {
     @Test
     void shouldSavePublicTrade() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
-        final var expected = getPublicTradeCount(data);
+        final var expected = getRowsCount(data);
         assertEquals(expected, repository.savePublicTrade(List.of(data), 800L));
         assertTableCount(BYBIT_SPOT_PUBLIC_TRADE_TABLE, expected);
     }

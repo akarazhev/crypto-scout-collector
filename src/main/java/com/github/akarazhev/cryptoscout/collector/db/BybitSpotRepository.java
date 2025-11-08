@@ -105,7 +105,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL_NAME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TAKER_SIDE;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SIDE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_24H;
@@ -305,7 +305,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                             final var tradeTime = row.get(T);
                             final var price = toBigDecimal(row.get(P));
                             final var size = toBigDecimal(row.get(V));
-                            final var takerSide = (String) row.get(TAKER_SIDE);
+                            final var takerSide = (String) row.get(SIDE);
                             final var isBlock = toBoolean(row.get(BT));
                             final var isRpi = toBoolean(row.get(RPI));
 

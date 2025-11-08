@@ -22,7 +22,7 @@ public final class PayloadParser {
         return SNAPSHOT.equals(payload.get(TYPE));
     }
 
-    public static int getPublicTradeCount(final Map<String, Object> payload) {
+    public static int getRowsCount(final Map<String, Object> payload) {
         @SuppressWarnings("unchecked") final var rows = (List<Map<String, Object>>) payload.get(DATA);
         return rows == null ? 0 : rows.size();
     }
