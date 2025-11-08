@@ -254,8 +254,8 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     final var openInterestValue = toBigDecimal(row.get(OPEN_INTEREST_VALUE));
                     final var turnover24h = toBigDecimal(row.get(TURNOVER_24H));
                     final var volume24h = toBigDecimal(row.get(VOLUME_24H));
-                    final var fundingIntervalHour = toBigDecimal(row.get(FUNDING_INTERVAL_HOUR));
-                    final var fundingCap = toBigDecimal(row.get(FUNDING_CAP));
+                    final var fundingIntervalHour = toBigDecimal(row.get(FUNDING_INTERVAL_HOUR)); // can be null
+                    final var fundingCap = toBigDecimal(row.get(FUNDING_CAP)); // can be null
                     final var nextFundingTime = row.get(NEXT_FUNDING_TIME);
                     final var fundingRate = toBigDecimal(row.get(FUNDING_RATE));
                     final var bid1Price = toBigDecimal(row.get(BID1_PRICE));
@@ -277,9 +277,8 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                             lastPrice == null || prevPrice24h == null || highPrice24h == null || lowPrice24h == null ||
                             prevPrice1h == null || markPrice == null || indexPrice == null || openInterest == null ||
                             openInterestValue == null || turnover24h == null || volume24h == null ||
-                            fundingIntervalHour == null || fundingCap == null || nextFundingTime == null ||
-                            fundingRate == null || bid1Price == null || bid1Size == null || ask1Price == null ||
-                            ask1Size == null) {
+                            nextFundingTime == null || fundingRate == null || bid1Price == null || bid1Size == null ||
+                            ask1Price == null || ask1Size == null) {
                         continue; // skip malformed rows
                     }
 
