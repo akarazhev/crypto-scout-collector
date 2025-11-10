@@ -28,7 +28,7 @@ flowchart LR
     end
 
     subgraph App[crypto-scout-collector -> ActiveJ]
-        A1[AmqpConsumer]
+        A1[StreamConsumer]
         A2[CmcParserCollector]
         A3[BybitParserCollector]
         A4[BybitCryptoCollector]
@@ -52,9 +52,9 @@ Key modules/classes:
 - `src/main/java/com/github/akarazhev/cryptoscout/module/CoreModule.java` — single-threaded reactor + virtual-thread
   executor.
 - `src/main/java/com/github/akarazhev/cryptoscout/module/CollectorModule.java` — DI wiring for repositories and
-  collectors; starts `AmqpConsumer` eagerly.
+  collectors; starts `StreamConsumer` eagerly.
 - `src/main/java/com/github/akarazhev/cryptoscout/module/WebModule.java` — HTTP server exposing `/health`.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java` — subscribes to RabbitMQ Streams and
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/StreamConsumer.java` — subscribes to RabbitMQ Streams and
   dispatches payloads.
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/*Collector.java` — batch/interval buffered writes to DB.
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/db/*Repository.java` — JDBC/Hikari-based writes.
@@ -182,7 +182,7 @@ configured hosts/ports.
 
 ## Offset management
 
-- **CMC stream (external offsets):** `AmqpConsumer` disables server-side offset tracking and uses a DB-backed offset in
+- **CMC stream (external offsets):** `StreamConsumer` disables server-side offset tracking and uses a DB-backed offset in
   `crypto_scout.stream_offsets`.
     - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if
       absent).
@@ -190,10 +190,10 @@ configured hosts/ports.
     - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once
       semantics.
 - **Bybit metrics stream (external offsets):** the `bybit-parser-stream` uses the same DB-backed offset approach.
-    - On startup, `AmqpConsumer` reads `bybit-parser-stream` offset from DB and subscribes from `offset + 1`.
+    - On startup, `StreamConsumer` reads `bybit-parser-stream` offset from DB and subscribes from `offset + 1`.
     - `BybitParserCollector` batches inserts and updates the max processed offset in one transaction.
 - **Bybit spot stream (external offsets):** `bybit-crypto-stream` also uses the DB-backed offset approach.
-    - On startup, `AmqpConsumer` reads `bybit-crypto-stream` offset from DB and subscribes from `offset + 1`.
+    - On startup, `StreamConsumer` reads `bybit-crypto-stream` offset from DB and subscribes from `offset + 1`.
     - `BybitCryptoCollector` batches inserts and updates the max processed offset in one transaction.
     - Manual stream acknowledgments are no longer used.
 

@@ -44,8 +44,8 @@ import com.rabbitmq.stream.Consumer;
 import com.rabbitmq.stream.Environment;
 import com.rabbitmq.stream.OffsetSpecification;
 
-public final class AmqpConsumer extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(AmqpConsumer.class);
+public final class StreamConsumer extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(StreamConsumer.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
     private final BybitCryptoCollector bybitCryptoCollector;
@@ -58,20 +58,20 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
 
     private enum StreamType {CMC_PARSER, BYBIT_PARSER, BYBIT_CRYPTO}
 
-    public static AmqpConsumer create(final NioReactor reactor, final Executor executor,
-                                      final StreamOffsetsRepository streamOffsetsRepository,
-                                      final BybitCryptoCollector bybitCryptoCollector,
-                                      final BybitParserCollector bybitParserCollector,
-                                      final CmcParserCollector cmcParserCollector) {
-        return new AmqpConsumer(reactor, executor, streamOffsetsRepository, bybitCryptoCollector, bybitParserCollector,
+    public static StreamConsumer create(final NioReactor reactor, final Executor executor,
+                                        final StreamOffsetsRepository streamOffsetsRepository,
+                                        final BybitCryptoCollector bybitCryptoCollector,
+                                        final BybitParserCollector bybitParserCollector,
+                                        final CmcParserCollector cmcParserCollector) {
+        return new StreamConsumer(reactor, executor, streamOffsetsRepository, bybitCryptoCollector, bybitParserCollector,
                 cmcParserCollector);
     }
 
-    private AmqpConsumer(final NioReactor reactor, final Executor executor,
-                         final StreamOffsetsRepository streamOffsetsRepository,
-                         final BybitCryptoCollector bybitCryptoCollector,
-                         final BybitParserCollector bybitParserCollector,
-                         final CmcParserCollector cmcParserCollector) {
+    private StreamConsumer(final NioReactor reactor, final Executor executor,
+                           final StreamOffsetsRepository streamOffsetsRepository,
+                           final BybitCryptoCollector bybitCryptoCollector,
+                           final BybitParserCollector bybitParserCollector,
+                           final CmcParserCollector cmcParserCollector) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
@@ -106,9 +106,9 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                         .subscriptionListener(c -> updateOffset(bybitCryptoStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_CRYPTO, c, m))
                         .build();
-                LOGGER.info("AmqpConsumer started");
+                LOGGER.info("StreamConsumer started");
             } catch (final Exception ex) {
-                LOGGER.error("Failed to start AmqpConsumer", ex);
+                LOGGER.error("Failed to start StreamConsumer", ex);
                 throw new RuntimeException(ex);
             }
         });
@@ -124,7 +124,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
             closeConsumer(bybitCryptoConsumer);
             bybitCryptoConsumer = null;
             closeEnvironment();
-            LOGGER.info("AmqpConsumer stopped");
+            LOGGER.info("StreamConsumer stopped");
         });
     }
 

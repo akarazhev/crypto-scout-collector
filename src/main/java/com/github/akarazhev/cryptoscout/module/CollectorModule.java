@@ -24,7 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.module;
 
-import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
+import com.github.akarazhev.cryptoscout.collector.StreamConsumer;
 import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
 import com.github.akarazhev.cryptoscout.collector.CmcParserCollector;
@@ -110,12 +110,12 @@ public final class CollectorModule extends AbstractModule {
 
     @Provides
     @Eager
-    private AmqpConsumer amqpConsumer(final NioReactor reactor, final Executor executor,
-                                      final StreamOffsetsRepository streamOffsetsRepository,
-                                      final BybitCryptoCollector bybitCryptoCollector,
-                                      final BybitParserCollector bybitParserCollector,
-                                      final CmcParserCollector cmcParserCollector) {
-        return AmqpConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
+    private StreamConsumer streamConsumer(final NioReactor reactor, final Executor executor,
+                                          final StreamOffsetsRepository streamOffsetsRepository,
+                                          final BybitCryptoCollector bybitCryptoCollector,
+                                          final BybitParserCollector bybitParserCollector,
+                                          final CmcParserCollector cmcParserCollector) {
+        return StreamConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
                 bybitParserCollector, cmcParserCollector);
     }
 }

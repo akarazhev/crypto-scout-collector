@@ -22,7 +22,7 @@ Take the following roles:
 
 - As the expert java engineer review the current `crypto-scout-collector` project implementation and update it by
   saving `CMC` stream data message offset in the database after processing. The implementation of the stream consumer
-  is here: `AmqpConsumer`, processing the data is here: `CmcParserCollector`, saving the data is here:
+  is here: `StreamConsumer`, processing the data is here: `CmcParserCollector`, saving the data is here:
   `CmcParserRepository`.
 - As the expert java engineer recheck your proposal and make sure that they are correct and haven't missed any
   important points.
@@ -46,7 +46,7 @@ Take the following roles:
 
 ### Code changes
 
-- **Consumer (`src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java`)**
+- **Consumer (`src/main/java/com/github/akarazhev/cryptoscout/collector/StreamConsumer.java`)**
     - Use `.noTrackingStrategy()` and `subscriptionListener` for the CMC consumer to choose start offset from DB via
       `CmcParserRepository.getStreamOffset(...)` and `OffsetSpecification.offset(saved+1)` (fallback to `first`).
     - Pass the current message offset to processing: `cmcParserCollector.save(context.offset(), payload)`.
@@ -66,7 +66,7 @@ Take the following roles:
     - New SQL constants in `collector/db/Constants.java` under `Offsets` (SELECT/UPSERT).
 
 - **DI wiring (`src/main/java/com/github/akarazhev/cryptoscout/module/CollectorModule.java`)**
-    - Provide `CmcParserRepository` to `AmqpConsumer.create(...)`.
+    - Provide `CmcParserRepository` to `StreamConsumer.create(...)`.
 
 ### Database schema
 

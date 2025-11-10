@@ -83,9 +83,9 @@ backups.
 
 - Application
     - Entry point: `src/main/java/com/github/akarazhev/cryptoscout/Collector.java` (ActiveJ `Launcher`).
-    - Modules: `module/CoreModule.java` (reactor/executor), `module/CollectorModule.java` (DI and eager `AmqpConsumer`),
+    - Modules: `module/CoreModule.java` (reactor/executor), `module/CollectorModule.java` (DI and eager `StreamConsumer`),
       `module/WebModule.java` (`/health`).
-    - Collectors: `collector/AmqpConsumer.java`, `collector/CmcParserCollector.java`,
+    - Collectors: `collector/StreamConsumer.java`, `collector/CmcParserCollector.java`,
       `collector/BybitParserCollector.java`, `collector/BybitCryptoCollector.java`.
     - Repos & datasource: `collector/db/CollectorDataSource.java`, `collector/db/*Repository.java`.
     - Config readers: `config/AmqpConfig.java`, `config/JdbcConfig.java`, `config/ServerConfig.java`; keys in
@@ -105,7 +105,7 @@ flowchart LR
     end
 
     subgraph App[crypto-scout-collector (ActiveJ)]
-        A1[AmqpConsumer]
+        A1[StreamConsumer]
         A2[CmcParserCollector]
         A3[BybitParserCollector]
         A4[BybitCryptoCollector]
@@ -183,7 +183,7 @@ Application container: `crypto-scout-collector`
       and `(symbol, side, price)`.
     - `crypto_scout.bybit_linear_all_liqudation` — primary key `(id, event_time)`; indexes on `(symbol, event_time)`.
 - External offset tracking for CMC, Bybit metrics, and Bybit spot streams:
-    - `AmqpConsumer` starts consumers from DB offset and disables server-side tracking.
+    - `StreamConsumer` starts consumers from DB offset and disables server-side tracking.
     - `CmcParserCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
 - Compression policies (segmentby/orderby) for all three tables (compress chunks older than 7 days).
 - Reorder policies align with time‑descending indexes.
@@ -314,7 +314,7 @@ pick up `script/init.sql` changes.
   description.
 - Implemented external DB-backed offset tracking for CMC stream:
     - New table `crypto_scout.stream_offsets`.
-    - `AmqpConsumer` starts CMC consumer from DB offset and disables server-side tracking.
+    - `StreamConsumer` starts CMC consumer from DB offset and disables server-side tracking.
     - `CmcParserCollector` batches inserts and updates offset atomically.
 - Split bootstrap SQL:
     - Moved `crypto_scout.bybit_spot_tickers` from `script/init.sql` to `script/bybit_spot_tables.sql`.

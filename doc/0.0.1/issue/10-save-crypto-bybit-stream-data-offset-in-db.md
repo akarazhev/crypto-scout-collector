@@ -22,7 +22,7 @@ Take the following roles:
 
 - As the expert java engineer review the current `crypto-scout-collector` project implementation and update it by
   saving `Crypto-Bybit` stream data message offset in the database after processing. The implementation of the stream
-  consumer is here: `AmqpConsumer`, processing the data is here: `BybitCryptoCollector`, saving the data is here:
+  consumer is here: `StreamConsumer`, processing the data is here: `BybitCryptoCollector`, saving the data is here:
   `BybitSpotRepository`.
 - As the expert java engineer recheck your proposal and make sure that they are correct and haven't missed any
   important points.
@@ -32,7 +32,7 @@ Take the following roles:
 
 The offset has been implemented for the `CMC` data stream:
 
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java`
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/StreamConsumer.java`
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/db/StreamOffsetsRepository.java`
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/db/BybitParserRepository.java`
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/db/CmcParserRepository.java`
