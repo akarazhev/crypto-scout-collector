@@ -48,9 +48,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBI
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_LINEAR_ORDER_BOOK_50_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_LINEAR_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_LINEAR_TICKERS_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getRowsCount;
+import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
