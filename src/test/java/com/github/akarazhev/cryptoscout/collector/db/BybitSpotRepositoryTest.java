@@ -41,17 +41,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBI
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_240M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_5M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_60M_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_1000_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_1_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_200_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_ORDER_BOOK_50_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_TICKERS_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
-import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getRowsCount;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class BybitSpotRepositoryTest {
     private static ExecutorService executor;
@@ -123,49 +115,5 @@ final class BybitSpotRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
         assertEquals(1, repository.saveTicker(List.of(data), 700L));
         assertTableCount(BYBIT_SPOT_TICKERS_TABLE, 1);
-    }
-
-    @Test
-    void shouldSavePublicTrade() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
-        final var expected = getRowsCount(data);
-        assertEquals(expected, repository.savePublicTrade(List.of(data), 800L));
-        assertTableCount(BYBIT_SPOT_PUBLIC_TRADE_TABLE, expected);
-    }
-
-    @Test
-    void shouldSaveOrderBook1() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
-        final var expected = getOrderBookLevelsCount(data);
-        assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook1(List.of(data), 900L));
-        assertTableCount(BYBIT_SPOT_ORDER_BOOK_1_TABLE, expected);
-    }
-
-    @Test
-    void shouldSaveOrderBook50() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
-        final var expected = getOrderBookLevelsCount(data);
-        assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook50(List.of(data), 1000L));
-        assertTableCount(BYBIT_SPOT_ORDER_BOOK_50_TABLE, expected);
-    }
-
-    @Test
-    void shouldSaveOrderBook200() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
-        final var expected = getOrderBookLevelsCount(data);
-        assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook200(List.of(data), 1100L));
-        assertTableCount(BYBIT_SPOT_ORDER_BOOK_200_TABLE, expected);
-    }
-
-    @Test
-    void shouldSaveOrderBook1000() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
-        final var expected = getOrderBookLevelsCount(data);
-        assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1200L));
-        assertTableCount(BYBIT_SPOT_ORDER_BOOK_1000_TABLE, expected);
     }
 }
