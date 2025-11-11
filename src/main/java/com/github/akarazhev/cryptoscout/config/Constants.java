@@ -40,6 +40,7 @@ final class Constants {
         static final String AMQP_RABBITMQ_PASSWORD = "amqp.rabbitmq.password";
         static final String AMQP_STREAM_PORT = "amqp.stream.port";
         static final String AMQP_BYBIT_CRYPTO_STREAM = "amqp.bybit.crypto.stream";
+        static final String AMQP_BYBIT_TA_CRYPTO_STREAM = "amqp.bybit.ta.crypto.stream";
         static final String AMQP_BYBIT_PARSER_STREAM = "amqp.bybit.parser.stream";
         static final String AMQP_CMC_PARSER_STREAM = "amqp.cmc.parser.stream";
         static final String AMQP_CRYPTO_SCOUT_EXCHANGE = "amqp.crypto.scout.exchange";

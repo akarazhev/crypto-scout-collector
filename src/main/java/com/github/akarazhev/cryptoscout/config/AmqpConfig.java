@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_QUEUE;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_TA_CRYPTO_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_COLLECTOR_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CRYPTO_SCOUT_EXCHANGE;
@@ -69,6 +70,10 @@ public final class AmqpConfig {
 
     public static String getAmqpBybitCryptoStream() {
         return AppConfig.getAsString(AMQP_BYBIT_CRYPTO_STREAM);
+    }
+
+    public static String getAmqpBybitTaCryptoStream() {
+        return AppConfig.getAsString(AMQP_BYBIT_TA_CRYPTO_STREAM);
     }
 
     public static String getAmqpBybitParserStream() {
