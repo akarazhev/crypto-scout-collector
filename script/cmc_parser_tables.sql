@@ -1,10 +1,4 @@
 -- CMC parser tables and policies (TimescaleDB PG17)
--- Safe to run on initial bootstrap; idempotent DDL where possible
-
--- Ensure required extensions and schema
-create EXTENSION IF NOT EXISTS timescaledb;
-create SCHEMA IF NOT EXISTS crypto_scout;
-SET search_path TO public, crypto_scout;
 
 -- =========================
 -- CMC FEAR & GREED INDEX (FGI)
