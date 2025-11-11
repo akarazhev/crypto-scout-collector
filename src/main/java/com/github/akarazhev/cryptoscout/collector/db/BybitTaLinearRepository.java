@@ -100,12 +100,12 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
     }
 
     @Override
-    public Promise<?> start() {
+    public Promise<Void> start() {
         return Promise.complete();
     }
 
     @Override
-    public Promise<?> stop() {
+    public Promise<Void> stop() {
         return Promise.complete();
     }
 

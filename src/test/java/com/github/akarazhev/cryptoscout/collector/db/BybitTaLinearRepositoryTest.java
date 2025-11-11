@@ -64,7 +64,8 @@ final class BybitTaLinearRepositoryTest {
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> dataSource.stop().whenComplete(() -> reactor.breakEventloop()));
+        reactor.post(() -> dataSource.stop()
+                .whenComplete(() -> reactor.breakEventloop()));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
@@ -72,7 +73,7 @@ final class BybitTaLinearRepositoryTest {
 
     @Test
     void shouldSavePublicTrade() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.PUBLIC_TRADE);
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.PUBLIC_TRADE);
         final var expected = getRowsCount(data);
         assertEquals(expected, repository.savePublicTrade(List.of(data), 800L));
         assertTableCount(BYBIT_TA_LINEAR_PUBLIC_TRADE_TABLE, expected);
@@ -80,7 +81,7 @@ final class BybitTaLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook1() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1);
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
         assertEquals(expected, repository.saveOrderBook1(List.of(data), 900L));
@@ -89,7 +90,7 @@ final class BybitTaLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook50() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_50);
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
         assertEquals(expected, repository.saveOrderBook50(List.of(data), 1000L));
@@ -98,7 +99,7 @@ final class BybitTaLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook200() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_200);
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
         assertEquals(expected, repository.saveOrderBook200(List.of(data), 1100L));
@@ -107,7 +108,7 @@ final class BybitTaLinearRepositoryTest {
 
     @Test
     void shouldSaveOrderBook1000() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1000);
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1000);
         final var expected = getOrderBookLevelsCount(data);
         assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1200L));
         assertTableCount(BYBIT_TA_LINEAR_ORDER_BOOK_1000_TABLE, expected);
@@ -115,7 +116,7 @@ final class BybitTaLinearRepositoryTest {
 
     @Test
     void shouldSaveAllLiquidation() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ALL_LIQUIDATION);
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ALL_LIQUIDATION);
         assertEquals(1, repository.saveAllLiquidation(List.of(data), 1300L));
         assertTableCount(BYBIT_TA_LINEAR_ALL_LIQUIDATION_TABLE, 1);
     }

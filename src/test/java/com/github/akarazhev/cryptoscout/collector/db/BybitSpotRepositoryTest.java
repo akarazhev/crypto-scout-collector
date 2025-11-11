@@ -62,7 +62,8 @@ final class BybitSpotRepositoryTest {
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> dataSource.stop().whenComplete(() -> reactor.breakEventloop()));
+        reactor.post(() -> dataSource.stop()
+                .whenComplete(() -> reactor.breakEventloop()));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
