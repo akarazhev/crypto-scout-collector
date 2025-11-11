@@ -24,12 +24,15 @@
 
 package com.github.akarazhev.cryptoscout.module;
 
+import com.github.akarazhev.cryptoscout.collector.BybitTaCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.StreamConsumer;
 import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
 import com.github.akarazhev.cryptoscout.collector.CmcParserCollector;
 import com.github.akarazhev.cryptoscout.collector.db.BybitLinearRepository;
 import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitTaLinearRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitTaSpotRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
@@ -80,9 +83,21 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
+    private BybitTaSpotRepository bybitTaSpotRepository(final NioReactor reactor,
+                                                        final CollectorDataSource collectorDataSource) {
+        return BybitTaSpotRepository.create(reactor, collectorDataSource);
+    }
+
+    @Provides
     private BybitLinearRepository bybitLinearRepository(final NioReactor reactor,
                                                         final CollectorDataSource collectorDataSource) {
         return BybitLinearRepository.create(reactor, collectorDataSource);
+    }
+
+    @Provides
+    private BybitTaLinearRepository bybitTaLinearRepository(final NioReactor reactor,
+                                                            final CollectorDataSource collectorDataSource) {
+        return BybitTaLinearRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
@@ -92,6 +107,15 @@ public final class CollectorModule extends AbstractModule {
                                                       final BybitLinearRepository bybitLinearRepository) {
         return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitSpotRepository,
                 bybitLinearRepository);
+    }
+
+    @Provides
+    private BybitTaCryptoCollector bybitTaCryptoCollector(final NioReactor reactor, final Executor executor,
+                                                          final StreamOffsetsRepository streamOffsetsRepository,
+                                                          final BybitTaSpotRepository bybitTaSpotRepository,
+                                                          final BybitTaLinearRepository bybitTaLinearRepository) {
+        return BybitTaCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitTaSpotRepository,
+                bybitTaLinearRepository);
     }
 
     @Provides
@@ -113,9 +137,10 @@ public final class CollectorModule extends AbstractModule {
     private StreamConsumer streamConsumer(final NioReactor reactor, final Executor executor,
                                           final StreamOffsetsRepository streamOffsetsRepository,
                                           final BybitCryptoCollector bybitCryptoCollector,
+                                          final BybitTaCryptoCollector bybitTaCryptoCollector,
                                           final BybitParserCollector bybitParserCollector,
                                           final CmcParserCollector cmcParserCollector) {
         return StreamConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
-                bybitParserCollector, cmcParserCollector);
+                bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
     }
 }

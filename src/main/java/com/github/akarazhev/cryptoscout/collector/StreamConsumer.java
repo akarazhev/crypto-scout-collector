@@ -49,33 +49,38 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
     private final BybitCryptoCollector bybitCryptoCollector;
+    private final BybitTaCryptoCollector bybitTaCryptoCollector;
     private final BybitParserCollector bybitParserCollector;
     private final CmcParserCollector cmcParserCollector;
     private volatile Environment environment;
     private volatile Consumer cmcParserConsumer;
     private volatile Consumer bybitParserConsumer;
     private volatile Consumer bybitCryptoConsumer;
+    private volatile Consumer bybitTaCryptoConsumer;
 
-    private enum StreamType {CMC_PARSER, BYBIT_PARSER, BYBIT_CRYPTO}
+    private enum StreamType {CMC_PARSER, BYBIT_PARSER, BYBIT_CRYPTO, BYBIT_TA_CRYPTO}
 
     public static StreamConsumer create(final NioReactor reactor, final Executor executor,
                                         final StreamOffsetsRepository streamOffsetsRepository,
                                         final BybitCryptoCollector bybitCryptoCollector,
+                                        final BybitTaCryptoCollector bybitTaCryptoCollector,
                                         final BybitParserCollector bybitParserCollector,
                                         final CmcParserCollector cmcParserCollector) {
-        return new StreamConsumer(reactor, executor, streamOffsetsRepository, bybitCryptoCollector, bybitParserCollector,
-                cmcParserCollector);
+        return new StreamConsumer(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
+                bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
     }
 
     private StreamConsumer(final NioReactor reactor, final Executor executor,
                            final StreamOffsetsRepository streamOffsetsRepository,
                            final BybitCryptoCollector bybitCryptoCollector,
+                           final BybitTaCryptoCollector bybitTaCryptoCollector,
                            final BybitParserCollector bybitParserCollector,
                            final CmcParserCollector cmcParserCollector) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
         this.bybitCryptoCollector = bybitCryptoCollector;
+        this.bybitTaCryptoCollector = bybitTaCryptoCollector;
         this.bybitParserCollector = bybitParserCollector;
         this.cmcParserCollector = cmcParserCollector;
     }
@@ -106,6 +111,13 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
                         .subscriptionListener(c -> updateOffset(bybitCryptoStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_CRYPTO, c, m))
                         .build();
+                final var bybitTaCryptoStream = AmqpConfig.getAmqpBybitTaCryptoStream();
+                bybitTaCryptoConsumer = environment.consumerBuilder()
+                        .stream(bybitTaCryptoStream)
+                        .noTrackingStrategy()
+                        .subscriptionListener(c -> updateOffset(bybitTaCryptoStream, c))
+                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_TA_CRYPTO, c, m))
+                        .build();
                 LOGGER.info("StreamConsumer started");
             } catch (final Exception ex) {
                 LOGGER.error("Failed to start StreamConsumer", ex);
@@ -123,6 +135,8 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
             bybitParserConsumer = null;
             closeConsumer(bybitCryptoConsumer);
             bybitCryptoConsumer = null;
+            closeConsumer(bybitTaCryptoConsumer);
+            bybitTaCryptoConsumer = null;
             closeEnvironment();
             LOGGER.info("StreamConsumer stopped");
         });
@@ -158,6 +172,7 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
                     case CMC_PARSER -> cmcParserCollector.save(payload, context.offset());
                     case BYBIT_PARSER -> bybitParserCollector.save(payload, context.offset());
                     case BYBIT_CRYPTO -> bybitCryptoCollector.save(payload, context.offset());
+                    case BYBIT_TA_CRYPTO -> bybitTaCryptoCollector.save(payload, context.offset());
                 })
                 .whenComplete((_, ex) -> {
                     if (ex != null) {

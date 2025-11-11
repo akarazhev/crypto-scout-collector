@@ -56,12 +56,14 @@ public final class Constants {
         static final String BYBIT_SPOT_KLINE_60M_TABLE = "crypto_scout.bybit_spot_kline_60m";
         static final String BYBIT_SPOT_KLINE_240M_TABLE = "crypto_scout.bybit_spot_kline_240m";
         static final String BYBIT_SPOT_KLINE_1D_TABLE = "crypto_scout.bybit_spot_kline_1d";
-        static final String BYBIT_SPOT_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_spot_public_trade";
-        static final String BYBIT_SPOT_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_spot_order_book_1";
-        static final String BYBIT_SPOT_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_spot_order_book_50";
-        static final String BYBIT_SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_spot_order_book_200";
-        static final String BYBIT_SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_spot_order_book_1000";
         static final String BYBIT_SPOT_TICKERS_TABLE = "crypto_scout.bybit_spot_tickers";
+
+        // Bybit ta spot tables
+        static final String BYBIT_TA_SPOT_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_spot_public_trade";
+        static final String BYBIT_TA_SPOT_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_spot_order_book_1";
+        static final String BYBIT_TA_SPOT_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_spot_order_book_50";
+        static final String BYBIT_TA_SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_spot_order_book_200";
+        static final String BYBIT_TA_SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_spot_order_book_1000";
 
         // Bybit linear tables
         static final String BYBIT_LINEAR_KLINE_1M_TABLE = "crypto_scout.bybit_linear_kline_1m";
@@ -70,13 +72,15 @@ public final class Constants {
         static final String BYBIT_LINEAR_KLINE_60M_TABLE = "crypto_scout.bybit_linear_kline_60m";
         static final String BYBIT_LINEAR_KLINE_240M_TABLE = "crypto_scout.bybit_linear_kline_240m";
         static final String BYBIT_LINEAR_KLINE_1D_TABLE = "crypto_scout.bybit_linear_kline_1d";
-        static final String BYBIT_LINEAR_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_linear_public_trade";
-        static final String BYBIT_LINEAR_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_linear_order_book_1";
-        static final String BYBIT_LINEAR_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_linear_order_book_50";
-        static final String BYBIT_LINEAR_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_linear_order_book_200";
-        static final String BYBIT_LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_linear_order_book_1000";
         static final String BYBIT_LINEAR_TICKERS_TABLE = "crypto_scout.bybit_linear_tickers";
-        static final String BYBIT_LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_linear_all_liqudation";
+
+        // Bybit linear tables
+        static final String BYBIT_TA_LINEAR_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_linear_public_trade";
+        static final String BYBIT_TA_LINEAR_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_linear_order_book_1";
+        static final String BYBIT_TA_LINEAR_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_linear_order_book_50";
+        static final String BYBIT_TA_LINEAR_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_linear_order_book_200";
+        static final String BYBIT_TA_LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_linear_order_book_1000";
+        static final String BYBIT_TA_LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_ta_linear_all_liqudation";
 
         // Bybit LPL
         static final String LPL_INSERT = "INSERT INTO crypto_scout.bybit_lpl " +
@@ -207,7 +211,7 @@ public final class Constants {
         static final int LINEAR_TICKERS_CUR_PRE_LISTING_PHASE = 32;
 
         // Spot public trades
-        static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_SPOT_PUBLIC_TRADE_TABLE +
+        static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_TA_SPOT_PUBLIC_TRADE_TABLE +
                 "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final int SPOT_PUBLIC_TRADE_SYMBOL = 1;
         static final int SPOT_PUBLIC_TRADE_TRADE_TIME = 2;
@@ -218,7 +222,7 @@ public final class Constants {
         static final int SPOT_PUBLIC_TRADE_IS_RPI = 7;
 
         // Linear public trades
-        static final String LINEAR_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_LINEAR_PUBLIC_TRADE_TABLE +
+        static final String LINEAR_PUBLIC_TRADE_INSERT = "INSERT INTO " + BYBIT_TA_LINEAR_PUBLIC_TRADE_TABLE +
                 "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final int LINEAR_PUBLIC_TRADE_SYMBOL = 1;
         static final int LINEAR_PUBLIC_TRADE_TRADE_TIME = 2;
@@ -233,13 +237,13 @@ public final class Constants {
         static final String BID = "bid";
 
         // Spot order books (one row per level)
-        static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1_TABLE +
+        static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + BYBIT_TA_SPOT_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_50_TABLE +
+        static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + BYBIT_TA_SPOT_ORDER_BOOK_50_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_200_TABLE +
+        static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + BYBIT_TA_SPOT_ORDER_BOOK_200_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + BYBIT_SPOT_ORDER_BOOK_1000_TABLE +
+        static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + BYBIT_TA_SPOT_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final int SPOT_ORDER_BOOK_SYMBOL = 1;
         static final int SPOT_ORDER_BOOK_ENGINE_TIME = 2;
@@ -248,13 +252,13 @@ public final class Constants {
         static final int SPOT_ORDER_BOOK_SIZE = 5;
 
         // Linear order books (one row per level)
-        static final String LINEAR_ORDER_BOOK_1_INSERT = "INSERT INTO " + BYBIT_LINEAR_ORDER_BOOK_1_TABLE +
+        static final String LINEAR_ORDER_BOOK_1_INSERT = "INSERT INTO " + BYBIT_TA_LINEAR_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ORDER_BOOK_50_INSERT = "INSERT INTO " + BYBIT_LINEAR_ORDER_BOOK_50_TABLE +
+        static final String LINEAR_ORDER_BOOK_50_INSERT = "INSERT INTO " + BYBIT_TA_LINEAR_ORDER_BOOK_50_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ORDER_BOOK_200_INSERT = "INSERT INTO " + BYBIT_LINEAR_ORDER_BOOK_200_TABLE +
+        static final String LINEAR_ORDER_BOOK_200_INSERT = "INSERT INTO " + BYBIT_TA_LINEAR_ORDER_BOOK_200_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ORDER_BOOK_1000_INSERT = "INSERT INTO " + BYBIT_LINEAR_ORDER_BOOK_1000_TABLE +
+        static final String LINEAR_ORDER_BOOK_1000_INSERT = "INSERT INTO " + BYBIT_TA_LINEAR_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final int LINEAR_ORDER_BOOK_SYMBOL = 1;
         static final int LINEAR_ORDER_BOOK_ENGINE_TIME = 2;
@@ -263,7 +267,7 @@ public final class Constants {
         static final int LINEAR_ORDER_BOOK_SIZE = 5;
 
         // Linear all liquidation
-        static final String LINEAR_ALL_LIQUIDATION_INSERT = "INSERT INTO " + BYBIT_LINEAR_ALL_LIQUIDATION_TABLE +
+        static final String LINEAR_ALL_LIQUIDATION_INSERT = "INSERT INTO " + BYBIT_TA_LINEAR_ALL_LIQUIDATION_TABLE +
                 "(symbol, event_time, position_side, executed_size, bankruptcy_price) VALUES (?, ?, ?, ?, ?)";
         static final int LINEAR_ALL_LIQUIDATION_SYMBOL = 1;
         static final int LINEAR_ALL_LIQUIDATION_EVENT_TIME = 2;
