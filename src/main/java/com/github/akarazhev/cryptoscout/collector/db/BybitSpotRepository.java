@@ -34,19 +34,8 @@ import io.activej.reactor.nio.NioReactor;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.ASK;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BID;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_ENGINE_TIME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_PRICE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SIDE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SIZE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_INSERT;
@@ -62,15 +51,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_TURNOVER;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_VOLUME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_IS_RPI;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_PRICE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_SIZE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_SYMBOL;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TAKER_SIDE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TRADE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_HIGH_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_LAST_PRICE;
@@ -84,11 +64,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.B;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BT;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.HIGH;
@@ -97,30 +73,21 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LAST_PRIC
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.LOW_PRICE_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.OPEN;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.P;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PREV_PRICE_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.PRICE_24H_PCNT;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RPI;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SYMBOL_NAME;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.SIDE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TURNOVER_24H;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.U;
-import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.VOLUME_24H;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
-import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRows;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getSymbol;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
-import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBoolean;
 
 public final class BybitSpotRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -290,216 +257,9 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return count;
     }
 
-    public int savePublicTrade(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
-        var count = 0;
-        try (final var c = dataSource.getConnection()) {
-            final var oldAutoCommit = c.getAutoCommit();
-            c.setAutoCommit(false);
-            try (final var ps = c.prepareStatement(SPOT_PUBLIC_TRADE_INSERT);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
-                for (final var trade : trades) {
-                    final var rows = getRows(DATA, trade);
-                    if (rows != null) {
-                        for (final var row : rows) {
-                            final var symbol = (String) row.get(SYMBOL_NAME);
-                            final var tradeTime = row.get(T);
-                            final var price = toBigDecimal(row.get(P));
-                            final var size = toBigDecimal(row.get(V));
-                            final var takerSide = (String) row.get(SIDE);
-                            final var isBlock = toBoolean(row.get(BT));
-                            final var isRpi = toBoolean(row.get(RPI));
-
-                            if (symbol == null || tradeTime == null || price == null || size == null || takerSide == null
-                                    || isBlock == null || isRpi == null) {
-                                continue; // skip malformed rows
-                            }
-
-                            ps.setString(SPOT_PUBLIC_TRADE_SYMBOL, symbol);
-                            ps.setObject(SPOT_PUBLIC_TRADE_TRADE_TIME, toOdt(tradeTime));
-                            ps.setBigDecimal(SPOT_PUBLIC_TRADE_PRICE, price);
-                            ps.setBigDecimal(SPOT_PUBLIC_TRADE_SIZE, size);
-                            ps.setString(SPOT_PUBLIC_TRADE_TAKER_SIDE, takerSide);
-                            ps.setBoolean(SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE, isBlock);
-                            ps.setBoolean(SPOT_PUBLIC_TRADE_IS_RPI, isRpi);
-
-                            ps.addBatch();
-                            if (++count % batchSize == 0) {
-                                ps.executeBatch();
-                            }
-                        }
-                    }
-                }
-
-                ps.executeBatch();
-                updateOffset(psOffset, offset);
-                c.commit();
-            } catch (final Exception ex) {
-                c.rollback();
-                throw ex;
-            } finally {
-                c.setAutoCommit(oldAutoCommit);
-            }
-        }
-
-        return count;
-    }
-
-    public int saveOrderBook1(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
-        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_1_INSERT);
-    }
-
-    public int saveOrderBook50(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
-        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_50_INSERT);
-    }
-
-    public int saveOrderBook200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
-        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_200_INSERT);
-    }
-
-    public int saveOrderBook1000(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
-        return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_1000_INSERT);
-    }
-
-    private int saveOrderBooks(final Iterable<Map<String, Object>> orderBooks, final long offset, final String insertSql)
-            throws SQLException {
-        var count = 0;
-        try (final var c = dataSource.getConnection()) {
-            final var oldAutoCommit = c.getAutoCommit();
-            c.setAutoCommit(false);
-            try (final var ps = c.prepareStatement(insertSql);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
-                for (final var order : orderBooks) {
-                    final var row = getRow(DATA, order);
-                    if (row == null) {
-                        continue;
-                    }
-
-                    final var symbol = (String) row.get(SYMBOL_NAME);
-                    final var engineTime = order.get(CTS);
-                    @SuppressWarnings("unchecked") final var bids = (List<List<String>>) row.get(B);
-                    @SuppressWarnings("unchecked") final var asks = (List<List<String>>) row.get(A);
-                    final var updateId = row.get(U);
-
-                    if (symbol == null || engineTime == null || updateId == null) {
-                        continue; // skip malformed rows
-                    }
-
-                    for (final var bid : bids) {
-                        ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
-                        ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_SIDE, BID);
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_PRICE, toBigDecimal(bid.getFirst()));
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_SIZE, toBigDecimal(bid.get(1)));
-
-                        ps.addBatch();
-                        if (++count % batchSize == 0) {
-                            ps.executeBatch();
-                        }
-                    }
-
-                    for (final var ask : asks) {
-                        ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
-                        ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_SIDE, ASK);
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_PRICE, toBigDecimal(ask.getFirst()));
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_SIZE, toBigDecimal(ask.get(1)));
-
-                        ps.addBatch();
-                        if (++count % batchSize == 0) {
-                            ps.executeBatch();
-                        }
-                    }
-                }
-
-                ps.executeBatch();
-                updateOffset(psOffset, offset);
-                c.commit();
-            } catch (final Exception ex) {
-                c.rollback();
-                throw ex;
-            } finally {
-                c.setAutoCommit(oldAutoCommit);
-            }
-        }
-
-        return count;
-    }
-
     private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
         ps.setString(STREAM, stream);
         ps.setLong(LAST_OFFSET, offset);
         ps.executeUpdate();
-    }
-
-    public Iterable<Map<String, Object>> getKline1m(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getKline5m(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getKline15m(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getKline60m(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getKline240m(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getKline1d(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getTicker(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getPublicTrade(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getOrderBook1(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getOrderBook50(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getOrderBook200(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
-    }
-
-    public Iterable<Map<String, Object>> getOrderBook1000(final String[] symbols, final Interval from)
-            throws SQLException {
-        // TODO: implement it
-        return null;
     }
 }
