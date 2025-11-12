@@ -35,6 +35,8 @@ import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_15M_INSERT;
@@ -304,7 +306,7 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
 
                     if (predictedDeliveryPrice != null) {
                         ps.setBigDecimal(LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE, predictedDeliveryPrice);
-                    }  else {
+                    } else {
                         ps.setNull(LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE, Types.NUMERIC);
                     }
 
@@ -338,6 +340,34 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
         }
 
         return count;
+    }
+
+    public List<Map<String, Object>> getKline1m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline5m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline15m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline60m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline240m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getTicker(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
     }
 
     private int saveKlines(final Iterable<Map<String, Object>> klines, final long offset, final String insertSql)
