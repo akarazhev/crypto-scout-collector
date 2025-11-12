@@ -34,6 +34,8 @@ import io.activej.reactor.nio.NioReactor;
 import javax.sql.DataSource;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_INSERT;
@@ -257,6 +259,33 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return count;
     }
 
+    public List<Map<String, Object>> getKline1m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline5m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline15m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline60m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline240m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
+
+    public List<Map<String, Object>> getTicker(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return List.of();
+    }
     private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
         ps.setString(STREAM, stream);
         ps.setLong(LAST_OFFSET, offset);

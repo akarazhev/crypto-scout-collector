@@ -32,18 +32,25 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_15M_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_1D_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_1M_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_240M_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_5M_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_KLINE_60M_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_SPOT_TICKERS_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class BybitSpotRepositoryTest {
@@ -62,12 +69,12 @@ final class BybitSpotRepositoryTest {
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitSpotRepository.create(reactor, dataSource);
         DBUtils.deleteFromTables(dataSource.getDataSource(),
-                BYBIT_SPOT_KLINE_1M_TABLE,
-                BYBIT_SPOT_KLINE_5M_TABLE,
-                BYBIT_SPOT_KLINE_15M_TABLE,
-                BYBIT_SPOT_KLINE_60M_TABLE,
-                BYBIT_SPOT_KLINE_240M_TABLE,
-                BYBIT_SPOT_TICKERS_TABLE
+                SPOT_KLINE_1M_TABLE,
+                SPOT_KLINE_5M_TABLE,
+                SPOT_KLINE_15M_TABLE,
+                SPOT_KLINE_60M_TABLE,
+                SPOT_KLINE_240M_TABLE,
+                SPOT_TICKERS_TABLE
         );
     }
 
@@ -84,48 +91,110 @@ final class BybitSpotRepositoryTest {
     void shouldSaveKline1m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
         assertEquals(1, repository.saveKline1m(List.of(data), 100L));
-        assertTableCount(BYBIT_SPOT_KLINE_1M_TABLE, 1);
+        assertTableCount(SPOT_KLINE_1M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline5m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
         assertEquals(1, repository.saveKline5m(List.of(data), 200L));
-        assertTableCount(BYBIT_SPOT_KLINE_5M_TABLE, 1);
+        assertTableCount(SPOT_KLINE_5M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline15m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
         assertEquals(1, repository.saveKline15m(List.of(data), 300L));
-        assertTableCount(BYBIT_SPOT_KLINE_15M_TABLE, 1);
+        assertTableCount(SPOT_KLINE_15M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline60m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
         assertEquals(1, repository.saveKline60m(List.of(data), 400L));
-        assertTableCount(BYBIT_SPOT_KLINE_60M_TABLE, 1);
+        assertTableCount(SPOT_KLINE_60M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline240m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
         assertEquals(1, repository.saveKline240m(List.of(data), 500L));
-        assertTableCount(BYBIT_SPOT_KLINE_240M_TABLE, 1);
+        assertTableCount(SPOT_KLINE_240M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline1d() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
         assertEquals(1, repository.saveKline1d(List.of(data), 600L));
-        assertTableCount(BYBIT_SPOT_KLINE_1D_TABLE, 1);
+        assertTableCount(SPOT_KLINE_1D_TABLE, 1);
     }
 
     @Test
     void shouldSaveTicker() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
         assertEquals(1, repository.saveTicker(List.of(data), 700L));
-        assertTableCount(BYBIT_SPOT_TICKERS_TABLE, 1);
+        assertTableCount(SPOT_TICKERS_TABLE, 1);
+    }
+
+    @Test
+    void shouldGetKline1m() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
+        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        assertEquals(1, repository.saveKline1m(List.of(data), 800L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+        assertEquals(1, repository.getKline1m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+    }
+
+    @Test
+    void shouldGetKline5m() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
+        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        assertEquals(1, repository.saveKline5m(List.of(data), 900L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+        assertEquals(1, repository.getKline5m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+    }
+
+    @Test
+    void shouldGetKline15m() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
+        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        assertEquals(1, repository.saveKline15m(List.of(data), 1000L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+        assertEquals(1, repository.getKline15m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+    }
+
+    @Test
+    void shouldGetKline60m() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
+        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        assertEquals(1, repository.saveKline60m(List.of(data), 1100L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+        assertEquals(1, repository.getKline60m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+    }
+
+    @Test
+    void shouldGetKline240m() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
+        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        assertEquals(1, repository.saveKline240m(List.of(data), 1200L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+        assertEquals(1, repository.getKline240m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+    }
+
+    @Test
+    void shouldGetKline1d() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
+        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        assertEquals(1, repository.saveKline1d(List.of(data), 1300L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+        assertEquals(1, repository.getKline1d(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+    }
+
+    @Test
+    void shouldGetTicker() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
+        assertEquals(1, repository.saveTicker(List.of(data), 1400L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) data.get(TS)), ZoneOffset.UTC);
+        assertEquals(1, repository.getTicker(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 }
