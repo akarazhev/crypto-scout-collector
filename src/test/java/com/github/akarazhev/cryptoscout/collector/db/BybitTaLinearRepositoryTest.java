@@ -38,12 +38,12 @@ import java.util.concurrent.Executors;
 
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getRowsCount;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_LINEAR_ALL_LIQUIDATION_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_LINEAR_ORDER_BOOK_1000_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_LINEAR_ORDER_BOOK_1_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_LINEAR_ORDER_BOOK_200_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_LINEAR_ORDER_BOOK_50_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_LINEAR_PUBLIC_TRADE_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ALL_LIQUIDATION_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_1000_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_1_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_200_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_50_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -64,12 +64,12 @@ final class BybitTaLinearRepositoryTest {
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitTaLinearRepository.create(reactor, dataSource);
         DBUtils.deleteFromTables(dataSource.getDataSource(),
-                BYBIT_TA_LINEAR_ORDER_BOOK_1_TABLE,
-                BYBIT_TA_LINEAR_ORDER_BOOK_50_TABLE,
-                BYBIT_TA_LINEAR_ORDER_BOOK_200_TABLE,
-                BYBIT_TA_LINEAR_ORDER_BOOK_1000_TABLE,
-                BYBIT_TA_LINEAR_PUBLIC_TRADE_TABLE,
-                BYBIT_TA_LINEAR_ALL_LIQUIDATION_TABLE
+                TA_LINEAR_ORDER_BOOK_1_TABLE,
+                TA_LINEAR_ORDER_BOOK_50_TABLE,
+                TA_LINEAR_ORDER_BOOK_200_TABLE,
+                TA_LINEAR_ORDER_BOOK_1000_TABLE,
+                TA_LINEAR_PUBLIC_TRADE_TABLE,
+                TA_LINEAR_ALL_LIQUIDATION_TABLE
         );
     }
 
@@ -86,8 +86,8 @@ final class BybitTaLinearRepositoryTest {
     void shouldSavePublicTrade() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.PUBLIC_TRADE);
         final var expected = getRowsCount(data);
-        assertEquals(expected, repository.savePublicTrade(List.of(data), 800L));
-        assertTableCount(BYBIT_TA_LINEAR_PUBLIC_TRADE_TABLE, expected);
+        assertEquals(expected, repository.savePublicTrade(List.of(data), 100L));
+        assertTableCount(TA_LINEAR_PUBLIC_TRADE_TABLE, expected);
     }
 
     @Test
@@ -95,8 +95,8 @@ final class BybitTaLinearRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook1(List.of(data), 900L));
-        assertTableCount(BYBIT_TA_LINEAR_ORDER_BOOK_1_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook1(List.of(data), 200L));
+        assertTableCount(TA_LINEAR_ORDER_BOOK_1_TABLE, expected);
     }
 
     @Test
@@ -104,8 +104,8 @@ final class BybitTaLinearRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook50(List.of(data), 1000L));
-        assertTableCount(BYBIT_TA_LINEAR_ORDER_BOOK_50_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook50(List.of(data), 300L));
+        assertTableCount(TA_LINEAR_ORDER_BOOK_50_TABLE, expected);
     }
 
     @Test
@@ -113,22 +113,22 @@ final class BybitTaLinearRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook200(List.of(data), 1100L));
-        assertTableCount(BYBIT_TA_LINEAR_ORDER_BOOK_200_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook200(List.of(data), 400L));
+        assertTableCount(TA_LINEAR_ORDER_BOOK_200_TABLE, expected);
     }
 
     @Test
     void shouldSaveOrderBook1000() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1000);
         final var expected = getOrderBookLevelsCount(data);
-        assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1200L));
-        assertTableCount(BYBIT_TA_LINEAR_ORDER_BOOK_1000_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook1000(List.of(data), 500L));
+        assertTableCount(TA_LINEAR_ORDER_BOOK_1000_TABLE, expected);
     }
 
     @Test
     void shouldSaveAllLiquidation() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ALL_LIQUIDATION);
-        assertEquals(1, repository.saveAllLiquidation(List.of(data), 1300L));
-        assertTableCount(BYBIT_TA_LINEAR_ALL_LIQUIDATION_TABLE, 1);
+        assertEquals(1, repository.saveAllLiquidation(List.of(data), 600L));
+        assertTableCount(TA_LINEAR_ALL_LIQUIDATION_TABLE, 1);
     }
 }

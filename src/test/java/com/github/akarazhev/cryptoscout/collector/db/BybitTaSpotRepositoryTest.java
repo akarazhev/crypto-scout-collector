@@ -38,11 +38,11 @@ import java.util.concurrent.Executors;
 
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getRowsCount;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_SPOT_ORDER_BOOK_1000_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_SPOT_ORDER_BOOK_1_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_SPOT_ORDER_BOOK_200_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_SPOT_ORDER_BOOK_50_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_TA_SPOT_PUBLIC_TRADE_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_1000_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_1_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_200_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_50_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -63,11 +63,11 @@ final class BybitTaSpotRepositoryTest {
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitTaSpotRepository.create(reactor, dataSource);
         DBUtils.deleteFromTables(dataSource.getDataSource(),
-                BYBIT_TA_SPOT_ORDER_BOOK_1_TABLE,
-                BYBIT_TA_SPOT_ORDER_BOOK_50_TABLE,
-                BYBIT_TA_SPOT_ORDER_BOOK_200_TABLE,
-                BYBIT_TA_SPOT_ORDER_BOOK_1000_TABLE,
-                BYBIT_TA_SPOT_PUBLIC_TRADE_TABLE
+                TA_SPOT_ORDER_BOOK_1_TABLE,
+                TA_SPOT_ORDER_BOOK_50_TABLE,
+                TA_SPOT_ORDER_BOOK_200_TABLE,
+                TA_SPOT_ORDER_BOOK_1000_TABLE,
+                TA_SPOT_PUBLIC_TRADE_TABLE
         );
     }
 
@@ -84,8 +84,8 @@ final class BybitTaSpotRepositoryTest {
     void shouldSavePublicTrade() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.PUBLIC_TRADE);
         final var expected = getRowsCount(data);
-        assertEquals(expected, repository.savePublicTrade(List.of(data), 800L));
-        assertTableCount(BYBIT_TA_SPOT_PUBLIC_TRADE_TABLE, expected);
+        assertEquals(expected, repository.savePublicTrade(List.of(data), 100L));
+        assertTableCount(TA_SPOT_PUBLIC_TRADE_TABLE, expected);
     }
 
     @Test
@@ -93,8 +93,8 @@ final class BybitTaSpotRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook1(List.of(data), 900L));
-        assertTableCount(BYBIT_TA_SPOT_ORDER_BOOK_1_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook1(List.of(data), 200L));
+        assertTableCount(TA_SPOT_ORDER_BOOK_1_TABLE, expected);
     }
 
     @Test
@@ -102,8 +102,8 @@ final class BybitTaSpotRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook50(List.of(data), 1000L));
-        assertTableCount(BYBIT_TA_SPOT_ORDER_BOOK_50_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook50(List.of(data), 300L));
+        assertTableCount(TA_SPOT_ORDER_BOOK_50_TABLE, expected);
     }
 
     @Test
@@ -111,8 +111,8 @@ final class BybitTaSpotRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook200(List.of(data), 1100L));
-        assertTableCount(BYBIT_TA_SPOT_ORDER_BOOK_200_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook200(List.of(data), 400L));
+        assertTableCount(TA_SPOT_ORDER_BOOK_200_TABLE, expected);
     }
 
     @Test
@@ -120,7 +120,7 @@ final class BybitTaSpotRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1000);
         final var expected = getOrderBookLevelsCount(data);
         assertTrue(expected > 0);
-        assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1200L));
-        assertTableCount(BYBIT_TA_SPOT_ORDER_BOOK_1000_TABLE, expected);
+        assertEquals(expected, repository.saveOrderBook1000(List.of(data), 500L));
+        assertTableCount(TA_SPOT_ORDER_BOOK_1000_TABLE, expected);
     }
 }
