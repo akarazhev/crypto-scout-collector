@@ -134,18 +134,28 @@ public final class Constants {
         static final String LINEAR_KLINE_5M_INSERT = "INSERT INTO " + LINEAR_KLINE_5M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String LINEAR_KLINE_5M_SELECT = "SELECT * FROM " + LINEAR_KLINE_5M_TABLE +
+                " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_15M_INSERT = "INSERT INTO " + LINEAR_KLINE_15M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String LINEAR_KLINE_15M_SELECT = "SELECT * FROM " + LINEAR_KLINE_15M_TABLE +
+                " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_60M_INSERT = "INSERT INTO " + LINEAR_KLINE_60M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String LINEAR_KLINE_60M_SELECT = "SELECT * FROM " + LINEAR_KLINE_60M_TABLE +
+                " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_240M_INSERT = "INSERT INTO " + LINEAR_KLINE_240M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String LINEAR_KLINE_240M_SELECT = "SELECT * FROM " + LINEAR_KLINE_240M_TABLE +
+                " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_1D_INSERT = "INSERT INTO " + LINEAR_KLINE_1D_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
+        static final String LINEAR_KLINE_1D_SELECT = "SELECT * FROM " + LINEAR_KLINE_1D_TABLE +
+                " WHERE start_time >= ? AND end_time <= ?";
         static final int LINEAR_KLINE_SYMBOL = 1;
         static final int LINEAR_KLINE_START_TIME = 2;
         static final int LINEAR_KLINE_END_TIME = 3;
