@@ -30,14 +30,11 @@ import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.util.concurrent.Executor;
 
 public final class CollectorDataSource extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(CollectorDataSource.class);
     private final Executor executor;
     private final HikariDataSource dataSource;
 
@@ -52,8 +49,7 @@ public final class CollectorDataSource extends AbstractReactive implements React
     }
 
     @Override
-    public Promise<?> start() {
-        LOGGER.info("CollectorDataSource started");
+    public Promise<Void> start() {
         return Promise.complete();
     }
 
@@ -62,13 +58,11 @@ public final class CollectorDataSource extends AbstractReactive implements React
     }
 
     @Override
-    public Promise<?> stop() {
+    public Promise<Void> stop() {
         return Promise.ofBlocking(executor, () -> {
             if (dataSource.isRunning()) {
                 dataSource.close();
             }
-
-            LOGGER.info("CollectorDataSource stopped");
         });
     }
 }

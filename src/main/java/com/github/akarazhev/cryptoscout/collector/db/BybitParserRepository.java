@@ -78,12 +78,12 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
     }
 
     @Override
-    public Promise<?> start() {
+    public Promise<Void> start() {
         return Promise.complete();
     }
 
     @Override
-    public Promise<?> stop() {
+    public Promise<Void> stop() {
         return Promise.complete();
     }
 
