@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector.db;
 
+import com.github.akarazhev.cryptoscout.test.DBUtils;
 import com.github.akarazhev.cryptoscout.test.MockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
@@ -55,9 +56,19 @@ final class BybitSpotRepositoryTest {
     static void setup() {
         PodmanCompose.up();
         executor = Executors.newVirtualThreadPerTaskExecutor();
-        reactor = Eventloop.builder().withCurrentThread().build();
+        reactor = Eventloop.builder()
+                .withCurrentThread()
+                .build();
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitSpotRepository.create(reactor, dataSource);
+        DBUtils.deleteFromTables(dataSource.getDataSource(),
+                BYBIT_SPOT_KLINE_1M_TABLE,
+                BYBIT_SPOT_KLINE_5M_TABLE,
+                BYBIT_SPOT_KLINE_15M_TABLE,
+                BYBIT_SPOT_KLINE_60M_TABLE,
+                BYBIT_SPOT_KLINE_240M_TABLE,
+                BYBIT_SPOT_TICKERS_TABLE
+        );
     }
 
     @AfterAll

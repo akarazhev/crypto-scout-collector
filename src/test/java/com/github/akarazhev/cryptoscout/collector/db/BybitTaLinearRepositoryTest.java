@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector.db;
 
+import com.github.akarazhev.cryptoscout.test.DBUtils;
 import com.github.akarazhev.cryptoscout.test.MockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
@@ -57,9 +58,19 @@ final class BybitTaLinearRepositoryTest {
     static void setup() {
         PodmanCompose.up();
         executor = Executors.newVirtualThreadPerTaskExecutor();
-        reactor = Eventloop.builder().withCurrentThread().build();
+        reactor = Eventloop.builder()
+                .withCurrentThread()
+                .build();
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitTaLinearRepository.create(reactor, dataSource);
+        DBUtils.deleteFromTables(dataSource.getDataSource(),
+                BYBIT_TA_LINEAR_ORDER_BOOK_1_TABLE,
+                BYBIT_TA_LINEAR_ORDER_BOOK_50_TABLE,
+                BYBIT_TA_LINEAR_ORDER_BOOK_200_TABLE,
+                BYBIT_TA_LINEAR_ORDER_BOOK_1000_TABLE,
+                BYBIT_TA_LINEAR_PUBLIC_TRADE_TABLE,
+                BYBIT_TA_LINEAR_ALL_LIQUIDATION_TABLE
+        );
     }
 
     @AfterAll
