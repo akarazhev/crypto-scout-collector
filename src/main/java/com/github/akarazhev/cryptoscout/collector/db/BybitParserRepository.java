@@ -32,9 +32,10 @@ import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_DESC;
@@ -47,9 +48,8 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_TRADE_BEGIN_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WEBSITE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WHITE_PAPER;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DESC;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN_ICON;
@@ -87,7 +87,7 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
         return Promise.complete();
     }
 
-    public int insertLpl(final Iterable<Map<String, Object>> lpls, final long offset) throws SQLException {
+    public int saveLpl(final Iterable<Map<String, Object>> lpls, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final boolean oldAutoCommit = c.getAutoCommit();
@@ -117,7 +117,7 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -130,9 +130,7 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
         return count;
     }
 
-    private void updateOffset(final PreparedStatement psOffset, final long offset) throws SQLException {
-        psOffset.setString(STREAM, stream);
-        psOffset.setLong(LAST_OFFSET, offset);
-        psOffset.executeUpdate();
+    public List<Map<String, Object>> getLpl(final OffsetDateTime odt) throws SQLException {
+        return List.of();
     }
 }

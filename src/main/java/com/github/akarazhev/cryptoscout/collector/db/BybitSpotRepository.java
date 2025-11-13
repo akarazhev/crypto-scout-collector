@@ -32,7 +32,6 @@ import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -70,10 +69,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TURNOVER_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_VOLUME_24H;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
@@ -195,7 +193,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -254,7 +252,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -301,10 +299,5 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         return fetchRange(dataSource, SPOT_TICKERS_SELECT, from, to,
                 SYMBOL, TS, LAST_PRICE, HIGH_PRICE_24H, LOW_PRICE_24H, PREV_PRICE_24H, VOLUME_24H,
                 TURNOVER_24H, PRICE_24H_PCNT);
-    }
-    private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
-        ps.setString(STREAM, stream);
-        ps.setLong(LAST_OFFSET, offset);
-        ps.executeUpdate();
     }
 }

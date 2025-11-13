@@ -32,7 +32,6 @@ import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.OffsetDateTime;
@@ -94,10 +93,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_TURNOVER_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_VOLUME_24H;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
@@ -337,7 +335,7 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -435,7 +433,7 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -446,11 +444,5 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
         }
 
         return count;
-    }
-
-    private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
-        ps.setString(STREAM, stream);
-        ps.setLong(LAST_OFFSET, offset);
-        ps.executeUpdate();
     }
 }
