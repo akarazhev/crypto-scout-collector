@@ -30,9 +30,14 @@ import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -45,6 +50,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_L
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_50_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -63,6 +71,10 @@ final class BybitTaLinearRepositoryTest {
                 .build();
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitTaLinearRepository.create(reactor, dataSource);
+    }
+
+    @BeforeEach
+    void before() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 TA_LINEAR_ORDER_BOOK_1_TABLE,
                 TA_LINEAR_ORDER_BOOK_50_TABLE,
@@ -130,5 +142,60 @@ final class BybitTaLinearRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ALL_LIQUIDATION);
         assertEquals(1, repository.saveAllLiquidation(List.of(data), 600L));
         assertTableCount(TA_LINEAR_ALL_LIQUIDATION_TABLE, 1);
+    }
+
+    @Test
+    void shouldGetPublicTrade() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.PUBLIC_TRADE);
+        final var expected = getRowsCount(data);
+        assertEquals(expected, repository.savePublicTrade(List.of(data), 700L));
+        final var t = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(T);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+        assertEquals(expected, repository.getPublicTrade(from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook1() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1);
+        final var expected = getOrderBookLevelsCount(data);
+        assertEquals(expected, repository.saveOrderBook1(List.of(data), 800L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) data.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook1(from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook50() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_50);
+        final var expected = getOrderBookLevelsCount(data);
+        assertEquals(expected, repository.saveOrderBook50(List.of(data), 900L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) data.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook50(from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook200() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_200);
+        final var expected = getOrderBookLevelsCount(data);
+        assertEquals(expected, repository.saveOrderBook200(List.of(data), 1000L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) data.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook200(from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook1000() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1000);
+        final var expected = getOrderBookLevelsCount(data);
+        assertEquals(expected, repository.saveOrderBook1000(List.of(data), 1100L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) data.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook1000(from, from).size());
+    }
+
+    @Test
+    void shouldGetAllLiquidation() throws Exception {
+        final var data = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ALL_LIQUIDATION);
+        assertEquals(1, repository.saveAllLiquidation(List.of(data), 1200L));
+        final var t = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(T);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+        assertEquals(1, repository.getAllLiquidation(from, from).size());
     }
 }
