@@ -32,7 +32,7 @@ import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
+import java.time.OffsetDateTime;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +49,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SIZE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_IS_RPI;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_PRICE;
@@ -56,9 +57,13 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TAKER_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TRADE_TIME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.B;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BT;
@@ -144,7 +149,7 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -225,7 +230,7 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -238,9 +243,28 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
         return count;
     }
 
-    private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
-        ps.setString(STREAM, stream);
-        ps.setLong(LAST_OFFSET, offset);
-        ps.executeUpdate();
+    public List<Map<String, Object>> getPublicTrade(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, SPOT_PUBLIC_TRADE_SELECT, from, to,
+                SYMBOL_NAME, T, P, V, SIDE, BT, RPI);
+    }
+
+    public List<Map<String, Object>> getOrderBook1(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, SPOT_ORDER_BOOK_1_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
+    }
+
+    public List<Map<String, Object>> getOrderBook50(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, SPOT_ORDER_BOOK_50_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
+    }
+
+    public List<Map<String, Object>> getOrderBook200(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, SPOT_ORDER_BOOK_200_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
+    }
+
+    public List<Map<String, Object>> getOrderBook1000(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, SPOT_ORDER_BOOK_1000_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
     }
 }

@@ -32,7 +32,7 @@ import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
+import java.time.OffsetDateTime;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -47,14 +47,19 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ALL_LIQUIDATION_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_1000_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_1_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_1_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_200_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_200_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_50_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_50_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_ENGINE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_SIZE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ORDER_BOOK_1000_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_IS_BLOCK_TRADE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_IS_RPI;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_PRICE;
@@ -62,9 +67,10 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_TAKER_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_TRADE_TIME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ALL_LIQUIDATION_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.B;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.BT;
@@ -150,7 +156,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -161,6 +167,36 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
         }
 
         return count;
+    }
+
+    public List<Map<String, Object>> getPublicTrade(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, LINEAR_PUBLIC_TRADE_SELECT, from, to,
+                SYMBOL_NAME, T, P, V, SIDE, BT, RPI);
+    }
+
+    public List<Map<String, Object>> getOrderBook1(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, LINEAR_ORDER_BOOK_1_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
+    }
+
+    public List<Map<String, Object>> getOrderBook50(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, LINEAR_ORDER_BOOK_50_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
+    }
+
+    public List<Map<String, Object>> getOrderBook200(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, LINEAR_ORDER_BOOK_200_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
+    }
+
+    public List<Map<String, Object>> getOrderBook1000(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, LINEAR_ORDER_BOOK_1000_SELECT, from, to,
+                SYMBOL_NAME, CTS, SIDE, P, V);
+    }
+
+    public List<Map<String, Object>> getAllLiquidation(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, LINEAR_ALL_LIQUIDATION_SELECT, from, to,
+                SYMBOL_NAME, T, SIDE, V, P);
     }
 
     public int saveOrderBook1(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
@@ -218,7 +254,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -283,7 +319,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -294,11 +330,5 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
         }
 
         return count;
-    }
-
-    private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
-        ps.setString(STREAM, stream);
-        ps.setLong(LAST_OFFSET, offset);
-        ps.executeUpdate();
     }
 }
