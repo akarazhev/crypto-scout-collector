@@ -30,6 +30,7 @@ import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -68,6 +69,10 @@ final class BybitLinearRepositoryTest {
                 .build();
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitLinearRepository.create(reactor, dataSource);
+    }
+
+    @BeforeEach
+    void before() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 LINEAR_KLINE_1M_TABLE,
                 LINEAR_KLINE_5M_TABLE,
@@ -139,7 +144,7 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldGetKline1m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
-        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(START);
         assertEquals(1, repository.saveKline1m(List.of(data), 800L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline1m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -148,7 +153,7 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldGetKline5m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
-        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(START);
         assertEquals(1, repository.saveKline5m(List.of(data), 900L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline5m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -157,7 +162,7 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldGetKline15m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
-        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(START);
         assertEquals(1, repository.saveKline15m(List.of(data), 1000L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline15m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -166,7 +171,7 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldGetKline60m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
-        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(START);
         assertEquals(1, repository.saveKline60m(List.of(data), 1100L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline60m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -175,7 +180,7 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldGetKline240m() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
-        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(START);
         assertEquals(1, repository.saveKline240m(List.of(data), 1200L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline240m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -184,7 +189,7 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldGetKline1d() throws Exception {
         final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
-        final var start = ((Map<?, ?>)((List<?>) data.get(DATA)).get(0)).get(START);
+        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(START);
         assertEquals(1, repository.saveKline1d(List.of(data), 1300L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline1d(from, OffsetDateTime.now(ZoneOffset.UTC)).size());

@@ -49,6 +49,9 @@ public final class Constants {
             throw new UnsupportedOperationException();
         }
 
+        // Bybit parser tables
+        static final String BYBIT_LPL_TABLE = "crypto_scout.bybit_lpl";
+
         // Bybit spot tables
         static final String SPOT_KLINE_1M_TABLE = "crypto_scout.bybit_spot_kline_1m";
         static final String SPOT_KLINE_5M_TABLE = "crypto_scout.bybit_spot_kline_5m";
@@ -82,8 +85,12 @@ public final class Constants {
         static final String TA_LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_linear_order_book_1000";
         static final String TA_LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_ta_linear_all_liqudation";
 
+        // Time range
+        static final int FROM = 1;
+        static final int TO = 2;
+
         // Bybit LPL
-        static final String LPL_INSERT = "INSERT INTO crypto_scout.bybit_lpl " +
+        static final String LPL_INSERT = "INSERT INTO " + BYBIT_LPL_TABLE +
                 "(return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
                 "stake_end_time, trade_begin_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         static final int LPL_RETURN_COIN = 1;
