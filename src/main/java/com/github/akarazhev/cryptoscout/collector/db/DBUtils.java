@@ -25,6 +25,7 @@
 package com.github.akarazhev.cryptoscout.collector.db;
 
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -34,6 +35,8 @@ import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.FROM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 
 final class DBUtils {
 
@@ -57,5 +60,11 @@ final class DBUtils {
         }
 
         return results;
+    }
+
+    static void updateOffset(final PreparedStatement ps, final String stream, final long offset) throws SQLException {
+        ps.setString(STREAM, stream);
+        ps.setLong(LAST_OFFSET, offset);
+        ps.executeUpdate();
     }
 }
