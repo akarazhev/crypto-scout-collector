@@ -38,12 +38,18 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_CLOSE_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_END_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_HIGH_PRICE;
@@ -59,6 +65,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_LOW_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_PREV_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_PRICE_24H_PCNT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TURNOVER_24H;
@@ -66,6 +73,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.END;
@@ -260,31 +268,39 @@ public final class BybitSpotRepository extends AbstractReactive implements React
     }
 
     public List<Map<String, Object>> getKline1m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return List.of();
+        return fetchRange(dataSource, SPOT_KLINE_1M_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
     public List<Map<String, Object>> getKline5m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return List.of();
+        return fetchRange(dataSource, SPOT_KLINE_5M_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
     public List<Map<String, Object>> getKline15m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return List.of();
+        return fetchRange(dataSource, SPOT_KLINE_15M_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
     public List<Map<String, Object>> getKline60m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return List.of();
+        return fetchRange(dataSource, SPOT_KLINE_60M_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
     public List<Map<String, Object>> getKline240m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return List.of();
+        return fetchRange(dataSource, SPOT_KLINE_240M_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
     public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return List.of();
+        return fetchRange(dataSource, SPOT_KLINE_1D_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
     public List<Map<String, Object>> getTicker(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return List.of();
+        return fetchRange(dataSource, SPOT_TICKERS_SELECT, from, to,
+                SYMBOL, TS, LAST_PRICE, HIGH_PRICE_24H, LOW_PRICE_24H, PREV_PRICE_24H, VOLUME_24H,
+                TURNOVER_24H, PRICE_24H_PCNT);
     }
     private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
         ps.setString(STREAM, stream);

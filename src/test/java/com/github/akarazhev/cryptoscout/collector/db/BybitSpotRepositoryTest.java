@@ -30,6 +30,7 @@ import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import io.activej.eventloop.Eventloop;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -68,6 +69,10 @@ final class BybitSpotRepositoryTest {
                 .build();
         dataSource = CollectorDataSource.create(reactor, executor);
         repository = BybitSpotRepository.create(reactor, dataSource);
+    }
+
+    @BeforeEach
+    void before() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 SPOT_KLINE_1M_TABLE,
                 SPOT_KLINE_5M_TABLE,
