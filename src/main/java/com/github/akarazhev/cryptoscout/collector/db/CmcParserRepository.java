@@ -32,7 +32,6 @@ import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
@@ -44,9 +43,8 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_IN
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_NAME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SCORE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_TIMESTAMP;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_PRICE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_VOLUME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
@@ -117,7 +115,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
                 }
 
                 ps.executeBatch();
-                updateOffset(psOffset, offset);
+                updateOffset(psOffset, stream, offset);
                 c.commit();
             } catch (final Exception ex) {
                 c.rollback();
@@ -128,11 +126,5 @@ public final class CmcParserRepository extends AbstractReactive implements React
         }
 
         return count;
-    }
-
-    private void updateOffset(final PreparedStatement ps, final long offset) throws SQLException {
-        ps.setString(STREAM, stream);
-        ps.setLong(LAST_OFFSET, offset);
-        ps.executeUpdate();
     }
 }
