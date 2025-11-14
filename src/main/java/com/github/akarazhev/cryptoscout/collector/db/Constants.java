@@ -29,13 +29,13 @@ public final class Constants {
         throw new UnsupportedOperationException();
     }
 
-    final static class CMC {
+    public final static class CMC {
         private CMC() {
             throw new UnsupportedOperationException();
         }
 
         // CMC fgi table
-        static final String CMC_FGI_TABLE = "crypto_scout.cmc_fgi";
+        public static final String CMC_FGI_TABLE = "crypto_scout.cmc_fgi";
 
         // CMC fgi
         static final String FGI_INSERT = "INSERT INTO " + CMC_FGI_TABLE +
@@ -51,46 +51,46 @@ public final class Constants {
         static final int FGI_BTC_VOLUME = 5;
     }
 
-    final static class Bybit {
+    public final static class Bybit {
         private Bybit() {
             throw new UnsupportedOperationException();
         }
 
         // Bybit parser tables
-        static final String BYBIT_LPL_TABLE = "crypto_scout.bybit_lpl";
+        public static final String BYBIT_LPL_TABLE = "crypto_scout.bybit_lpl";
 
         // Bybit spot tables
-        static final String SPOT_KLINE_1M_TABLE = "crypto_scout.bybit_spot_kline_1m";
-        static final String SPOT_KLINE_5M_TABLE = "crypto_scout.bybit_spot_kline_5m";
-        static final String SPOT_KLINE_15M_TABLE = "crypto_scout.bybit_spot_kline_15m";
-        static final String SPOT_KLINE_60M_TABLE = "crypto_scout.bybit_spot_kline_60m";
-        static final String SPOT_KLINE_240M_TABLE = "crypto_scout.bybit_spot_kline_240m";
-        static final String SPOT_KLINE_1D_TABLE = "crypto_scout.bybit_spot_kline_1d";
-        static final String SPOT_TICKERS_TABLE = "crypto_scout.bybit_spot_tickers";
+        public static final String SPOT_KLINE_1M_TABLE = "crypto_scout.bybit_spot_kline_1m";
+        public static final String SPOT_KLINE_5M_TABLE = "crypto_scout.bybit_spot_kline_5m";
+        public static final String SPOT_KLINE_15M_TABLE = "crypto_scout.bybit_spot_kline_15m";
+        public static final String SPOT_KLINE_60M_TABLE = "crypto_scout.bybit_spot_kline_60m";
+        public static final String SPOT_KLINE_240M_TABLE = "crypto_scout.bybit_spot_kline_240m";
+        public static final String SPOT_KLINE_1D_TABLE = "crypto_scout.bybit_spot_kline_1d";
+        public static final String SPOT_TICKERS_TABLE = "crypto_scout.bybit_spot_tickers";
 
         // Bybit ta spot tables
-        static final String TA_SPOT_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_spot_public_trade";
-        static final String TA_SPOT_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_spot_order_book_1";
-        static final String TA_SPOT_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_spot_order_book_50";
-        static final String TA_SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_spot_order_book_200";
-        static final String TA_SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_spot_order_book_1000";
+        public static final String TA_SPOT_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_spot_public_trade";
+        public static final String TA_SPOT_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_spot_order_book_1";
+        public static final String TA_SPOT_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_spot_order_book_50";
+        public static final String TA_SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_spot_order_book_200";
+        public static final String TA_SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_spot_order_book_1000";
 
         // Bybit linear tables
-        static final String LINEAR_KLINE_1M_TABLE = "crypto_scout.bybit_linear_kline_1m";
-        static final String LINEAR_KLINE_5M_TABLE = "crypto_scout.bybit_linear_kline_5m";
-        static final String LINEAR_KLINE_15M_TABLE = "crypto_scout.bybit_linear_kline_15m";
-        static final String LINEAR_KLINE_60M_TABLE = "crypto_scout.bybit_linear_kline_60m";
-        static final String LINEAR_KLINE_240M_TABLE = "crypto_scout.bybit_linear_kline_240m";
-        static final String LINEAR_KLINE_1D_TABLE = "crypto_scout.bybit_linear_kline_1d";
-        static final String LINEAR_TICKERS_TABLE = "crypto_scout.bybit_linear_tickers";
+        public static final String LINEAR_KLINE_1M_TABLE = "crypto_scout.bybit_linear_kline_1m";
+        public static final String LINEAR_KLINE_5M_TABLE = "crypto_scout.bybit_linear_kline_5m";
+        public static final String LINEAR_KLINE_15M_TABLE = "crypto_scout.bybit_linear_kline_15m";
+        public static final String LINEAR_KLINE_60M_TABLE = "crypto_scout.bybit_linear_kline_60m";
+        public static final String LINEAR_KLINE_240M_TABLE = "crypto_scout.bybit_linear_kline_240m";
+        public static final String LINEAR_KLINE_1D_TABLE = "crypto_scout.bybit_linear_kline_1d";
+        public static final String LINEAR_TICKERS_TABLE = "crypto_scout.bybit_linear_tickers";
 
         // Bybit linear tables
-        static final String TA_LINEAR_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_linear_public_trade";
-        static final String TA_LINEAR_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_linear_order_book_1";
-        static final String TA_LINEAR_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_linear_order_book_50";
-        static final String TA_LINEAR_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_linear_order_book_200";
-        static final String TA_LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_linear_order_book_1000";
-        static final String TA_LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_ta_linear_all_liqudation";
+        public static final String TA_LINEAR_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_linear_public_trade";
+        public static final String TA_LINEAR_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_linear_order_book_1";
+        public static final String TA_LINEAR_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_linear_order_book_50";
+        public static final String TA_LINEAR_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_linear_order_book_200";
+        public static final String TA_LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_linear_order_book_1000";
+        public static final String TA_LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_ta_linear_all_liqudation";
 
         // Time range
         static final int FROM = 1;
@@ -375,13 +375,13 @@ public final class Constants {
         static final int LINEAR_ALL_LIQUIDATION_BANKRUPTCY_PRICE = 5;
     }
 
-    final static class Offsets {
+    public final static class Offsets {
         private Offsets() {
             throw new UnsupportedOperationException();
         }
 
         // Stream offsets table
-        static final String STREAM_OFFSETS_TABLE = "crypto_scout.stream_offsets";
+        public static final String STREAM_OFFSETS_TABLE = "crypto_scout.stream_offsets";
 
         // Stream offsets
         static final String STREAM_OFFSETS_UPSERT = "INSERT INTO crypto_scout.stream_offsets(stream, \"offset\") VALUES " +
