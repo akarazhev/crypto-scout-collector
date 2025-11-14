@@ -35,19 +35,24 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.FROM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_DESC;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_RETURN_COIN;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_RETURN_COIN_ICON;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_RULES;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_STAKE_BEGIN_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_STAKE_END_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_TRADE_BEGIN_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WEBSITE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WHITE_PAPER;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DESC;
@@ -131,6 +136,28 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
     }
 
     public List<Map<String, Object>> getLpl(final OffsetDateTime odt) throws SQLException {
-        return List.of();
+        final var results = new ArrayList<Map<String, Object>>();
+        try (final var c = dataSource.getConnection()) {
+            final var ps = c.prepareStatement(LPL_SELECT);
+            ps.setObject(FROM, odt);
+            ps.setObject(TO, odt);
+            try (final var rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    final var row = new HashMap<String, Object>();
+                    row.put(RETURN_COIN, rs.getObject(LPL_RETURN_COIN));
+                    row.put(RETURN_COIN_ICON, rs.getObject(LPL_RETURN_COIN_ICON));
+                    row.put(DESC, rs.getObject(LPL_DESC));
+                    row.put(WEBSITE, rs.getObject(LPL_WEBSITE));
+                    row.put(WHITE_PAPER, rs.getObject(LPL_WHITE_PAPER));
+                    row.put(RULES, rs.getObject(LPL_RULES));
+                    row.put(STAKE_BEGIN_TIME, rs.getObject(LPL_STAKE_BEGIN_TIME));
+                    row.put(STAKE_END_TIME, rs.getObject(LPL_STAKE_END_TIME));
+                    row.put(TRADE_BEGIN_TIME, rs.getObject(LPL_TRADE_BEGIN_TIME));
+                    results.add(row);
+                }
+            }
+        }
+
+        return results;
     }
 }
