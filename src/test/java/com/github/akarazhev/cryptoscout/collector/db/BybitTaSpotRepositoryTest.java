@@ -141,7 +141,7 @@ final class BybitTaSpotRepositoryTest {
         final var data = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.PUBLIC_TRADE);
         final var expected = getRowsCount(data);
         assertEquals(expected, repository.savePublicTrade(List.of(data), 600L));
-        final var t = ((Map<?, ?>) ((List<?>) data.get(DATA)).get(0)).get(T);
+        final var t = ((Map<?, ?>) ((List<?>) data.get(DATA)).getFirst()).get(T);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
         assertEquals(expected, repository.getPublicTrade(from, from).size());
     }
