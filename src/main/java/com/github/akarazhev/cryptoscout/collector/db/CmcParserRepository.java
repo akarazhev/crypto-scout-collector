@@ -34,14 +34,20 @@ import io.activej.reactor.nio.NioReactor;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.FROM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_BTC_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_BTC_VOLUME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_NAME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SCORE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
@@ -81,7 +87,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
     }
 
     @SuppressWarnings("unchecked")
-    public int insertFgi(final List<Map<String, Object>> fgis, final long offset) throws SQLException {
+    public int saveFgi(final List<Map<String, Object>> fgis, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final boolean oldAutoCommit = c.getAutoCommit();
@@ -126,5 +132,27 @@ public final class CmcParserRepository extends AbstractReactive implements React
         }
 
         return count;
+    }
+
+    public List<Map<String, Object>> getFgi(final OffsetDateTime odt) throws SQLException {
+        final var results = new ArrayList<Map<String, Object>>();
+        try (final var c = dataSource.getConnection()) {
+            final var ps = c.prepareStatement(FGI_SELECT);
+            ps.setObject(FROM, odt);
+            ps.setObject(TO, odt);
+            try (final var rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    final var row = new HashMap<String, Object>();
+                    row.put(SCORE, rs.getObject(FGI_SCORE));
+                    row.put(NAME, rs.getObject(FGI_NAME));
+                    row.put(TIMESTAMP, rs.getObject(FGI_TIMESTAMP));
+                    row.put(BTC_PRICE, rs.getObject(FGI_BTC_PRICE));
+                    row.put(BTC_VOLUME, rs.getObject(FGI_BTC_VOLUME));
+                    results.add(row);
+                }
+            }
+        }
+
+        return results;
     }
 }

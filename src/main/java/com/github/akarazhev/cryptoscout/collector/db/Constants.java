@@ -34,9 +34,16 @@ public final class Constants {
             throw new UnsupportedOperationException();
         }
 
-        static final String FGI_INSERT = "INSERT INTO crypto_scout.cmc_fgi " +
+        // CMC fgi table
+        static final String CMC_FGI_TABLE = "crypto_scout.cmc_fgi";
+
+        // CMC fgi
+        static final String FGI_INSERT = "INSERT INTO " + CMC_FGI_TABLE +
                 "(score, name, timestamp, btc_price, btc_volume) VALUES " +
                 "(?, ?, ?, ?, ?)";
+        static final String FGI_SELECT =
+                "SELECT score, name, timestamp, btc_price, btc_volume FROM " + CMC_FGI_TABLE +
+                        " WHERE timestamp >= ? AND timestamp <= ?";
         static final int FGI_SCORE = 1;
         static final int FGI_NAME = 2;
         static final int FGI_TIMESTAMP = 3;
@@ -93,6 +100,10 @@ public final class Constants {
         static final String LPL_INSERT = "INSERT INTO " + BYBIT_LPL_TABLE +
                 "(return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
                 "stake_end_time, trade_begin_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        static final String LPL_SELECT =
+                "SELECT return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
+                "stake_end_time, trade_begin_time FROM " + BYBIT_LPL_TABLE +
+                        " WHERE stake_end_time >= ? AND trade_begin_time <= ?";
         static final int LPL_RETURN_COIN = 1;
         static final int LPL_RETURN_COIN_ICON = 2;
         static final int LPL_DESC = 3;
