@@ -43,6 +43,8 @@ import java.util.concurrent.Executors;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class CmcParserRepositoryTest {
@@ -87,7 +89,7 @@ final class CmcParserRepositoryTest {
     void shouldGetFgi() throws Exception {
         final var data = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
         assertEquals(30, repository.saveFgi(List.of(data), 200L));
-        final var timestamp = ((Map<?, ?>) ((List<?>) data.get("dataList")).getFirst()).get("timestamp");
+        final var timestamp = ((Map<?, ?>) ((List<?>) data.get(DATA_LIST)).getFirst()).get(TIMESTAMP);
         final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong((String) timestamp)), ZoneOffset.UTC);
         assertEquals(1, repository.getFgi(odt).size());
     }
