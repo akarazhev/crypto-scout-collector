@@ -79,6 +79,7 @@ final class BybitSpotRepositoryTest {
                 SPOT_KLINE_15M_TABLE,
                 SPOT_KLINE_60M_TABLE,
                 SPOT_KLINE_240M_TABLE,
+                SPOT_KLINE_1D_TABLE,
                 SPOT_TICKERS_TABLE
         );
     }

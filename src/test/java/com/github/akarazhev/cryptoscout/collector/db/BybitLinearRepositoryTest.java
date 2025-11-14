@@ -79,6 +79,7 @@ final class BybitLinearRepositoryTest {
                 LINEAR_KLINE_15M_TABLE,
                 LINEAR_KLINE_60M_TABLE,
                 LINEAR_KLINE_240M_TABLE,
+                LINEAR_KLINE_1D_TABLE,
                 LINEAR_TICKERS_TABLE
         );
     }
