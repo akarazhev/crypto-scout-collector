@@ -69,7 +69,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TURNOVER_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_VOLUME_24H;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
@@ -154,7 +154,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(insertSql);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var kline : klines) {
                     final var row = getFirstRow(DATA, kline);
                     if (row == null) {
@@ -212,7 +212,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(String.format(SPOT_TICKERS_INSERT));
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var ticker : tickers) {
                     final var row = getRow(DATA, ticker);
                     if (row == null) {

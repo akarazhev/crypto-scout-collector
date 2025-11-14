@@ -53,7 +53,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WEBSITE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WHITE_PAPER;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DESC;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.RETURN_COIN;
@@ -98,7 +98,7 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
             final boolean oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(LPL_INSERT);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var lpl : lpls) {
                     ps.setString(LPL_RETURN_COIN, (String) lpl.get(RETURN_COIN));
                     ps.setString(LPL_RETURN_COIN_ICON, (String) lpl.get(RETURN_COIN_ICON));

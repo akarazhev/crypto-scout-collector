@@ -49,7 +49,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_NA
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SCORE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_TIMESTAMP;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_PRICE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_VOLUME;
@@ -93,7 +93,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
             final boolean oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(FGI_INSERT);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var fgi : fgis) {
                     if (fgi != null && fgi.containsKey(DATA_LIST)) {
                         for (final var dl : (List<Map<String, Object>>) fgi.get(DATA_LIST)) {

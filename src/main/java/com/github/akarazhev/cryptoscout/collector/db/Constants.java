@@ -380,10 +380,14 @@ public final class Constants {
             throw new UnsupportedOperationException();
         }
 
-        static final String SELECT = "SELECT \"offset\" FROM crypto_scout.stream_offsets WHERE stream = ?";
+        // Stream offsets table
+        static final String STREAM_OFFSETS_TABLE = "crypto_scout.stream_offsets";
+
+        // Stream offsets
+        static final String STREAM_OFFSETS_UPSERT = "INSERT INTO crypto_scout.stream_offsets(stream, \"offset\") VALUES " +
+                "(?, ?) ON CONFLICT (stream) DO UPDATE SET \"offset\" = EXCLUDED.\"offset\", updated_at = NOW()";
+        static final String STREAM_OFFSETS_SELECT = "SELECT \"offset\" " + STREAM_OFFSETS_TABLE + " WHERE stream = ?";
         static final int CURRENT_OFFSET = 1;
-        static final String UPSERT = "INSERT INTO crypto_scout.stream_offsets(stream, \"offset\") VALUES (?, ?) " +
-                "ON CONFLICT (stream) DO UPDATE SET \"offset\" = EXCLUDED.\"offset\", updated_at = NOW()";
         static final int STREAM = 1;
         static final int LAST_OFFSET = 2;
     }

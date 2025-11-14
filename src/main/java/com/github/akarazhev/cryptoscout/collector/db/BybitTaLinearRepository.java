@@ -68,7 +68,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_TAKER_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_PUBLIC_TRADE_TRADE_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_ALL_LIQUIDATION_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
@@ -121,7 +121,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(LINEAR_PUBLIC_TRADE_INSERT);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var trade : trades) {
                     final var rows = getRows(DATA, trade);
                     if (rows != null) {
@@ -223,7 +223,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(LINEAR_ALL_LIQUIDATION_INSERT);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var allLiquidation : allLiquidations) {
                     final var rows = getRows(DATA, allLiquidation);
                     if (rows != null) {
@@ -274,7 +274,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(insertSql);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var order : orderBooks) {
                     final var row = getRow(DATA, order);
                     if (row == null) {

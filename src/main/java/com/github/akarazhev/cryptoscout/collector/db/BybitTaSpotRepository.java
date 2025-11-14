@@ -61,7 +61,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.A;
@@ -114,7 +114,7 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(SPOT_PUBLIC_TRADE_INSERT);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var trade : trades) {
                     final var rows = getRows(DATA, trade);
                     if (rows != null) {
@@ -185,7 +185,7 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(insertSql);
-                 final var psOffset = c.prepareStatement(UPSERT)) {
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var order : orderBooks) {
                     final var row = getRow(DATA, order);
                     if (row == null) {
