@@ -35,9 +35,9 @@ import java.util.OptionalLong;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.CURRENT_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 
 public final class StreamOffsetsRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -63,7 +63,7 @@ public final class StreamOffsetsRepository extends AbstractReactive implements R
 
     public OptionalLong getOffset(final String stream) throws SQLException {
         try (final var c = dataSource.getConnection();
-             final var ps = c.prepareStatement(SELECT)) {
+             final var ps = c.prepareStatement(STREAM_OFFSETS_SELECT)) {
             ps.setString(STREAM, stream);
             try (final var rs = ps.executeQuery()) {
                 if (rs.next()) {
@@ -80,7 +80,7 @@ public final class StreamOffsetsRepository extends AbstractReactive implements R
 
     public int upsertOffset(final String stream, final long offset) throws SQLException {
         try (final var c = dataSource.getConnection();
-             final var ps = c.prepareStatement(UPSERT)) {
+             final var ps = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
             ps.setString(STREAM, stream);
             ps.setLong(LAST_OFFSET, offset);
             return ps.executeUpdate();
