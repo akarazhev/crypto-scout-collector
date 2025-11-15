@@ -13,7 +13,8 @@ Take the following roles:
 
 - Rely on the following implementations: @BybitLinearRepositoryTest.java, @BybitSpotRepositoryTest.java,
   @StreamOffsetsRepositoryTest.java
-- Use implementation of the `PodmanCompose` service to manage containers and the `BybitMockData` service to get mock data.
+- Use the `PodmanCompose` service to manage containers and the `BybitMockData` service to get mock data as it has been 
+  implemented in @BybitLinearRepositoryTest.java, @BybitSpotRepositoryTest.java, @StreamOffsetsRepositoryTest.java.
 - Double-check your proposal and make sure that they are correct and haven't missed any important points.
 - Implementation must be production ready.
 
