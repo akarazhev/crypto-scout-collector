@@ -93,17 +93,17 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     }
 
     @Override
-    public Promise<?> start() {
+    public Promise<Void> start() {
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
         return Promise.complete();
     }
 
     @Override
-    public Promise<?> stop() {
+    public Promise<Void> stop() {
         return flush();
     }
 
-    public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
+    public Promise<Void> save(final Payload<Map<String, Object>> payload, final long offset) {
         if (!Provider.BYBIT.equals(payload.getProvider())) {
             LOGGER.warn("Invalid payload: {}", payload);
             return Promise.complete();
@@ -122,7 +122,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
     }
 
-    private Promise<?> flush() {
+    private Promise<Void> flush() {
         if (buffer.isEmpty()) {
             return Promise.complete();
         }
@@ -269,8 +269,6 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 linearTickers.trimToSize();
                 saveLinearTicker(linearTickers, maxOffset);
             }
-
-            return null;
         });
     }
 
@@ -278,7 +276,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveKline1m(klines, maxOffset);
-                LOGGER.info("Inserted {} spot 1m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot 1m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -287,7 +285,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveKline5m(klines, maxOffset);
-                LOGGER.info("Inserted {} spot 5m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot 5m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -296,7 +294,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveKline15m(klines, maxOffset);
-                LOGGER.info("Inserted {} spot 15m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot 15m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -305,7 +303,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveKline60m(klines, maxOffset);
-                LOGGER.info("Inserted {} spot 60m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot 60m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -314,7 +312,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveKline240m(klines, maxOffset);
-                LOGGER.info("Inserted {} spot 240m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot 240m klines (tx) and updated offset {}", count, maxOffset);
                 ;
             }
         }
@@ -324,7 +322,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveKline1d(klines, maxOffset);
-                LOGGER.info("Inserted {} spot 1d klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot 1d klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -333,7 +331,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!tickers.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveTicker(tickers, maxOffset);
-                LOGGER.info("Inserted {} spot tickers (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot tickers (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -342,7 +340,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveKline1m(klines, maxOffset);
-                LOGGER.info("Inserted {} linear 1m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear 1m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -351,7 +349,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveKline5m(klines, maxOffset);
-                LOGGER.info("Inserted {} linear 5m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear 5m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -360,7 +358,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveKline15m(klines, maxOffset);
-                LOGGER.info("Inserted {} linear 15m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear 15m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -369,7 +367,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveKline60m(klines, maxOffset);
-                LOGGER.info("Inserted {} linear 60m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear 60m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -378,7 +376,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveKline240m(klines, maxOffset);
-                LOGGER.info("Inserted {} linear 240m klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear 240m klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -387,7 +385,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveKline1d(klines, maxOffset);
-                LOGGER.info("Inserted {} linear 1d klines (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear 1d klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -396,7 +394,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         if (!tickers.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveTicker(tickers, maxOffset);
-                LOGGER.info("Inserted {} linear tickers (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear tickers (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
