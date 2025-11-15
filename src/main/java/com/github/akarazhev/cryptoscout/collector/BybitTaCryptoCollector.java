@@ -91,17 +91,17 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
     }
 
     @Override
-    public Promise<?> start() {
+    public Promise<Void> start() {
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
         return Promise.complete();
     }
 
     @Override
-    public Promise<?> stop() {
+    public Promise<Void> stop() {
         return flush();
     }
 
-    public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
+    public Promise<Void> save(final Payload<Map<String, Object>> payload, final long offset) {
         if (!Provider.BYBIT.equals(payload.getProvider())) {
             LOGGER.warn("Invalid payload: {}", payload);
             return Promise.complete();
@@ -120,7 +120,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
                 reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
     }
 
-    private Promise<?> flush() {
+    private Promise<Void> flush() {
         if (buffer.isEmpty()) {
             return Promise.complete();
         }
@@ -246,8 +246,6 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
                 linearAllLiqudation.trimToSize();
                 saveLinearAllLiquidation(linearAllLiqudation, maxOffset);
             }
-
-            return null;
         });
     }
 
@@ -256,7 +254,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!publicTrades.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaSpotRepository.savePublicTrade(publicTrades, maxOffset);
-                LOGGER.info("Inserted {} spot public trades (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot public trades (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -266,7 +264,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaSpotRepository.saveOrderBook1(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} spot order books 1 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot order books 1 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -276,7 +274,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaSpotRepository.saveOrderBook50(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} spot order books 50 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot order books 50 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -286,7 +284,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaSpotRepository.saveOrderBook200(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} spot order books 200 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot order books 200 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -296,7 +294,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaSpotRepository.saveOrderBook1000(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} spot order books 1000 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} spot order books 1000 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -306,7 +304,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!publicTrades.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaLinearRepository.savePublicTrade(publicTrades, maxOffset);
-                LOGGER.info("Inserted {} linear public trades (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear public trades (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -316,7 +314,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaLinearRepository.saveOrderBook1(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} linear order books 1 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear order books 1 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -326,7 +324,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaLinearRepository.saveOrderBook50(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} linear order books 50 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear order books 50 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -336,7 +334,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaLinearRepository.saveOrderBook200(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} linear order books 200 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear order books 200 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -346,7 +344,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!orderBooks.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaLinearRepository.saveOrderBook1000(orderBooks, maxOffset);
-                LOGGER.info("Inserted {} linear order books 1000 (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear order books 1000 (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
@@ -356,7 +354,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         if (!allLiqudations.isEmpty()) {
             if (maxOffset >= 0) {
                 final var count = bybitTaLinearRepository.saveAllLiquidation(allLiqudations, maxOffset);
-                LOGGER.info("Inserted {} linear all liquidations (tx) and updated offset {}", count, maxOffset);
+                LOGGER.info("Save {} linear all liquidations (tx) and updated offset {}", count, maxOffset);
             }
         }
     }
