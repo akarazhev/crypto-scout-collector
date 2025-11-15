@@ -30,5 +30,5 @@ Take the following roles:
   project and update @BybitCryptoCollectorTest.java by implementing tests methods to cover logic in the 
   @BybitCryptoCollector.java, use @BybitLinearRepositoryTest.java, @BybitSpotRepositoryTest.java,
   @StreamOffsetsRepositoryTest.java as examples.
-- As the `expert java engineer` recheck your proposal and make sure that they are correct and haven't missed any
+- As the `expert java engineer` Double-check your proposal and make sure that they are correct and haven't missed any
   important points.
