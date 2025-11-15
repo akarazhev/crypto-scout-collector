@@ -13,8 +13,9 @@ Take the following roles:
 
 - Rely on the following implementations: @BybitLinearRepositoryTest.java, @BybitSpotRepositoryTest.java,
   @StreamOffsetsRepositoryTest.java
-- Use the `PodmanCompose` service to manage containers and the `BybitMockData` service to get mock data as it has been 
-  implemented in @BybitLinearRepositoryTest.java, @BybitSpotRepositoryTest.java, @StreamOffsetsRepositoryTest.java.
+- Use the `PodmanCompose` service to manage containers and the `BybitMockData` service to get mock data.
+- The usage of `PodmanCompose` and `BybitMockData` services are already in @BybitLinearRepositoryTest.java,
+  @BybitSpotRepositoryTest.java, @StreamOffsetsRepositoryTest.java.
 - Double-check your proposal and make sure that they are correct and haven't missed any important points.
 - Implementation must be production ready.
 
@@ -27,8 +28,8 @@ Take the following roles:
 
 ## Tasks
 
-- As the `expert java engineer` review the current @BybitCryptoCollector.java implementation in `crypto-scout-collector` 
-  project and update @BybitCryptoCollectorTest.java by implementing tests methods to cover logic in the 
+- As the `expert java engineer` review the current @BybitCryptoCollector.java implementation in `crypto-scout-collector`
+  project and update @BybitCryptoCollectorTest.java by implementing tests methods to cover logic in the
   @BybitCryptoCollector.java, use @BybitLinearRepositoryTest.java, @BybitSpotRepositoryTest.java,
   @StreamOffsetsRepositoryTest.java as examples.
 - As the `expert java engineer` Double-check your proposal and make sure that they are correct and haven't missed any
