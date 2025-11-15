@@ -73,20 +73,17 @@ public final class BybitParserCollector extends AbstractReactive implements Reac
     }
 
     @Override
-    public Promise<?> start() {
+    public Promise<Void> start() {
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
-        LOGGER.info("BybitParserCollector started");
         return Promise.complete();
     }
 
     @Override
-    public Promise<?> stop() {
-        final var promise = flush();
-        LOGGER.info("BybitParserCollector stopped");
-        return promise;
+    public Promise<Void> stop() {
+        return flush();
     }
 
-    public Promise<?> save(final Payload<Map<String, Object>> payload, final long offset) {
+    public Promise<Void> save(final Payload<Map<String, Object>> payload, final long offset) {
         if (!Provider.BYBIT.equals(payload.getProvider())) {
             LOGGER.warn("Invalid payload: {}", payload);
             return Promise.complete();
@@ -105,7 +102,7 @@ public final class BybitParserCollector extends AbstractReactive implements Reac
                 reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
     }
 
-    private Promise<?> flush() {
+    private Promise<Void> flush() {
         if (buffer.isEmpty()) {
             return Promise.complete();
         }
@@ -141,16 +138,14 @@ public final class BybitParserCollector extends AbstractReactive implements Reac
 
             if (!lpls.isEmpty()) {
                 if (maxOffset >= 0) {
-                    LOGGER.info("Inserted {} LPL points (tx) and updated offset {}",
-                            bybitParserRepository.insertLpl(lpls, maxOffset), maxOffset);
+                    LOGGER.info("Save {} LPL points (tx) and updated offset {}",
+                            bybitParserRepository.saveLpl(lpls, maxOffset), maxOffset);
                 }
             } else if (maxOffset >= 0) {
                 // No data to insert but we still may want to advance offset in rare cases
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.debug("Upserted Bybit parser offset {} (no data batch)", maxOffset);
             }
-
-            return null;
         });
     }
 }
