@@ -80,7 +80,7 @@ final class StreamOffsetsRepositoryTest {
     @Test
     void shouldGetOffset() throws Exception {
         assertEquals(1, repository.upsertOffset(AmqpConfig.getAmqpBybitCryptoStream(), 200L));
-        final var offset = repository.getOffset(AmqpConfig.getAmqpBybitCryptoStream());
-        assertEquals(200, offset.isPresent() ? offset.getAsLong() : 0L);
+        final var o = repository.getOffset(AmqpConfig.getAmqpBybitCryptoStream());
+        assertEquals(200, o.isPresent() ? o.getAsLong() : 0L);
     }
 }

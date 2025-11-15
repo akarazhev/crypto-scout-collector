@@ -95,112 +95,112 @@ final class BybitLinearRepositoryTest {
 
     @Test
     void shouldSaveKline1m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
-        assertEquals(1, repository.saveKline1m(List.of(data), 100L));
+        final var k1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
+        assertEquals(1, repository.saveKline1m(List.of(k1), 100L));
         assertTableCount(LINEAR_KLINE_1M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline5m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
-        assertEquals(1, repository.saveKline5m(List.of(data), 200L));
+        final var k5 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
+        assertEquals(1, repository.saveKline5m(List.of(k5), 200L));
         assertTableCount(LINEAR_KLINE_5M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline15m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
-        assertEquals(1, repository.saveKline15m(List.of(data), 300L));
+        final var k15 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
+        assertEquals(1, repository.saveKline15m(List.of(k15), 300L));
         assertTableCount(LINEAR_KLINE_15M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline60m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
-        assertEquals(1, repository.saveKline60m(List.of(data), 400L));
+        final var k60 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
+        assertEquals(1, repository.saveKline60m(List.of(k60), 400L));
         assertTableCount(LINEAR_KLINE_60M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline240m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
-        assertEquals(1, repository.saveKline240m(List.of(data), 500L));
+        final var k240 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
+        assertEquals(1, repository.saveKline240m(List.of(k240), 500L));
         assertTableCount(LINEAR_KLINE_240M_TABLE, 1);
     }
 
     @Test
     void shouldSaveKline1d() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
-        assertEquals(1, repository.saveKline1d(List.of(data), 600L));
+        final var kd = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
+        assertEquals(1, repository.saveKline1d(List.of(kd), 600L));
         assertTableCount(LINEAR_KLINE_1D_TABLE, 1);
     }
 
     @Test
     void shouldSaveTicker() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
-        assertEquals(1, repository.saveTicker(List.of(data), 700L));
+        final var tickers = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
+        assertEquals(1, repository.saveTicker(List.of(tickers), 700L));
         assertTableCount(LINEAR_TICKERS_TABLE, 1);
     }
 
     @Test
     void shouldGetKline1m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
-        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline1m(List.of(data), 800L));
+        final var k1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
+        final var start = ((Map<?, ?>) ((List<?>) k1.get(DATA)).getFirst()).get(START);
+        assertEquals(1, repository.saveKline1m(List.of(k1), 800L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline1m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline5m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
-        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline5m(List.of(data), 900L));
+        final var k5 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
+        final var start = ((Map<?, ?>) ((List<?>) k5.get(DATA)).getFirst()).get(START);
+        assertEquals(1, repository.saveKline5m(List.of(k5), 900L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline5m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline15m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
-        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline15m(List.of(data), 1000L));
+        final var k15 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
+        final var start = ((Map<?, ?>) ((List<?>) k15.get(DATA)).getFirst()).get(START);
+        assertEquals(1, repository.saveKline15m(List.of(k15), 1000L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline15m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline60m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
-        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline60m(List.of(data), 1100L));
+        final var k60 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
+        final var start = ((Map<?, ?>) ((List<?>) k60.get(DATA)).getFirst()).get(START);
+        assertEquals(1, repository.saveKline60m(List.of(k60), 1100L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline60m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline240m() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
-        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline240m(List.of(data), 1200L));
+        final var k240 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
+        final var start = ((Map<?, ?>) ((List<?>) k240.get(DATA)).getFirst()).get(START);
+        assertEquals(1, repository.saveKline240m(List.of(k240), 1200L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline240m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline1d() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
-        final var start = ((Map<?, ?>) ((List<?>) data.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline1d(List.of(data), 1300L));
+        final var kd = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
+        final var start = ((Map<?, ?>) ((List<?>) kd.get(DATA)).getFirst()).get(START);
+        assertEquals(1, repository.saveKline1d(List.of(kd), 1300L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
         assertEquals(1, repository.getKline1d(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetTicker() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
-        assertEquals(1, repository.saveTicker(List.of(data), 1400L));
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) data.get(TS)), ZoneOffset.UTC);
+        final var tickers = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
+        assertEquals(1, repository.saveTicker(List.of(tickers), 1400L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
         assertEquals(1, repository.getTicker(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 }

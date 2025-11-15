@@ -78,16 +78,16 @@ final class BybitParserRepositoryTest {
 
     @Test
     void shouldSaveLpl() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
-        assertEquals(1, repository.saveLpl(List.of(data), 100L));
+        final var lpl = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
+        assertEquals(1, repository.saveLpl(List.of(lpl), 100L));
         assertTableCount(BYBIT_LPL_TABLE, 1);
     }
 
     @Test
     void shouldGetLpl() throws Exception {
-        final var data = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
-        assertEquals(1, repository.saveLpl(List.of(data), 200L));
-        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) data.get(STAKE_BEGIN_TIME)), ZoneOffset.UTC);
+        final var lpl = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
+        assertEquals(1, repository.saveLpl(List.of(lpl), 200L));
+        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) lpl.get(STAKE_BEGIN_TIME)), ZoneOffset.UTC);
         assertEquals(1, repository.getLpl(odt).size());
     }
 }

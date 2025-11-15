@@ -80,16 +80,16 @@ final class CmcParserRepositoryTest {
 
     @Test
     void shouldSaveFgi() throws Exception {
-        final var data = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
-        assertEquals(30, repository.saveFgi(List.of(data), 100L));
+        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        assertEquals(30, repository.saveFgi(List.of(fgi), 100L));
         assertTableCount(CMC_FGI_TABLE, 30);
     }
 
     @Test
     void shouldGetFgi() throws Exception {
-        final var data = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
-        assertEquals(30, repository.saveFgi(List.of(data), 200L));
-        final var timestamp = ((Map<?, ?>) ((List<?>) data.get(DATA_LIST)).getFirst()).get(TIMESTAMP);
+        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        assertEquals(30, repository.saveFgi(List.of(fgi), 200L));
+        final var timestamp = ((Map<?, ?>) ((List<?>) fgi.get(DATA_LIST)).getFirst()).get(TIMESTAMP);
         final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong((String) timestamp)), ZoneOffset.UTC);
         assertEquals(1, repository.getFgi(odt).size());
     }
