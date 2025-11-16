@@ -69,7 +69,6 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 final class BybitTaCryptoCollectorTest {
     private static ExecutorService executor;
