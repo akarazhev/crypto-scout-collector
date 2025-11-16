@@ -51,6 +51,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -82,7 +84,11 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_S
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.cryptoscout.test.MockData.Source.BYBIT_PARSER;
+import static com.github.akarazhev.cryptoscout.test.MockData.Source.CMC_PARSER;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.STAKE_BEGIN_TIME;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class StreamConsumerTest {
@@ -106,6 +112,7 @@ final class StreamConsumerTest {
     private static StreamConsumer streamConsumer;
 
     private static StreamTestPublisher bybitParserStreamPublisher;
+    private static StreamTestPublisher cmcParserStreamPublisher;
 
     @BeforeAll
     static void setup() {
@@ -136,8 +143,11 @@ final class StreamConsumerTest {
         final var environment = AmqpConfig.getEnvironment();
         bybitParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpBybitParserStream());
+        cmcParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
+                AmqpConfig.getAmqpCmcParserStream());
         TestUtils.await(bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
-                cmcParserCollector.start(), streamConsumer.start(), bybitParserStreamPublisher.start());
+                cmcParserCollector.start(), streamConsumer.start(), bybitParserStreamPublisher.start(),
+                cmcParserStreamPublisher.start());
     }
 
     @BeforeEach
@@ -181,13 +191,15 @@ final class StreamConsumerTest {
     @AfterAll
     static void cleanup() {
         reactor.post(() -> bybitParserStreamPublisher.stop()
-                .whenComplete(() -> streamConsumer.stop()
-                        .whenComplete(() -> bybitCryptoCollector.stop()
-                                .whenComplete(() -> bybitParserCollector.stop()
-                                        .whenComplete(() -> bybitTaCryptoCollector.stop()
-                                                .whenComplete(() -> cmcParserCollector.stop()
-                                                        .whenComplete(() -> dataSource.stop()
-                                                                .whenComplete(() -> reactor.breakEventloop()))))))));
+                .whenComplete(() -> cmcParserStreamPublisher.stop()
+                        .whenComplete(() -> streamConsumer.stop()
+                                .whenComplete(() -> bybitCryptoCollector.stop()
+                                        .whenComplete(() -> bybitParserCollector.stop()
+                                                .whenComplete(() -> bybitTaCryptoCollector.stop()
+                                                        .whenComplete(() -> cmcParserCollector.stop()
+                                                                .whenComplete(() -> dataSource.stop()
+                                                                        .whenComplete(() -> reactor.breakEventloop()
+                                                                        )))))))));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
@@ -195,7 +207,7 @@ final class StreamConsumerTest {
 
     @Test
     void testShouldBybitLplBeConsumed() throws Exception {
-        final var lpl = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
+        final var lpl = MockData.get(BYBIT_PARSER, MockData.Type.LPL);
         bybitParserStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.LPL, lpl));
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(bybitParserCollector.stop());
@@ -208,5 +220,23 @@ final class StreamConsumerTest {
         assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);
 
         TestUtils.await(bybitParserCollector.start());
+    }
+
+    @Test
+    void testShouldCmcFgiBeConsumed() throws Exception {
+        final var fgi = MockData.get(CMC_PARSER, MockData.Type.FGI);
+        cmcParserStreamPublisher.publish(Payload.of(Provider.CMC, Source.FGI, fgi));
+        Thread.sleep(Duration.ofSeconds(1));
+        TestUtils.await(cmcParserCollector.stop());
+
+        final var ts = ((Map<?, ?>) ((List<?>) fgi.get(DATA_LIST)).getFirst()).get(TIMESTAMP);
+        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong((String) ts)), ZoneOffset.UTC);
+        assertEquals(1, cmcParserRepository.getFgi(odt).size());
+        assertTableCount(CMC_FGI_TABLE, 30);
+
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
+        assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);
+
+        TestUtils.await(cmcParserCollector.start());
     }
 }
