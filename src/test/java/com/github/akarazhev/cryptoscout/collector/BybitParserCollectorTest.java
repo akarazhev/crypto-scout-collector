@@ -108,4 +108,31 @@ final class BybitParserCollectorTest {
 
         TestUtils.await(collector.start());
     }
+
+    @Test
+    void shouldUpsertOffsetWhenNoDataBatch() throws Exception {
+        TestUtils.await(collector.save(Payload.of(Provider.BYBIT, Source.FGI, java.util.Map.of()), 200L));
+
+        TestUtils.await(collector.stop());
+
+        assertTableCount(BYBIT_LPL_TABLE, 0);
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitParserStream());
+        assertEquals(200L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(collector.start());
+    }
+
+    @Test
+    void shouldIgnoreInvalidProvider() throws Exception {
+        final var lpl = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
+        TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.LPL, lpl), 300L));
+
+        TestUtils.await(collector.stop());
+
+        assertTableCount(BYBIT_LPL_TABLE, 0);
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitParserStream());
+        assertEquals(0L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(collector.start());
+    }
 }
