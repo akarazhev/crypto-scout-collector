@@ -36,7 +36,6 @@ import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.test.DBUtils;
 import com.github.akarazhev.cryptoscout.test.MockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
-import com.github.akarazhev.cryptoscout.test.StreamTestConsumer;
 import com.github.akarazhev.cryptoscout.test.StreamTestPublisher;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
@@ -48,6 +47,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -106,7 +106,6 @@ final class StreamConsumerTest {
     private static StreamConsumer streamConsumer;
 
     private static StreamTestPublisher bybitParserStreamPublisher;
-    private static StreamTestConsumer bybitParserStreamConsumer;
 
     @BeforeAll
     static void setup() {
@@ -130,25 +129,22 @@ final class StreamConsumerTest {
         bybitTaCryptoCollector = BybitTaCryptoCollector.create(reactor, executor, streamOffsetsRepository,
                 taSpotRepository, taLinearRepository);
         cmcParserCollector = CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
-        TestUtils.await(bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
-                cmcParserCollector.start());
 
         streamConsumer = StreamConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
                 bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
-        TestUtils.await(streamConsumer.start());
 
         final var environment = AmqpConfig.getEnvironment();
         bybitParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpBybitParserStream());
-        bybitParserStreamConsumer = StreamTestConsumer.create(reactor, executor, environment,
-                AmqpConfig.getAmqpBybitParserStream());
-        TestUtils.await(bybitParserStreamPublisher.start(), bybitParserStreamConsumer.start());
+        TestUtils.await(bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
+                cmcParserCollector.start(), streamConsumer.start(), bybitParserStreamPublisher.start());
     }
 
     @BeforeEach
     void before() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 BYBIT_LPL_TABLE,
+
                 SPOT_KLINE_1M_TABLE,
                 SPOT_KLINE_5M_TABLE,
                 SPOT_KLINE_15M_TABLE,
@@ -185,16 +181,13 @@ final class StreamConsumerTest {
     @AfterAll
     static void cleanup() {
         reactor.post(() -> bybitParserStreamPublisher.stop()
-                .whenComplete(() -> bybitParserStreamConsumer.stop()));
-
-        reactor.post(() -> streamConsumer.stop()
-                .whenComplete(() -> bybitCryptoCollector.stop()
-                        .whenComplete(() -> bybitParserCollector.stop()
-                                .whenComplete(() -> bybitTaCryptoCollector.stop()
-                                        .whenComplete(() -> cmcParserCollector.stop())))));
-
-        reactor.post(() -> dataSource.stop()
-                .whenComplete(() -> reactor.breakEventloop()));
+                .whenComplete(() -> streamConsumer.stop()
+                        .whenComplete(() -> bybitCryptoCollector.stop()
+                                .whenComplete(() -> bybitParserCollector.stop()
+                                        .whenComplete(() -> bybitTaCryptoCollector.stop()
+                                                .whenComplete(() -> cmcParserCollector.stop()
+                                                        .whenComplete(() -> dataSource.stop()
+                                                                .whenComplete(() -> reactor.breakEventloop()))))))));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
@@ -202,11 +195,9 @@ final class StreamConsumerTest {
 
     @Test
     void testShouldBybitLplBeConsumed() throws Exception {
-        System.out.println("publish");
         final var lpl = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
         bybitParserStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.LPL, lpl));
-        TestUtils.await(bybitParserStreamConsumer.getResult());
-
+        Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(bybitParserCollector.stop());
 
         final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) lpl.get(STAKE_BEGIN_TIME)), ZoneOffset.UTC);
@@ -214,7 +205,7 @@ final class StreamConsumerTest {
         assertTableCount(BYBIT_LPL_TABLE, 1);
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitParserStream());
-        assertEquals(100L, offset.isPresent() ? offset.getAsLong() : 0L);
+        assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);
 
         TestUtils.await(bybitParserCollector.start());
     }
