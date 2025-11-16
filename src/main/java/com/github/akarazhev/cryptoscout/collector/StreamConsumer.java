@@ -86,7 +86,7 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
     }
 
     @Override
-    public Promise<?> start() {
+    public Promise<Void> start() {
         return Promise.ofBlocking(executor, () -> {
             try {
                 final var cmcStream = AmqpConfig.getAmqpCmcParserStream();
@@ -118,7 +118,6 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
                         .subscriptionListener(c -> updateOffset(bybitTaCryptoStream, c))
                         .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_TA_CRYPTO, c, m))
                         .build();
-                LOGGER.info("StreamConsumer started");
             } catch (final Exception ex) {
                 LOGGER.error("Failed to start StreamConsumer", ex);
                 throw new RuntimeException(ex);
@@ -127,7 +126,7 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
     }
 
     @Override
-    public Promise<?> stop() {
+    public Promise<Void> stop() {
         return Promise.ofBlocking(executor, () -> {
             closeConsumer(cmcParserConsumer);
             cmcParserConsumer = null;
@@ -138,7 +137,6 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
             closeConsumer(bybitTaCryptoConsumer);
             bybitTaCryptoConsumer = null;
             closeEnvironment();
-            LOGGER.info("StreamConsumer stopped");
         });
     }
 
