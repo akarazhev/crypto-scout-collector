@@ -33,18 +33,57 @@ import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
+import com.github.akarazhev.cryptoscout.test.DBUtils;
+import com.github.akarazhev.cryptoscout.test.MockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import com.github.akarazhev.cryptoscout.test.StreamTestConsumer;
 import com.github.akarazhev.cryptoscout.test.StreamTestPublisher;
-import com.rabbitmq.stream.Environment;
+import com.github.akarazhev.jcryptolib.stream.Payload;
+import com.github.akarazhev.jcryptolib.stream.Provider;
+import com.github.akarazhev.jcryptolib.stream.Source;
 import io.activej.eventloop.Eventloop;
 import io.activej.promise.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_LPL_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_15M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_240M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_5M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_60M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ALL_LIQUIDATION_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_1000_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_1_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_200_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_ORDER_BOOK_50_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_LINEAR_PUBLIC_TRADE_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_1000_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_1_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_200_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_50_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_PUBLIC_TRADE_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
+import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.STAKE_BEGIN_TIME;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class StreamConsumerTest {
     private static ExecutorService executor;
@@ -66,15 +105,8 @@ final class StreamConsumerTest {
 
     private static StreamConsumer streamConsumer;
 
-    private static Environment environment;
-    private static StreamTestPublisher bybitCryptoStreamPublisher;
-    private static StreamTestPublisher bybitTaCryptoStreamPublisher;
     private static StreamTestPublisher bybitParserStreamPublisher;
-    private static StreamTestPublisher cmcParserStreamPublisher;
-    private static StreamTestConsumer bybitCryptoStreamConsumer;
-    private static StreamTestConsumer bybitTaCryptoStreamConsumer;
     private static StreamTestConsumer bybitParserStreamConsumer;
-    private static StreamTestConsumer cmcParserStreamConsumer;
 
     @BeforeAll
     static void setup() {
@@ -105,43 +137,85 @@ final class StreamConsumerTest {
                 bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
         TestUtils.await(streamConsumer.start());
 
-        environment = AmqpConfig.getEnvironment();
-        bybitCryptoStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
-                AmqpConfig.getAmqpBybitCryptoStream());
-        bybitTaCryptoStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
-                AmqpConfig.getAmqpBybitTaCryptoStream());
+        final var environment = AmqpConfig.getEnvironment();
         bybitParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpBybitParserStream());
-        cmcParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
-                AmqpConfig.getAmqpCmcParserStream());
-        TestUtils.await(bybitCryptoStreamPublisher.start(), bybitTaCryptoStreamPublisher.start(),
-                bybitParserStreamPublisher.start(), cmcParserStreamPublisher.start());
-
-        bybitCryptoStreamConsumer = StreamTestConsumer.create(reactor, executor, environment,
-                AmqpConfig.getAmqpBybitCryptoStream());
-        bybitTaCryptoStreamConsumer = StreamTestConsumer.create(reactor, executor, environment,
-                AmqpConfig.getAmqpBybitTaCryptoStream());
         bybitParserStreamConsumer = StreamTestConsumer.create(reactor, executor, environment,
                 AmqpConfig.getAmqpBybitParserStream());
-        cmcParserStreamConsumer = StreamTestConsumer.create(reactor, executor, environment,
-                AmqpConfig.getAmqpCmcParserStream());
-        TestUtils.await(bybitCryptoStreamConsumer.start(), bybitTaCryptoStreamConsumer.start(),
-                bybitParserStreamConsumer.start(), cmcParserStreamConsumer.start());
+        TestUtils.await(bybitParserStreamPublisher.start(), bybitParserStreamConsumer.start());
     }
 
     @BeforeEach
     void before() {
+        DBUtils.deleteFromTables(dataSource.getDataSource(),
+                BYBIT_LPL_TABLE,
+                SPOT_KLINE_1M_TABLE,
+                SPOT_KLINE_5M_TABLE,
+                SPOT_KLINE_15M_TABLE,
+                SPOT_KLINE_60M_TABLE,
+                SPOT_KLINE_240M_TABLE,
+                SPOT_KLINE_1D_TABLE,
+                SPOT_TICKERS_TABLE,
 
+                TA_SPOT_PUBLIC_TRADE_TABLE,
+                TA_SPOT_ORDER_BOOK_1_TABLE,
+                TA_SPOT_ORDER_BOOK_50_TABLE,
+                TA_SPOT_ORDER_BOOK_200_TABLE,
+                TA_SPOT_ORDER_BOOK_1000_TABLE,
+
+                LINEAR_KLINE_1M_TABLE,
+                LINEAR_KLINE_5M_TABLE,
+                LINEAR_KLINE_15M_TABLE,
+                LINEAR_KLINE_60M_TABLE,
+                LINEAR_KLINE_240M_TABLE,
+                LINEAR_KLINE_1D_TABLE,
+                LINEAR_TICKERS_TABLE,
+
+                TA_LINEAR_PUBLIC_TRADE_TABLE,
+                TA_LINEAR_ORDER_BOOK_1_TABLE,
+                TA_LINEAR_ORDER_BOOK_50_TABLE,
+                TA_LINEAR_ORDER_BOOK_200_TABLE,
+                TA_LINEAR_ORDER_BOOK_1000_TABLE,
+                TA_LINEAR_ALL_LIQUIDATION_TABLE,
+
+                CMC_FGI_TABLE
+        );
     }
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> bybitCryptoStreamPublisher.stop()
-                .whenComplete(() -> bybitTaCryptoStreamPublisher.stop()
-                        .whenComplete(() -> reactor.breakEventloop())));
+        reactor.post(() -> bybitParserStreamPublisher.stop()
+                .whenComplete(() -> bybitParserStreamConsumer.stop()));
+
+        reactor.post(() -> streamConsumer.stop()
+                .whenComplete(() -> bybitCryptoCollector.stop()
+                        .whenComplete(() -> bybitParserCollector.stop()
+                                .whenComplete(() -> bybitTaCryptoCollector.stop()
+                                        .whenComplete(() -> cmcParserCollector.stop())))));
+
+        reactor.post(() -> dataSource.stop()
+                .whenComplete(() -> reactor.breakEventloop()));
         reactor.run();
-        environment.close();
         executor.shutdown();
         PodmanCompose.down();
+    }
+
+    @Test
+    void testShouldBybitLplBeConsumed() throws Exception {
+        System.out.println("publish");
+        final var lpl = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
+        bybitParserStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.LPL, lpl));
+        TestUtils.await(bybitParserStreamConsumer.getResult());
+
+        TestUtils.await(bybitParserCollector.stop());
+
+        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) lpl.get(STAKE_BEGIN_TIME)), ZoneOffset.UTC);
+        assertEquals(1, bybitParserRepository.getLpl(odt).size());
+        assertTableCount(BYBIT_LPL_TABLE, 1);
+
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitParserStream());
+        assertEquals(100L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(bybitParserCollector.start());
     }
 }
