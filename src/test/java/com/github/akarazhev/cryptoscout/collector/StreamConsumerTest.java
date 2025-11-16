@@ -250,12 +250,22 @@ final class StreamConsumerTest {
     }
 
     @Test
-    void testShouldBybitTaCryptoDataBeConsumed() throws Exception {
+    void testShouldBybitTaSpotCryptoDataBeConsumed() throws Exception {
         // TODO:
     }
 
     @Test
-    void testShouldBybitCryptoDataBeConsumed() throws Exception {
+    void testShouldBybitTaLinearCryptoDataBeConsumed() throws Exception {
+        // TODO:
+    }
+
+    @Test
+    void testShouldBybitSpotCryptoDataBeConsumed() throws Exception {
+        // TODO:
+    }
+
+    @Test
+    void testShouldBybitLinearCryptoDataBeConsumed() throws Exception {
         // TODO:
     }
 }
