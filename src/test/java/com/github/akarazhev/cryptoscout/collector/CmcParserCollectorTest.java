@@ -24,5 +24,119 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
+import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
+import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
+import com.github.akarazhev.cryptoscout.test.DBUtils;
+import com.github.akarazhev.cryptoscout.test.MockData;
+import com.github.akarazhev.cryptoscout.test.PodmanCompose;
+import com.github.akarazhev.jcryptolib.stream.Payload;
+import com.github.akarazhev.jcryptolib.stream.Provider;
+import com.github.akarazhev.jcryptolib.stream.Source;
+import io.activej.eventloop.Eventloop;
+import io.activej.promise.TestUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
+import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 final class CmcParserCollectorTest {
+    private static ExecutorService executor;
+    private static Eventloop reactor;
+    private static CollectorDataSource dataSource;
+    private static StreamOffsetsRepository streamOffsetsRepository;
+    private static CmcParserRepository cmcParserRepository;
+    private static CmcParserCollector collector;
+
+    @BeforeAll
+    static void setup() {
+        PodmanCompose.up();
+        executor = Executors.newVirtualThreadPerTaskExecutor();
+        reactor = Eventloop.builder().withCurrentThread().build();
+
+        dataSource = CollectorDataSource.create(reactor, executor);
+        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, dataSource);
+        cmcParserRepository = CmcParserRepository.create(reactor, dataSource);
+        collector = CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
+        TestUtils.await(collector.start());
+    }
+
+    @BeforeEach
+    void before() {
+        DBUtils.deleteFromTables(dataSource.getDataSource(),
+                CMC_FGI_TABLE,
+                STREAM_OFFSETS_TABLE
+        );
+    }
+
+    @AfterAll
+    static void cleanup() {
+        reactor.post(() -> collector.stop()
+                .whenComplete(() -> dataSource.stop()
+                        .whenComplete(() -> reactor.breakEventloop())));
+        reactor.run();
+        executor.shutdown();
+        PodmanCompose.down();
+    }
+
+    @Test
+    void shouldCollectFgiAndUpdateOffsets() throws Exception {
+        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.FGI, fgi), 100L));
+
+        TestUtils.await(collector.stop());
+
+        final var ts = ((Map<?, ?>) ((List<?>) fgi.get(DATA_LIST)).getFirst()).get(TIMESTAMP);
+        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong((String) ts)), ZoneOffset.UTC);
+        assertEquals(1, cmcParserRepository.getFgi(odt).size());
+        assertTableCount(CMC_FGI_TABLE, 30);
+
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
+        assertEquals(100L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(collector.start());
+    }
+
+    @Test
+    void shouldUpsertOffsetWhenNoDataBatch() throws Exception {
+        TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.LPL, Map.of()), 200L));
+
+        TestUtils.await(collector.stop());
+
+        assertTableCount(CMC_FGI_TABLE, 0);
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
+        assertEquals(200L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(collector.start());
+    }
+
+    @Test
+    void shouldIgnoreInvalidProvider() throws Exception {
+        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        TestUtils.await(collector.save(Payload.of(Provider.BYBIT, Source.FGI, fgi), 300L));
+
+        TestUtils.await(collector.stop());
+
+        assertTableCount(CMC_FGI_TABLE, 0);
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
+        assertEquals(0L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(collector.start());
+    }
 }
