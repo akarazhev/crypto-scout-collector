@@ -215,7 +215,7 @@ final class StreamConsumerTest {
     }
 
     @Test
-    void testShouldBybitLplBeConsumed() throws Exception {
+    void testShouldBybitParserDataBeConsumed() throws Exception {
         final var lpl = MockData.get(BYBIT_PARSER, MockData.Type.LPL);
         bybitParserStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.LPL, lpl));
         Thread.sleep(Duration.ofSeconds(1));
@@ -232,7 +232,7 @@ final class StreamConsumerTest {
     }
 
     @Test
-    void testShouldCmcFgiBeConsumed() throws Exception {
+    void testShouldCmcParserDataBeConsumed() throws Exception {
         final var fgi = MockData.get(CMC_PARSER, MockData.Type.FGI);
         cmcParserStreamPublisher.publish(Payload.of(Provider.CMC, Source.FGI, fgi));
         Thread.sleep(Duration.ofSeconds(1));
@@ -247,5 +247,15 @@ final class StreamConsumerTest {
         assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);
 
         TestUtils.await(cmcParserCollector.start());
+    }
+
+    @Test
+    void testShouldBybitTaCryptoDataBeConsumed() throws Exception {
+        // TODO:
+    }
+
+    @Test
+    void testShouldBybitCryptoDataBeConsumed() throws Exception {
+        // TODO:
     }
 }
