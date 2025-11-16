@@ -111,7 +111,9 @@ final class StreamConsumerTest {
 
     private static StreamConsumer streamConsumer;
 
+    private static StreamTestPublisher bybitCryptoStreamPublisher;
     private static StreamTestPublisher bybitParserStreamPublisher;
+    private static StreamTestPublisher bybitTaCryptoStreamPublisher;
     private static StreamTestPublisher cmcParserStreamPublisher;
 
     @BeforeAll
@@ -141,12 +143,17 @@ final class StreamConsumerTest {
                 bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
 
         final var environment = AmqpConfig.getEnvironment();
+        bybitCryptoStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
+                AmqpConfig.getAmqpBybitCryptoStream());
         bybitParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpBybitParserStream());
+        bybitTaCryptoStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
+                AmqpConfig.getAmqpBybitTaCryptoStream());
         cmcParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpCmcParserStream());
         TestUtils.await(bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
-                cmcParserCollector.start(), streamConsumer.start(), bybitParserStreamPublisher.start(),
+                cmcParserCollector.start(), streamConsumer.start(), bybitCryptoStreamPublisher.start(),
+                bybitParserStreamPublisher.start(), bybitTaCryptoStreamPublisher.start(),
                 cmcParserStreamPublisher.start());
     }
 
@@ -190,16 +197,18 @@ final class StreamConsumerTest {
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> bybitParserStreamPublisher.stop()
-                .whenComplete(() -> cmcParserStreamPublisher.stop()
-                        .whenComplete(() -> streamConsumer.stop()
-                                .whenComplete(() -> bybitCryptoCollector.stop()
-                                        .whenComplete(() -> bybitParserCollector.stop()
-                                                .whenComplete(() -> bybitTaCryptoCollector.stop()
-                                                        .whenComplete(() -> cmcParserCollector.stop()
-                                                                .whenComplete(() -> dataSource.stop()
-                                                                        .whenComplete(() -> reactor.breakEventloop()
-                                                                        )))))))));
+        reactor.post(() -> bybitCryptoStreamPublisher.stop()
+                .whenComplete(() -> bybitParserStreamPublisher.stop()
+                        .whenComplete(() -> bybitTaCryptoStreamPublisher.stop()
+                                .whenComplete(() -> cmcParserStreamPublisher.stop()
+                                        .whenComplete(() -> streamConsumer.stop()
+                                                .whenComplete(() -> bybitCryptoCollector.stop()
+                                                        .whenComplete(() -> bybitParserCollector.stop()
+                                                                .whenComplete(() -> bybitTaCryptoCollector.stop()
+                                                                        .whenComplete(() -> cmcParserCollector.stop()
+                                                                                .whenComplete(() -> dataSource.stop()
+                                                                                        .whenComplete(() -> reactor.breakEventloop()
+                                                                                        )))))))))));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
