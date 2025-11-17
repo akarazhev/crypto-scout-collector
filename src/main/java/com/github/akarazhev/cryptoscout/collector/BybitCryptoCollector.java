@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,6 +71,8 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
+
+    public enum Type {BYBIT_SPOT, BYBIT_LINEAR}
 
     public static BybitCryptoCollector create(final NioReactor reactor, final Executor executor,
                                               final StreamOffsetsRepository streamOffsetsRepository,
@@ -116,6 +119,62 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         }
 
         return Promise.complete();
+    }
+
+    public Promise<List<Map<String, Object>>> getKline1m(final Type type, final OffsetDateTime from,
+                                                         final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline1m(from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline1m(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline5m(final Type type, final OffsetDateTime from,
+                                                         final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline5m(from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline5m(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline15m(final Type type, final OffsetDateTime from,
+                                                          final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline15m(from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline15m(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline60m(final Type type, final OffsetDateTime from,
+                                                          final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline60m(from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline60m(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline240m(final Type type, final OffsetDateTime from,
+                                                           final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline240m(from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline240m(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline1d(final Type type, final OffsetDateTime from,
+                                                         final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline1d(from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline1d(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getTicker(final Type type, final OffsetDateTime from,
+                                                        final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getTicker(from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getTicker(from, to));
+        };
     }
 
     private void scheduledFlush() {

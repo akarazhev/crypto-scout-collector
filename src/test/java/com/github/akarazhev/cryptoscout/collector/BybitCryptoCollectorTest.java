@@ -157,6 +157,56 @@ final class BybitCryptoCollectorTest {
     }
 
     @Test
+    void shouldGetCollectSpotData() throws Exception {
+        final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
+        final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
+        final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
+        final var k60 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
+        final var k240 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
+        final var kd = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
+        final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
+
+        assertEquals(1, spotRepository.saveKline1m(List.of(k1), 100L));
+        assertEquals(1, spotRepository.saveKline5m(List.of(k5), 200L));
+        assertEquals(1, spotRepository.saveKline15m(List.of(k15), 300L));
+        assertEquals(1, spotRepository.saveKline60m(List.of(k60), 400L));
+        assertEquals(1, spotRepository.saveKline240m(List.of(k240), 500L));
+        assertEquals(1, spotRepository.saveKline1d(List.of(kd), 600L));
+        assertEquals(1, spotRepository.saveTicker(List.of(tickers), 700L));
+
+        final var k1Start = ((Map<?, ?>) ((List<?>) k1.get(DATA)).getFirst()).get(START);
+        final var k5Start = ((Map<?, ?>) ((List<?>) k5.get(DATA)).getFirst()).get(START);
+        final var k15Start = ((Map<?, ?>) ((List<?>) k15.get(DATA)).getFirst()).get(START);
+        final var k60Start = ((Map<?, ?>) ((List<?>) k60.get(DATA)).getFirst()).get(START);
+        final var k240Start = ((Map<?, ?>) ((List<?>) k240.get(DATA)).getFirst()).get(START);
+        final var kdStart = ((Map<?, ?>) ((List<?>) kd.get(DATA)).getFirst()).get(START);
+
+        final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k1Start), ZoneOffset.UTC);
+        final var from5 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k5Start), ZoneOffset.UTC);
+        final var from15 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k15Start), ZoneOffset.UTC);
+        final var from60 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k60Start), ZoneOffset.UTC);
+        final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
+        final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
+
+        assertEquals(1, TestUtils.await(collector.getKline1m(BybitCryptoCollector.Type.BYBIT_SPOT, from1,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline5m(BybitCryptoCollector.Type.BYBIT_SPOT, from5,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline15m(BybitCryptoCollector.Type.BYBIT_SPOT, from15,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline60m(BybitCryptoCollector.Type.BYBIT_SPOT, from60,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline240m(BybitCryptoCollector.Type.BYBIT_SPOT, from240,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline1d(BybitCryptoCollector.Type.BYBIT_SPOT, fromD,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+
+        final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
+        assertEquals(1, TestUtils.await(collector.getTicker(BybitCryptoCollector.Type.BYBIT_SPOT, tickersFrom,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+    }
+
+    @Test
     void shouldCollectSpotDataAndUpdateOffsets() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
@@ -204,6 +254,56 @@ final class BybitCryptoCollectorTest {
         assertEquals(700L, offset.isPresent() ? offset.getAsLong() : 0L);
 
         TestUtils.await(collector.start());
+    }
+
+    @Test
+    void shouldGetCollectLinearData() throws Exception {
+        final var k1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
+        final var k5 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
+        final var k15 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
+        final var k60 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
+        final var k240 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
+        final var kd = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
+        final var tickers = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
+
+        assertEquals(1, linearRepository.saveKline1m(List.of(k1), 100L));
+        assertEquals(1, linearRepository.saveKline5m(List.of(k5), 200L));
+        assertEquals(1, linearRepository.saveKline15m(List.of(k15), 300L));
+        assertEquals(1, linearRepository.saveKline60m(List.of(k60), 400L));
+        assertEquals(1, linearRepository.saveKline240m(List.of(k240), 500L));
+        assertEquals(1, linearRepository.saveKline1d(List.of(kd), 600L));
+        assertEquals(1, linearRepository.saveTicker(List.of(tickers), 700L));
+
+        final var k1Start = ((Map<?, ?>) ((List<?>) k1.get(DATA)).getFirst()).get(START);
+        final var k5Start = ((Map<?, ?>) ((List<?>) k5.get(DATA)).getFirst()).get(START);
+        final var k15Start = ((Map<?, ?>) ((List<?>) k15.get(DATA)).getFirst()).get(START);
+        final var k60Start = ((Map<?, ?>) ((List<?>) k60.get(DATA)).getFirst()).get(START);
+        final var k240Start = ((Map<?, ?>) ((List<?>) k240.get(DATA)).getFirst()).get(START);
+        final var kdStart = ((Map<?, ?>) ((List<?>) kd.get(DATA)).getFirst()).get(START);
+
+        final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k1Start), ZoneOffset.UTC);
+        final var from5 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k5Start), ZoneOffset.UTC);
+        final var from15 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k15Start), ZoneOffset.UTC);
+        final var from60 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k60Start), ZoneOffset.UTC);
+        final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
+        final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
+
+        assertEquals(1, TestUtils.await(collector.getKline1m(BybitCryptoCollector.Type.BYBIT_LINEAR, from1,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline5m(BybitCryptoCollector.Type.BYBIT_LINEAR, from5,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline15m(BybitCryptoCollector.Type.BYBIT_LINEAR, from15,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline60m(BybitCryptoCollector.Type.BYBIT_LINEAR, from60,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline240m(BybitCryptoCollector.Type.BYBIT_LINEAR, from240,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline1d(BybitCryptoCollector.Type.BYBIT_LINEAR, fromD,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
+
+        final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
+        assertEquals(1, TestUtils.await(collector.getTicker(BybitCryptoCollector.Type.BYBIT_LINEAR, tickersFrom,
+                OffsetDateTime.now(ZoneOffset.UTC))).size());
     }
 
     @Test
