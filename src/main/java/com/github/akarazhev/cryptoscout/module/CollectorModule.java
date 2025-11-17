@@ -147,7 +147,12 @@ public final class CollectorModule extends AbstractModule {
 
     @Provides
     @Eager
-    private DataCollector dataLoader(final NioReactor reactor, final Executor executor) {
-        return DataCollector.create(reactor, executor);
+    private DataCollector dataCollector(final NioReactor reactor, final Executor executor,
+                                        final BybitCryptoCollector bybitCryptoCollector,
+                                        final BybitTaCryptoCollector bybitTaCryptoCollector,
+                                        final BybitParserCollector bybitParserCollector,
+                                        final CmcParserCollector cmcParserCollector) {
+        return DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
+                bybitParserCollector, cmcParserCollector);
     }
 }

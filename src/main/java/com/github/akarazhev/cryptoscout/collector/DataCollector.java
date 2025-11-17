@@ -36,14 +36,31 @@ import java.util.concurrent.Executor;
 public final class DataCollector extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DataCollector.class);
     private final Executor executor;
+    private final BybitCryptoCollector bybitCryptoCollector;
+    private final BybitTaCryptoCollector bybitTaCryptoCollector;
+    private final BybitParserCollector bybitParserCollector;
+    private final CmcParserCollector cmcParserCollector;
 
-    public static DataCollector create(final NioReactor reactor, final Executor executor) {
-        return new DataCollector(reactor, executor);
+    public static DataCollector create(final NioReactor reactor, final Executor executor,
+                                       final BybitCryptoCollector bybitCryptoCollector,
+                                       final BybitTaCryptoCollector bybitTaCryptoCollector,
+                                       final BybitParserCollector bybitParserCollector,
+                                       final CmcParserCollector cmcParserCollector) {
+        return new DataCollector(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector, bybitParserCollector,
+                cmcParserCollector);
     }
 
-    private DataCollector(final NioReactor reactor, final Executor executor) {
+    private DataCollector(final NioReactor reactor, final Executor executor,
+                          final BybitCryptoCollector bybitCryptoCollector,
+                          final BybitTaCryptoCollector bybitTaCryptoCollector,
+                          final BybitParserCollector bybitParserCollector,
+                          final CmcParserCollector cmcParserCollector) {
         super(reactor);
         this.executor = executor;
+        this.bybitCryptoCollector = bybitCryptoCollector;
+        this.bybitTaCryptoCollector = bybitTaCryptoCollector;
+        this.bybitParserCollector = bybitParserCollector;
+        this.cmcParserCollector = cmcParserCollector;
     }
 
     @Override
