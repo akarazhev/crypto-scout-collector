@@ -44,8 +44,8 @@ import com.rabbitmq.stream.Consumer;
 import com.rabbitmq.stream.Environment;
 import com.rabbitmq.stream.OffsetSpecification;
 
-public final class StreamConsumer extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(StreamConsumer.class);
+public final class StreamCollector extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(StreamCollector.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
     private final BybitCryptoCollector bybitCryptoCollector;
@@ -60,22 +60,22 @@ public final class StreamConsumer extends AbstractReactive implements ReactiveSe
 
     private enum StreamType {CMC_PARSER, BYBIT_PARSER, BYBIT_CRYPTO, BYBIT_TA_CRYPTO}
 
-    public static StreamConsumer create(final NioReactor reactor, final Executor executor,
-                                        final StreamOffsetsRepository streamOffsetsRepository,
-                                        final BybitCryptoCollector bybitCryptoCollector,
-                                        final BybitTaCryptoCollector bybitTaCryptoCollector,
-                                        final BybitParserCollector bybitParserCollector,
-                                        final CmcParserCollector cmcParserCollector) {
-        return new StreamConsumer(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
+    public static StreamCollector create(final NioReactor reactor, final Executor executor,
+                                         final StreamOffsetsRepository streamOffsetsRepository,
+                                         final BybitCryptoCollector bybitCryptoCollector,
+                                         final BybitTaCryptoCollector bybitTaCryptoCollector,
+                                         final BybitParserCollector bybitParserCollector,
+                                         final CmcParserCollector cmcParserCollector) {
+        return new StreamCollector(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
                 bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
     }
 
-    private StreamConsumer(final NioReactor reactor, final Executor executor,
-                           final StreamOffsetsRepository streamOffsetsRepository,
-                           final BybitCryptoCollector bybitCryptoCollector,
-                           final BybitTaCryptoCollector bybitTaCryptoCollector,
-                           final BybitParserCollector bybitParserCollector,
-                           final CmcParserCollector cmcParserCollector) {
+    private StreamCollector(final NioReactor reactor, final Executor executor,
+                            final StreamOffsetsRepository streamOffsetsRepository,
+                            final BybitCryptoCollector bybitCryptoCollector,
+                            final BybitTaCryptoCollector bybitTaCryptoCollector,
+                            final BybitParserCollector bybitParserCollector,
+                            final CmcParserCollector cmcParserCollector) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;

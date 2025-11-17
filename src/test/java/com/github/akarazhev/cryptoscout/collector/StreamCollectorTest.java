@@ -91,7 +91,7 @@ import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-final class StreamConsumerTest {
+final class StreamCollectorTest {
     private static ExecutorService executor;
     private static Eventloop reactor;
 
@@ -109,7 +109,7 @@ final class StreamConsumerTest {
     private static BybitTaCryptoCollector bybitTaCryptoCollector;
     private static CmcParserCollector cmcParserCollector;
 
-    private static StreamConsumer streamConsumer;
+    private static StreamCollector streamCollector;
 
     private static StreamTestPublisher bybitCryptoStreamPublisher;
     private static StreamTestPublisher bybitParserStreamPublisher;
@@ -139,7 +139,7 @@ final class StreamConsumerTest {
                 taSpotRepository, taLinearRepository);
         cmcParserCollector = CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
 
-        streamConsumer = StreamConsumer.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
+        streamCollector = StreamCollector.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
                 bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
 
         final var environment = AmqpConfig.getEnvironment();
@@ -152,7 +152,7 @@ final class StreamConsumerTest {
         cmcParserStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpCmcParserStream());
         TestUtils.await(bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
-                cmcParserCollector.start(), streamConsumer.start(), bybitCryptoStreamPublisher.start(),
+                cmcParserCollector.start(), streamCollector.start(), bybitCryptoStreamPublisher.start(),
                 bybitParserStreamPublisher.start(), bybitTaCryptoStreamPublisher.start(),
                 cmcParserStreamPublisher.start());
     }
@@ -201,7 +201,7 @@ final class StreamConsumerTest {
                 .whenComplete(() -> bybitParserStreamPublisher.stop()
                         .whenComplete(() -> bybitTaCryptoStreamPublisher.stop()
                                 .whenComplete(() -> cmcParserStreamPublisher.stop()
-                                        .whenComplete(() -> streamConsumer.stop()
+                                        .whenComplete(() -> streamCollector.stop()
                                                 .whenComplete(() -> bybitCryptoCollector.stop()
                                                         .whenComplete(() -> bybitParserCollector.stop()
                                                                 .whenComplete(() -> bybitTaCryptoCollector.stop()
