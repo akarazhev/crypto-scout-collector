@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -68,6 +69,8 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
+
+    public enum Type {BYBIT_TA_SPOT, BYBIT_TA_LINEAR}
 
     public static BybitTaCryptoCollector create(final NioReactor reactor, final Executor executor,
                                                 final StreamOffsetsRepository streamOffsetsRepository,
@@ -114,6 +117,54 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         }
 
         return Promise.complete();
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook1(final Type type, final OffsetDateTime from,
+                                                            final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_TA_SPOT -> Promise.ofBlocking(executor, () -> bybitTaSpotRepository.getOrderBook1(from, to));
+            case BYBIT_TA_LINEAR -> Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getOrderBook1(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook50(final Type type, final OffsetDateTime from,
+                                                             final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_TA_SPOT -> Promise.ofBlocking(executor, () -> bybitTaSpotRepository.getOrderBook50(from, to));
+            case BYBIT_TA_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getOrderBook50(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook200(final Type type, final OffsetDateTime from,
+                                                              final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_TA_SPOT -> Promise.ofBlocking(executor, () -> bybitTaSpotRepository.getOrderBook200(from, to));
+            case BYBIT_TA_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getOrderBook200(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook1000(final Type type, final OffsetDateTime from,
+                                                               final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_TA_SPOT -> Promise.ofBlocking(executor, () -> bybitTaSpotRepository.getOrderBook1000(from, to));
+            case BYBIT_TA_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getOrderBook1000(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getPublicTrade(final Type type, final OffsetDateTime from,
+                                                             final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_TA_SPOT -> Promise.ofBlocking(executor, () -> bybitTaSpotRepository.getPublicTrade(from, to));
+            case BYBIT_TA_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getPublicTrade(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getAllLiquidation(final OffsetDateTime from, final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getAllLiquidation(from, to));
     }
 
     private void scheduledFlush() {

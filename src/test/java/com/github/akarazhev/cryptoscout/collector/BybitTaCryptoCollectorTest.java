@@ -126,6 +126,40 @@ final class BybitTaCryptoCollectorTest {
     }
 
     @Test
+    void shouldGetCollectSpotTaData() throws Exception {
+        final var pt = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.PUBLIC_TRADE);
+        final var ob1 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1);
+        final var ob50 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_50);
+        final var ob200 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_200);
+        final var ob1000 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1000);
+
+        assertEquals(getRowsCount(pt), taSpotRepository.savePublicTrade(List.of(pt), 100L));
+        assertEquals(getOrderBookLevelsCount(ob1), taSpotRepository.saveOrderBook1(List.of(ob1), 200L));
+        assertEquals(getOrderBookLevelsCount(ob50), taSpotRepository.saveOrderBook50(List.of(ob50), 3000L));
+        assertEquals(getOrderBookLevelsCount(ob200), taSpotRepository.saveOrderBook200(List.of(ob200), 400L));
+        assertEquals(getOrderBookLevelsCount(ob1000), taSpotRepository.saveOrderBook1000(List.of(ob1000), 500L));
+
+        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
+        final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+        assertEquals(getRowsCount(pt), TestUtils.await(collector.getPublicTrade(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,
+                fromPt, fromPt)).size());
+
+        final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
+        final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
+        final var from200 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
+        final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
+
+        assertEquals(getOrderBookLevelsCount(ob1),
+                TestUtils.await(collector.getOrderBook1(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from1, from1)).size());
+        assertEquals(getOrderBookLevelsCount(ob50),
+                TestUtils.await(collector.getOrderBook50(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from50, from50)).size());
+        assertEquals(getOrderBookLevelsCount(ob200),
+                TestUtils.await(collector.getOrderBook200(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from200, from200)).size());
+        assertEquals(getOrderBookLevelsCount(ob1000),
+                TestUtils.await(collector.getOrderBook1000(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from1000, from1000)).size());
+    }
+
+    @Test
     void shouldCollectSpotTaDataAndUpdateOffsets() throws Exception {
         final var pt = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.PUBLIC_TRADE);
         final var ob1 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1);
@@ -159,6 +193,45 @@ final class BybitTaCryptoCollectorTest {
         assertEquals(500L, offset.isPresent() ? offset.getAsLong() : 0L);
 
         TestUtils.await(collector.start());
+    }
+
+    @Test
+    void shouldGetCollectLinearTaData() throws Exception {
+        final var pt = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.PUBLIC_TRADE);
+        final var ob1 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1);
+        final var ob50 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_50);
+        final var ob200 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_200);
+        final var ob1000 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1000);
+        final var al = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ALL_LIQUIDATION);
+
+        assertEquals(getRowsCount(pt), taLinearRepository.savePublicTrade(List.of(pt), 100L));
+        assertEquals(getOrderBookLevelsCount(ob1), taLinearRepository.saveOrderBook1(List.of(ob1), 200L));
+        assertEquals(getOrderBookLevelsCount(ob50), taLinearRepository.saveOrderBook50(List.of(ob50), 3000L));
+        assertEquals(getOrderBookLevelsCount(ob200), taLinearRepository.saveOrderBook200(List.of(ob200), 400L));
+        assertEquals(getOrderBookLevelsCount(ob1000), taLinearRepository.saveOrderBook1000(List.of(ob1000), 500L));
+        assertEquals(1, taLinearRepository.saveAllLiquidation(List.of(al), 600L));
+
+        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
+        final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+        assertEquals(getRowsCount(pt), TestUtils.await(collector.getPublicTrade(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,
+                fromPt, fromPt)).size());
+
+        final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
+        final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
+        final var from200 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
+        final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
+
+        assertEquals(getOrderBookLevelsCount(ob1),
+                TestUtils.await(collector.getOrderBook1(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from1, from1)).size());
+        assertEquals(getOrderBookLevelsCount(ob50),
+                TestUtils.await(collector.getOrderBook50(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from50, from50)).size());
+        assertEquals(getOrderBookLevelsCount(ob200),
+                TestUtils.await(collector.getOrderBook200(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from200, from200)).size());
+        assertEquals(getOrderBookLevelsCount(ob1000),
+                TestUtils.await(collector.getOrderBook1000(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from1000, from1000)).size());
+        final var tAl = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
+        final var fromAl = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tAl), ZoneOffset.UTC);
+        assertEquals(1, TestUtils.await(collector.getAllLiquidation(fromAl, fromAl)).size());
     }
 
     @Test
