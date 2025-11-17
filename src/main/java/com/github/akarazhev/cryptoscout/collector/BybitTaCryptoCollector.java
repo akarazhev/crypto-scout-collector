@@ -29,6 +29,7 @@ import com.github.akarazhev.cryptoscout.collector.db.BybitTaSpotRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.config.JdbcConfig;
+import com.github.akarazhev.jcryptolib.stream.OffsetPayload;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
 import com.github.akarazhev.jcryptolib.stream.Source;
