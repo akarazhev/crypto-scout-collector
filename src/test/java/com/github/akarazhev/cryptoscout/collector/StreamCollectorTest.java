@@ -56,6 +56,8 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getRowsCount;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_LPL_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_15M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1D_TABLE;
@@ -86,9 +88,11 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FG
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.BYBIT_PARSER;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.CMC_PARSER;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.STAKE_BEGIN_TIME;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
@@ -254,12 +258,82 @@ final class StreamCollectorTest {
 
     @Test
     void testShouldBybitTaSpotCryptoDataBeConsumed() throws Exception {
-        // TODO:
+        final var pt = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.PUBLIC_TRADE);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, pt));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob1 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob1));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob50 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_50);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob50));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob200 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_200);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob200));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob1000 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1000);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob1000));
+        Thread.sleep(Duration.ofSeconds(1));
+
+        TestUtils.await(bybitTaCryptoCollector.stop());
+
+        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
+        final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+        assertEquals(getRowsCount(pt), taSpotRepository.getPublicTrade(fromPt, fromPt).size());
+
+        final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
+        final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
+        final var from200 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
+        final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
+
+        assertEquals(getOrderBookLevelsCount(ob1), taSpotRepository.getOrderBook1(from1, from1).size());
+        assertEquals(getOrderBookLevelsCount(ob50), taSpotRepository.getOrderBook50(from50, from50).size());
+        assertEquals(getOrderBookLevelsCount(ob200), taSpotRepository.getOrderBook200(from200, from200).size());
+        assertEquals(getOrderBookLevelsCount(ob1000), taSpotRepository.getOrderBook1000(from1000, from1000).size());
+
+        TestUtils.await(bybitTaCryptoCollector.start());
     }
 
     @Test
     void testShouldBybitTaLinearCryptoDataBeConsumed() throws Exception {
-        // TODO:
+        final var pt = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.PUBLIC_TRADE);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, pt));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob1 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob1));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob50 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_50);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob50));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob200 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_200);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob200));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var ob1000 = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ORDER_BOOK_1000);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob1000));
+        Thread.sleep(Duration.ofSeconds(1));
+        final var al = MockData.get(MockData.Source.BYBIT_TA_LINEAR, MockData.Type.ALL_LIQUIDATION);
+        bybitTaCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, al));
+        Thread.sleep(Duration.ofSeconds(1));
+
+        TestUtils.await(bybitTaCryptoCollector.stop());
+
+        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
+        final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+        assertEquals(getRowsCount(pt), taLinearRepository.getPublicTrade(fromPt, fromPt).size());
+
+        final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
+        final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
+        final var from200 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
+        final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
+        assertEquals(getOrderBookLevelsCount(ob1), taLinearRepository.getOrderBook1(from1, from1).size());
+        assertEquals(getOrderBookLevelsCount(ob50), taLinearRepository.getOrderBook50(from50, from50).size());
+        assertEquals(getOrderBookLevelsCount(ob200), taLinearRepository.getOrderBook200(from200, from200).size());
+        assertEquals(getOrderBookLevelsCount(ob1000), taLinearRepository.getOrderBook1000(from1000, from1000).size());
+
+        final var tAl = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
+        final var fromAl = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tAl), ZoneOffset.UTC);
+        assertEquals(1, taLinearRepository.getAllLiquidation(fromAl, fromAl).size());
+
+        TestUtils.await(bybitTaCryptoCollector.start());
     }
 
     @Test
@@ -285,6 +359,7 @@ final class StreamCollectorTest {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
         bybitCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, tickers));
         Thread.sleep(Duration.ofSeconds(1));
+
         TestUtils.await(bybitCryptoCollector.stop());
 
         final var k1Start = ((Map<?, ?>) ((List<?>) k1.get(DATA)).getFirst()).get(START);
@@ -337,6 +412,7 @@ final class StreamCollectorTest {
         final var tickers = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
         bybitCryptoStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, tickers));
         Thread.sleep(Duration.ofSeconds(1));
+
         TestUtils.await(bybitCryptoCollector.stop());
 
         final var k1Start = ((Map<?, ?>) ((List<?>) k1.get(DATA)).getFirst()).get(START);
