@@ -39,7 +39,9 @@ import io.activej.reactor.nio.NioReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -96,6 +98,10 @@ public final class BybitParserCollector extends AbstractReactive implements Reac
         }
 
         return Promise.complete();
+    }
+
+    public Promise<List<Map<String, Object>>> getLpl(final OffsetDateTime odt) {
+        return Promise.ofBlocking(executor, () -> bybitParserRepository.getLpl(odt));
     }
 
     private void scheduledFlush() {

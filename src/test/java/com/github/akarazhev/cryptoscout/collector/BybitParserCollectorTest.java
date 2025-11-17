@@ -44,6 +44,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -90,6 +91,14 @@ final class BybitParserCollectorTest {
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
+    }
+
+    @Test
+    void shouldGetLpl() throws Exception {
+        final var lpl = MockData.get(MockData.Source.BYBIT_PARSER, MockData.Type.LPL);
+        assertEquals(1, bybitParserRepository.saveLpl(List.of(lpl), 200L));
+        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) lpl.get(STAKE_BEGIN_TIME)), ZoneOffset.UTC);
+        assertEquals(1, TestUtils.await(collector.getLpl(odt)).size());
     }
 
     @Test
