@@ -33,15 +33,15 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executor;
 
-public final class DataLoader extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(DataLoader.class);
+public final class DataCollector extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DataCollector.class);
     private final Executor executor;
 
-    public static DataLoader create(final NioReactor reactor, final Executor executor) {
-        return new DataLoader(reactor, executor);
+    public static DataCollector create(final NioReactor reactor, final Executor executor) {
+        return new DataCollector(reactor, executor);
     }
 
-    private DataLoader(final NioReactor reactor, final Executor executor) {
+    private DataCollector(final NioReactor reactor, final Executor executor) {
         super(reactor);
         this.executor = executor;
     }

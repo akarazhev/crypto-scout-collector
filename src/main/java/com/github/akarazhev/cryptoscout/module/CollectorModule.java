@@ -25,7 +25,7 @@
 package com.github.akarazhev.cryptoscout.module;
 
 import com.github.akarazhev.cryptoscout.collector.BybitTaCryptoCollector;
-import com.github.akarazhev.cryptoscout.collector.DataLoader;
+import com.github.akarazhev.cryptoscout.collector.DataCollector;
 import com.github.akarazhev.cryptoscout.collector.StreamCollector;
 import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
@@ -147,7 +147,7 @@ public final class CollectorModule extends AbstractModule {
 
     @Provides
     @Eager
-    private DataLoader dataLoader(final NioReactor reactor, final Executor executor) {
-        return DataLoader.create(reactor, executor);
+    private DataCollector dataLoader(final NioReactor reactor, final Executor executor) {
+        return DataCollector.create(reactor, executor);
     }
 }
