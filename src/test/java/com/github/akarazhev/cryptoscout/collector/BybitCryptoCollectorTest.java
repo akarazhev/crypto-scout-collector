@@ -78,6 +78,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_S
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
+import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
@@ -358,7 +359,7 @@ final class BybitCryptoCollectorTest {
 
     @Test
     void shouldAdvanceOffsetWithoutData() throws Exception {
-        final var ob1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
+        final var ob1 = MockData.get(MockData.Source.BYBIT_TA_SPOT, MockData.Type.ORDER_BOOK_1);
         TestUtils.await(collector.save(Payload.of(Provider.BYBIT, Source.PMST, ob1), 1500L));
 
         TestUtils.await(collector.stop());
@@ -366,10 +367,8 @@ final class BybitCryptoCollectorTest {
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitCryptoStream());
         assertEquals(1500L, offset.isPresent() ? offset.getAsLong() : 0L);
 
-        final var from = OffsetDateTime.now(ZoneOffset.UTC).minusHours(1);
-        final var to = OffsetDateTime.now(ZoneOffset.UTC);
-        assertEquals(0, spotRepository.getKline1m(from, to).size());
-        assertEquals(0, spotRepository.getTicker(from, to).size());
+        assertTableCount(SPOT_KLINE_1M_TABLE, 0);
+        assertTableCount(SPOT_TICKERS_TABLE, 0);
 
         TestUtils.await(collector.start());
     }
