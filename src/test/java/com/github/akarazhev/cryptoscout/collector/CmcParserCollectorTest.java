@@ -96,6 +96,15 @@ final class CmcParserCollectorTest {
     }
 
     @Test
+    void shouldGetFgi() throws Exception {
+        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        assertEquals(30, cmcParserRepository.saveFgi(List.of(fgi), 200L));
+        final var timestamp = ((Map<?, ?>) ((List<?>) fgi.get(DATA_LIST)).getFirst()).get(TIMESTAMP);
+        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong((String) timestamp)), ZoneOffset.UTC);
+        assertEquals(1, TestUtils.await(collector.getFgi(odt)).size());
+    }
+
+    @Test
     void shouldCollectFgiAndUpdateOffsets() throws Exception {
         final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
         TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.FGI, fgi), 100L));
