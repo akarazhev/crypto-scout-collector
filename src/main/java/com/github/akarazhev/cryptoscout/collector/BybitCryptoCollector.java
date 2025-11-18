@@ -70,7 +70,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
     private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
-    private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
+    private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
 
     public enum Type {BYBIT_SPOT, BYBIT_LINEAR}
 
@@ -113,7 +113,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             return Promise.complete();
         }
 
-        buffer.add(OffsetPayload.of(offset, payload));
+        buffer.add(OffsetPayload.of(payload, offset));
         if (buffer.size() >= batchSize) {
             return flush();
         }
@@ -187,7 +187,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             return Promise.complete();
         }
 
-        final var items = new LinkedList<OffsetPayload>();
+        final var items = new LinkedList<OffsetPayload<Map<String, Object>>>();
         while (true) {
             final var item = buffer.poll();
             if (item == null) {

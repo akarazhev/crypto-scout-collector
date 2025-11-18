@@ -55,7 +55,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
     private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
-    private final Queue<OffsetPayload> buffer = new ConcurrentLinkedQueue<>();
+    private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
 
     public static CmcParserCollector create(final NioReactor reactor, final Executor executor,
                                             final StreamOffsetsRepository streamOffsetsRepository,
@@ -92,7 +92,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
             return Promise.complete();
         }
 
-        buffer.add(OffsetPayload.of(offset, payload));
+        buffer.add(OffsetPayload.of(payload, offset));
         if (buffer.size() >= batchSize) {
             return flush();
         }
@@ -114,7 +114,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
             return Promise.complete();
         }
 
-        final var snapshot = new ArrayList<OffsetPayload>();
+        final var snapshot = new ArrayList<OffsetPayload<Map<String, Object>>>();
         while (true) {
             final var item = buffer.poll();
             if (item == null) {
