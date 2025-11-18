@@ -18,7 +18,7 @@ Take the following roles:
 - Double-check your proposal and make sure that they are correct and haven't missed any important points.
 - Implementation must be production ready.
 
-## Constants
+## Constraints
 
 - Use the best practices and design patterns.
 - Use the current technological stack, that's: `ActiveJ 6.0`, `Java 25`, `maven 3.9.1`, `podman 5.6.2`,
