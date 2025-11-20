@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.OffsetDateTime;
 import java.util.concurrent.Executor;
 
 public final class DataCollector extends AbstractReactive implements ReactiveService {
@@ -87,8 +88,11 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                 final DeliverCallback deliver = (_, delivery) -> {
                     try {
                         final var body = delivery.getBody();
-                        final var cmd = JsonUtils.bytes2Object(body, Command.class);
-                        reactor.execute(() -> processCommand(cmd));
+                        reactor.execute(() -> Promise.ofBlocking(executor, () -> {
+                            @SuppressWarnings("unchecked") final var command =
+                                    (Command<OffsetDateTime[]>) JsonUtils.bytes2Object(body, Command.class);
+                            process(command);
+                        }));
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     } catch (final Exception e) {
                         try {
@@ -144,7 +148,7 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
         });
     }
 
-    private Promise<Void> processCommand(final Command command) {
+    private Promise<Void> process(final Command<OffsetDateTime[]> command) {
         LOGGER.info("Received command: id={}, from={}, size={}", command.id(), command.from(), command.size());
         return Promise.complete();
     }
