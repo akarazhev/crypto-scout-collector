@@ -24,5 +24,107 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
+import com.github.akarazhev.cryptoscout.collector.db.BybitLinearRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitTaLinearRepository;
+import com.github.akarazhev.cryptoscout.collector.db.BybitTaSpotRepository;
+import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
+import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
+import com.github.akarazhev.cryptoscout.test.AmqpTestPublisher;
+import com.github.akarazhev.cryptoscout.test.PodmanCompose;
+import com.github.akarazhev.jcryptolib.stream.Command;
+import com.rabbitmq.client.ConnectionFactory;
+import io.activej.eventloop.Eventloop;
+import io.activej.promise.TestUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+
+import java.time.OffsetDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 final class DataCollectorTest {
+    private static ExecutorService executor;
+    private static Eventloop reactor;
+
+    private static CollectorDataSource dataSource;
+    private static BybitLinearRepository linearRepository;
+    private static BybitSpotRepository spotRepository;
+    private static StreamOffsetsRepository streamOffsetsRepository;
+    private static BybitParserRepository bybitParserRepository;
+    private static BybitTaSpotRepository taSpotRepository;
+    private static BybitTaLinearRepository taLinearRepository;
+    private static CmcParserRepository cmcParserRepository;
+
+    private static BybitCryptoCollector bybitCryptoCollector;
+    private static BybitParserCollector bybitParserCollector;
+    private static BybitTaCryptoCollector bybitTaCryptoCollector;
+    private static CmcParserCollector cmcParserCollector;
+
+    private static DataCollector dataCollector;
+
+    private static AmqpTestPublisher collectorQueuePublisher;
+
+    @BeforeAll
+    static void setup() {
+        PodmanCompose.up();
+        executor = Executors.newVirtualThreadPerTaskExecutor();
+        reactor = Eventloop.builder().withCurrentThread().build();
+
+        dataSource = CollectorDataSource.create(reactor, executor);
+        linearRepository = BybitLinearRepository.create(reactor, dataSource);
+        spotRepository = BybitSpotRepository.create(reactor, dataSource);
+        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, dataSource);
+        bybitParserRepository = BybitParserRepository.create(reactor, dataSource);
+        taSpotRepository = BybitTaSpotRepository.create(reactor, dataSource);
+        taLinearRepository = BybitTaLinearRepository.create(reactor, dataSource);
+        cmcParserRepository = CmcParserRepository.create(reactor, dataSource);
+
+        bybitCryptoCollector = BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, spotRepository,
+                linearRepository);
+        bybitParserCollector = BybitParserCollector.create(reactor, executor, streamOffsetsRepository,
+                bybitParserRepository);
+        bybitTaCryptoCollector = BybitTaCryptoCollector.create(reactor, executor, streamOffsetsRepository,
+                taSpotRepository, taLinearRepository);
+        cmcParserCollector = CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
+
+        dataCollector = DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
+                bybitParserCollector, cmcParserCollector);
+
+        final var factory = new ConnectionFactory();
+        factory.setHost(AmqpConfig.getAmqpRabbitmqHost());
+        factory.setPort(AmqpConfig.getAmqpRabbitmqPort());
+        factory.setUsername(AmqpConfig.getAmqpRabbitmqUsername());
+        factory.setPassword(AmqpConfig.getAmqpRabbitmqPassword());
+
+        collectorQueuePublisher = AmqpTestPublisher.create(reactor, executor, factory, AmqpConfig.getAmqpCollectorQueue());
+        TestUtils.await(collectorQueuePublisher.start());
+        TestUtils.await(bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
+                cmcParserCollector.start(), dataCollector.start(), collectorQueuePublisher.start());
+    }
+
+    @Test
+    void testPublishCommand() {
+        final var command = Command.of(0, 0, new OffsetDateTime[]{}, 0);
+        collectorQueuePublisher.publish("", "collector", command);
+    }
+
+    @AfterAll
+    static void cleanup() {
+        reactor.post(() -> collectorQueuePublisher.stop()
+                .whenComplete(() -> bybitCryptoCollector.stop()
+                        .whenComplete(() -> bybitParserCollector.stop()
+                                .whenComplete(() -> bybitTaCryptoCollector.stop()
+                                        .whenComplete(() -> cmcParserCollector.stop()
+                                                .whenComplete(() -> dataSource.stop()
+                                                        .whenComplete(() -> reactor.breakEventloop()
+                                                        )))))));
+        reactor.run();
+        executor.shutdown();
+        PodmanCompose.down();
+    }
 }
