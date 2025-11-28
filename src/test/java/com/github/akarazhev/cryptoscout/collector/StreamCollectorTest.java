@@ -94,8 +94,6 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.STAKE_BEG
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class StreamCollectorTest {
@@ -245,10 +243,9 @@ final class StreamCollectorTest {
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cmcParserCollector.stop());
 
-        final var ts = ((Map<?, ?>) ((List<?>) fgi.get(DATA_LIST)).getFirst()).get(TIMESTAMP);
-        final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli(Long.parseLong((String) ts)), ZoneOffset.UTC);
+        final var odt = OffsetDateTime.parse((String) fgi.get("update_time"));
         assertEquals(1, cmcParserRepository.getFgi(odt).size());
-        assertTableCount(CMC_FGI_TABLE, 30);
+        assertTableCount(CMC_FGI_TABLE, 1);
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
         assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);

@@ -42,23 +42,16 @@ import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.FROM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_BTC_PRICE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_BTC_VOLUME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_NAME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SCORE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_TIMESTAMP;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_UPDATE_TIME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_VALUE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_VALUE_CLASSIFICATION;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_PRICE;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.BTC_VOLUME;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.DATA_LIST;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.NAME;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.SCORE;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
-import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
-import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.VALUE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.VALUE_CLASSIFICATION;
 
 public final class CmcParserRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -95,27 +88,23 @@ public final class CmcParserRepository extends AbstractReactive implements React
             try (final var ps = c.prepareStatement(FGI_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var fgi : fgis) {
-                    if (fgi != null && fgi.containsKey(DATA_LIST)) {
-                        for (final var dl : (List<Map<String, Object>>) fgi.get(DATA_LIST)) {
-                            final var score = dl.get(SCORE);
-                            if (score instanceof Number n) {
-                                ps.setInt(FGI_SCORE, n.intValue());
-                            } else if (score instanceof String s) {
-                                ps.setInt(FGI_SCORE, Integer.parseInt(s));
-                            } else {
-                                ps.setNull(FGI_SCORE, Types.INTEGER);
-                            }
+                    if (fgi != null) {
+                        final var value = fgi.get(VALUE);
+                        if (value instanceof Number n) {
+                            ps.setInt(FGI_VALUE, n.intValue());
+                        } else if (value instanceof String s) {
+                            ps.setInt(FGI_VALUE, Integer.parseInt(s));
+                        } else {
+                            ps.setNull(FGI_VALUE, Types.INTEGER);
+                        }
 
-                            ps.setString(FGI_NAME, (String) dl.get(NAME));
-                            final var ts = (String) dl.get(TIMESTAMP);
-                            ps.setObject(FGI_TIMESTAMP, toOdt(ts != null ? Long.parseLong(ts) : 0L));
-                            ps.setBigDecimal(FGI_BTC_PRICE, toBigDecimal(dl.get(BTC_PRICE)));
-                            ps.setBigDecimal(FGI_BTC_VOLUME, toBigDecimal(dl.get(BTC_VOLUME)));
+                        ps.setString(FGI_VALUE_CLASSIFICATION, (String) fgi.get(VALUE_CLASSIFICATION));
+                        final var ut = (String) fgi.get(UPDATE_TIME);
+                        ps.setObject(FGI_UPDATE_TIME, ut != null ? OffsetDateTime.parse(ut) : null);
 
-                            ps.addBatch();
-                            if (++count % batchSize == 0) {
-                                ps.executeBatch();
-                            }
+                        ps.addBatch();
+                        if (++count % batchSize == 0) {
+                            ps.executeBatch();
                         }
                     }
                 }
@@ -143,11 +132,9 @@ public final class CmcParserRepository extends AbstractReactive implements React
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();
-                    row.put(SCORE, rs.getObject(FGI_SCORE));
-                    row.put(NAME, rs.getObject(FGI_NAME));
-                    row.put(TIMESTAMP, rs.getObject(FGI_TIMESTAMP));
-                    row.put(BTC_PRICE, rs.getObject(FGI_BTC_PRICE));
-                    row.put(BTC_VOLUME, rs.getObject(FGI_BTC_VOLUME));
+                    row.put(VALUE, rs.getObject(FGI_VALUE));
+                    row.put(VALUE_CLASSIFICATION, rs.getObject(FGI_VALUE_CLASSIFICATION));
+                    row.put(UPDATE_TIME, rs.getObject(FGI_UPDATE_TIME));
                     results.add(row);
                 }
             }
