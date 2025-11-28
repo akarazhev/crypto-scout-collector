@@ -39,16 +39,14 @@ public final class Constants {
 
         // CMC fgi
         static final String FGI_INSERT = "INSERT INTO " + CMC_FGI_TABLE +
-                "(score, name, timestamp, btc_price, btc_volume) VALUES " +
-                "(?, ?, ?, ?, ?)";
+                "(value, value_classification, update_time) VALUES " +
+                "(?, ?, ?)";
         static final String FGI_SELECT =
-                "SELECT score, name, timestamp, btc_price, btc_volume FROM " + CMC_FGI_TABLE +
-                        " WHERE timestamp >= ? AND timestamp <= ?";
-        static final int FGI_SCORE = 1;
-        static final int FGI_NAME = 2;
-        static final int FGI_TIMESTAMP = 3;
-        static final int FGI_BTC_PRICE = 4;
-        static final int FGI_BTC_VOLUME = 5;
+                "SELECT value, value_classification, update_time FROM " + CMC_FGI_TABLE +
+                        " WHERE update_time >= ? AND update_time <= ?";
+        static final int FGI_VALUE = 1;
+        static final int FGI_VALUE_CLASSIFICATION = 2;
+        static final int FGI_UPDATE_TIME = 3;
     }
 
     public final static class Bybit {
