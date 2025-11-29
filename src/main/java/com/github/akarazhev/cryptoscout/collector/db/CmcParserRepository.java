@@ -40,18 +40,53 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.FROM;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_UPDATE_TIME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_VALUE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.FGI_VALUE_CLASSIFICATION;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_UPDATE_TIME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE_CLASSIFICATION;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_CIRCULATING_SUPPLY;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_CLOSE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_HIGH;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_LOW;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_MARKET_CAP;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_OPEN;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_CLOSE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_HIGH;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_LOW;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_OPEN;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIMESTAMP;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_VOLUME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CIRCULATING_SUPPLY;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.HIGH;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.LOW;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.MARKET_CAP;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.OPEN;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.SYMBOL;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIME_CLOSE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIME_HIGH;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIME_LOW;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIME_OPEN;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.VALUE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.VALUE_CLASSIFICATION;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.VOLUME;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
+import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
 
 public final class CmcParserRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -79,7 +114,6 @@ public final class CmcParserRepository extends AbstractReactive implements React
         return Promise.complete();
     }
 
-    @SuppressWarnings("unchecked")
     public int saveFgi(final List<Map<String, Object>> fgis, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
@@ -99,8 +133,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
                         }
 
                         ps.setString(FGI_VALUE_CLASSIFICATION, (String) fgi.get(VALUE_CLASSIFICATION));
-                        final var ut = (String) fgi.get(UPDATE_TIME);
-                        ps.setObject(FGI_UPDATE_TIME, ut != null ? OffsetDateTime.parse(ut) : null);
+                        ps.setObject(FGI_UPDATE_TIME, toOdt(fgi.get(UPDATE_TIME)));
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {
@@ -141,5 +174,83 @@ public final class CmcParserRepository extends AbstractReactive implements React
         }
 
         return results;
+    }
+
+    public int saveKline1d(final List<Map<String, Object>> klines, final long offset) throws SQLException {
+        var count = 0;
+        try (final var c = dataSource.getConnection()) {
+            final boolean oldAutoCommit = c.getAutoCommit();
+            c.setAutoCommit(false);
+            try (final var ps = c.prepareStatement(CMC_KLINE_1D_INSERT);
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
+                for (final var kline : klines) {
+                    final var row = getFirstRow(QUOTES, kline);
+                    if (row == null) {
+                        continue;
+                    }
+
+                    final var quote = getRow(QUOTE, row);
+                    if (quote == null) {
+                        continue;
+                    }
+
+                    final var symbol = (String) kline.get(SYMBOL);
+                    final var timeOpen = row.get(TIME_OPEN);
+                    final var timeClose = row.get(TIME_CLOSE);
+                    final var timeHigh = row.get(TIME_HIGH);
+                    final var timeLow = row.get(TIME_LOW);
+                    final var open = toBigDecimal(quote.get(OPEN));
+                    final var high = toBigDecimal(quote.get(HIGH));
+                    final var low = toBigDecimal(quote.get(LOW));
+                    final var close = toBigDecimal(quote.get(CLOSE));
+                    final var volume = toBigDecimal(quote.get(VOLUME));
+                    final var marketCap = toBigDecimal(quote.get(MARKET_CAP));
+                    final var circulatingSupply = toBigDecimal(quote.get(CIRCULATING_SUPPLY));
+                    final var timestamp = quote.get(TIMESTAMP);
+
+                    if (symbol == null || timeOpen == null || timeClose == null || timeHigh == null ||
+                            timeLow == null || open == null || high == null || low == null || close == null ||
+                            volume == null || marketCap == null || circulatingSupply == null || timestamp == null) {
+                        continue;
+                    }
+
+                    ps.setString(CMC_KLINE_SYMBOL, symbol);
+                    ps.setObject(CMC_KLINE_TIME_OPEN, toOdt(timeOpen));
+                    ps.setObject(CMC_KLINE_TIME_CLOSE, toOdt(timeClose));
+                    ps.setObject(CMC_KLINE_TIME_HIGH, toOdt(timeHigh));
+                    ps.setObject(CMC_KLINE_TIME_LOW, toOdt(timeLow));
+                    ps.setBigDecimal(CMC_KLINE_OPEN, open);
+                    ps.setBigDecimal(CMC_KLINE_HIGH, high);
+                    ps.setBigDecimal(CMC_KLINE_LOW, low);
+                    ps.setBigDecimal(CMC_KLINE_CLOSE, close);
+                    ps.setBigDecimal(CMC_KLINE_VOLUME, volume);
+                    ps.setBigDecimal(CMC_KLINE_MARKET_CAP, marketCap);
+                    ps.setBigDecimal(CMC_KLINE_CIRCULATING_SUPPLY, circulatingSupply);
+                    ps.setObject(CMC_KLINE_TIMESTAMP, toOdt(timestamp));
+
+                    ps.addBatch();
+                    if (++count % batchSize == 0) {
+                        ps.executeBatch();
+                    }
+                }
+
+                ps.executeBatch();
+                updateOffset(psOffset, stream, offset);
+                c.commit();
+            } catch (final Exception ex) {
+                c.rollback();
+                throw ex;
+            } finally {
+                c.setAutoCommit(oldAutoCommit);
+            }
+        }
+
+        return count;
+    }
+
+    public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, CMC_KLINE_1D_SELECT, from, to,
+                SYMBOL, TIME_OPEN, TIME_CLOSE, TIME_HIGH, TIME_LOW,
+                OPEN, HIGH, LOW, CLOSE, VOLUME, MARKET_CAP, CIRCULATING_SUPPLY, TIMESTAMP);
     }
 }
