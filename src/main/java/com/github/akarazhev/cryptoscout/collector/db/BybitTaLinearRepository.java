@@ -115,7 +115,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
         return Promise.complete();
     }
 
-    public int savePublicTrade(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
+    public int savePublicTrade(final List<Map<String, Object>> trades, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final var oldAutoCommit = c.getAutoCommit();
@@ -199,24 +199,24 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                 SYMBOL_NAME, T, SIDE, V, P);
     }
 
-    public int saveOrderBook1(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook1(final List<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         return saveOrderBooks(orderBooks, offset, LINEAR_ORDER_BOOK_1_INSERT);
     }
 
-    public int saveOrderBook50(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook50(final List<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         return saveOrderBooks(orderBooks, offset, LINEAR_ORDER_BOOK_50_INSERT);
     }
 
-    public int saveOrderBook200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook200(final List<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         return saveOrderBooks(orderBooks, offset, LINEAR_ORDER_BOOK_200_INSERT);
     }
 
-    public int saveOrderBook1000(final Iterable<Map<String, Object>> orderBooks, final long offset)
+    public int saveOrderBook1000(final List<Map<String, Object>> orderBooks, final long offset)
             throws SQLException {
         return saveOrderBooks(orderBooks, offset, LINEAR_ORDER_BOOK_1000_INSERT);
     }
 
-    public int saveAllLiquidation(final Iterable<Map<String, Object>> allLiquidations, final long offset)
+    public int saveAllLiquidation(final List<Map<String, Object>> allLiquidations, final long offset)
             throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
@@ -267,7 +267,7 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
         return count;
     }
 
-    private int saveOrderBooks(final Iterable<Map<String, Object>> orderBooks, final long offset, final String insertSql)
+    private int saveOrderBooks(final List<Map<String, Object>> orderBooks, final long offset, final String insertSql)
             throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {

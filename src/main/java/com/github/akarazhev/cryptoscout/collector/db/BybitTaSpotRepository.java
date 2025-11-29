@@ -108,7 +108,7 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
         return Promise.complete();
     }
 
-    public int savePublicTrade(final Iterable<Map<String, Object>> trades, final long offset) throws SQLException {
+    public int savePublicTrade(final List<Map<String, Object>> trades, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final var oldAutoCommit = c.getAutoCommit();
@@ -162,23 +162,23 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
         return count;
     }
 
-    public int saveOrderBook1(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook1(final List<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_1_INSERT);
     }
 
-    public int saveOrderBook50(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook50(final List<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_50_INSERT);
     }
 
-    public int saveOrderBook200(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook200(final List<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_200_INSERT);
     }
 
-    public int saveOrderBook1000(final Iterable<Map<String, Object>> orderBooks, final long offset) throws SQLException {
+    public int saveOrderBook1000(final List<Map<String, Object>> orderBooks, final long offset) throws SQLException {
         return saveOrderBooks(orderBooks, offset, SPOT_ORDER_BOOK_1000_INSERT);
     }
 
-    private int saveOrderBooks(final Iterable<Map<String, Object>> orderBooks, final long offset, final String insertSql)
+    private int saveOrderBooks(final List<Map<String, Object>> orderBooks, final long offset, final String insertSql)
             throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
