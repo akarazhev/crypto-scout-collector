@@ -35,11 +35,16 @@ import org.junit.jupiter.api.Test;
 
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_KLINE_1D_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -62,7 +67,7 @@ final class CmcParserRepositoryTest {
 
     @BeforeEach
     void before() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(), CMC_FGI_TABLE);
+        DBUtils.deleteFromTables(dataSource.getDataSource(), CMC_FGI_TABLE, CMC_KLINE_1D_TABLE);
     }
 
     @AfterAll
@@ -87,5 +92,23 @@ final class CmcParserRepositoryTest {
         assertEquals(1, repository.saveFgi(List.of(fgi), 200L));
         final var odt = OffsetDateTime.parse((String) fgi.get(UPDATE_TIME));
         assertEquals(1, repository.getFgi(odt).size());
+    }
+
+    @Test
+    void shouldSaveKline1d() throws Exception {
+        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
+        assertEquals(1, repository.saveKline1d(List.of(kline), 100L));
+        assertTableCount(CMC_KLINE_1D_TABLE, 1);
+    }
+
+    @Test
+    void shouldGetKline1d() throws Exception {
+        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
+        assertEquals(1, repository.saveKline1d(List.of(kline), 200L));
+
+        final var kdTimestamp = ((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP);
+        final var from = OffsetDateTime.parse((String) kdTimestamp);
+
+        assertEquals(1, repository.getKline1d(from, from).size());
     }
 }
