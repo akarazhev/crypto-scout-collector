@@ -48,8 +48,13 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_KLINE_1D_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.cryptoscout.test.MockData.Source.CMC_PARSER;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -74,10 +79,36 @@ final class CmcParserCollectorTest {
         TestUtils.await(collector.start());
     }
 
+    @Test
+    void shouldCollectKline1dAndUpdateOffsets() throws Exception {
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.LPL, kline), 110L));
+
+        TestUtils.await(collector.stop());
+
+        assertTableCount(CMC_KLINE_1D_TABLE, 1);
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
+        assertEquals(110L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(collector.start());
+    }
+
+    @Test
+    void shouldGetKline1d() throws Exception {
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        assertEquals(1, cmcParserRepository.saveKline1d(List.of(kline), 120L));
+
+        final var kdTimestamp = ((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP);
+        final var from = OffsetDateTime.parse((String) kdTimestamp);
+
+        assertEquals(1, TestUtils.await(collector.getKline1d(from, from)).size());
+    }
+
     @BeforeEach
     void before() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 CMC_FGI_TABLE,
+                CMC_KLINE_1D_TABLE,
                 STREAM_OFFSETS_TABLE
         );
     }
