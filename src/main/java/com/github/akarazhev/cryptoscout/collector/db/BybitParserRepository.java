@@ -40,7 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.FROM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_DESC;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_RETURN_COIN;
@@ -52,7 +52,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_TRADE_BEGIN_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WEBSITE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LPL_WHITE_PAPER;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DESC;
