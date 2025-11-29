@@ -33,7 +33,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -46,6 +45,7 @@ import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class CmcParserRepositoryTest {
@@ -90,8 +90,7 @@ final class CmcParserRepositoryTest {
     void shouldGetFgi() throws Exception {
         final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
         assertEquals(1, repository.saveFgi(List.of(fgi), 200L));
-        final var odt = OffsetDateTime.parse((String) fgi.get(UPDATE_TIME));
-        assertEquals(1, repository.getFgi(odt).size());
+        assertEquals(1, repository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
     }
 
     @Test
@@ -106,9 +105,7 @@ final class CmcParserRepositoryTest {
         final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
         assertEquals(1, repository.saveKline1d(List.of(kline), 200L));
 
-        final var kdTimestamp = ((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP);
-        final var from = OffsetDateTime.parse((String) kdTimestamp);
-
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
         assertEquals(1, repository.getKline1d(from, from).size());
     }
 }
