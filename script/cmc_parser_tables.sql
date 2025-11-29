@@ -50,7 +50,7 @@ create TABLE IF NOT EXISTS crypto_scout.cmc_kline_1d (
 alter table crypto_scout.cmc_kline_1d OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_cmc_kline_1d_timestamp ON crypto_scout.cmc_kline_1d(timestamp DESC);
 create index IF NOT EXISTS idx_cmc_kline_1d_symbol_timestamp ON crypto_scout.cmc_kline_1d(symbol, timestamp DESC);
-select public.create_hypertable('crypto_scout.cmc_kline_1d', 'timestamp', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.cmc_kline_1d', 'timestamp', chunk_time_interval => INTERVAL '2 years', if_not_exists => TRUE);
 
 alter table crypto_scout.cmc_kline_1d set (
     timescaledb.compress,
