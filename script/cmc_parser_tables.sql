@@ -29,33 +29,29 @@ select add_reorder_policy('crypto_scout.cmc_fgi', 'idx_cmc_fgi_update_time');
 -- =========================
 
 create TABLE IF NOT EXISTS crypto_scout.cmc_kline_1d (
-    id BIGSERIAL,
     symbol TEXT NOT NULL,
     time_open TIMESTAMP WITH TIME ZONE NOT NULL,
     time_close TIMESTAMP WITH TIME ZONE NOT NULL,
     time_high TIMESTAMP WITH TIME ZONE NOT NULL,
     time_low  TIMESTAMP WITH TIME ZONE NOT NULL,
-    open NUMERIC(18, 10) NOT NULL,
-    high NUMERIC(18, 10) NOT NULL,
-    low NUMERIC(18, 10) NOT NULL,
-    close NUMERIC(18, 10) NOT NULL,
-    volume NUMERIC(25, 10) NOT NULL,
-    market_cap NUMERIC(26, 10) NOT NULL,
-    circulating_supply NUMERIC(11) NOT NULL,
+    open DOUBLE PRECISION NOT NULL,
+    high DOUBLE PRECISION NOT NULL,
+    low DOUBLE PRECISION NOT NULL,
+    close DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    market_cap DOUBLE PRECISION NOT NULL,
+    circulating_supply BIGINT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    CONSTRAINT cmc_kline_1d_pkey PRIMARY KEY (id, timestamp),
-    CONSTRAINT cmc_kline_1d_symbol_close_uniq UNIQUE (symbol, timestamp)
+    CONSTRAINT cmc_kline_1d_pkey PRIMARY KEY (symbol, timestamp)
 );
 
 alter table crypto_scout.cmc_kline_1d OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_cmc_kline_1d_timestamp ON crypto_scout.cmc_kline_1d(timestamp DESC);
-create index IF NOT EXISTS idx_cmc_kline_1d_symbol_timestamp ON crypto_scout.cmc_kline_1d(symbol, timestamp DESC);
-select public.create_hypertable('crypto_scout.cmc_kline_1d', 'timestamp', chunk_time_interval => INTERVAL '2 years', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.cmc_kline_1d', 'timestamp', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
 
 alter table crypto_scout.cmc_kline_1d set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol',
-    timescaledb.compress_orderby = 'timestamp DESC, id DESC'
+    timescaledb.compress_orderby = 'timestamp DESC'
 );
 
-select add_reorder_policy('crypto_scout.cmc_kline_1d', 'idx_cmc_kline_1d_timestamp');
+select public.add_compression_policy('crypto_scout.cmc_kline_1d', INTERVAL '35 days');
