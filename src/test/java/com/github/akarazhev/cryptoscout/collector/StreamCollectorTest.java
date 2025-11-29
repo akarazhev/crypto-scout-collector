@@ -99,6 +99,7 @@ import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class StreamCollectorTest {
@@ -249,8 +250,7 @@ final class StreamCollectorTest {
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cmcParserCollector.stop());
 
-        final var odt = OffsetDateTime.parse((String) fgi.get(UPDATE_TIME));
-        assertEquals(1, cmcParserRepository.getFgi(odt).size());
+        assertEquals(1, cmcParserRepository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
         assertTableCount(CMC_FGI_TABLE, 1);
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
@@ -266,9 +266,7 @@ final class StreamCollectorTest {
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cmcParserCollector.stop());
 
-        final var kdTimestamp = ((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP);
-        final var from = OffsetDateTime.parse((String) kdTimestamp);
-
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
         assertEquals(1, cmcParserRepository.getKline1d(from, from).size());
         assertTableCount(CMC_KLINE_1D_TABLE, 1);
 
