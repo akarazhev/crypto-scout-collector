@@ -69,7 +69,7 @@ import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CIRCULATING
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.HIGH;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.LOW;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.MARKET_CAP;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.MARKET_CAP2;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.OPEN;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
@@ -204,7 +204,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
                     final var low = toBigDecimal(quote.get(LOW));
                     final var close = toBigDecimal(quote.get(CLOSE));
                     final var volume = toBigDecimal(quote.get(VOLUME));
-                    final var marketCap = toBigDecimal(quote.get(MARKET_CAP));
+                    final var marketCap = toBigDecimal(quote.get(MARKET_CAP2));
                     final var circulatingSupply = toBigDecimal(quote.get(CIRCULATING_SUPPLY));
                     final var timestamp = quote.get(TIMESTAMP);
 
@@ -251,6 +251,6 @@ public final class CmcParserRepository extends AbstractReactive implements React
     public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
         return fetchRange(dataSource, CMC_KLINE_1D_SELECT, from, to,
                 SYMBOL, TIME_OPEN, TIME_CLOSE, TIME_HIGH, TIME_LOW,
-                OPEN, HIGH, LOW, CLOSE, VOLUME, MARKET_CAP, CIRCULATING_SUPPLY, TIMESTAMP);
+                OPEN, HIGH, LOW, CLOSE, VOLUME, MARKET_CAP2, CIRCULATING_SUPPLY, TIMESTAMP);
     }
 }
