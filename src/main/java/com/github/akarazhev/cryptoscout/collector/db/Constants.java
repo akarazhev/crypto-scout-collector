@@ -37,6 +37,9 @@ public final class Constants {
         // CMC fgi table
         public static final String CMC_FGI_TABLE = "crypto_scout.cmc_fgi";
 
+        // CMC BTC-USD kline 1d table
+        public static final String CMC_KLINE_1D_TABLE = "crypto_scout.cmc_kline_1d";
+
         // CMC fgi
         static final String FGI_INSERT = "INSERT INTO " + CMC_FGI_TABLE +
                 "(value, value_classification, update_time) VALUES " +
@@ -47,6 +50,29 @@ public final class Constants {
         static final int FGI_VALUE = 1;
         static final int FGI_VALUE_CLASSIFICATION = 2;
         static final int FGI_UPDATE_TIME = 3;
+
+        // CMC kline 1d
+        static final String CMC_KLINE_1D_INSERT = "INSERT INTO " + CMC_KLINE_1D_TABLE +
+                "(symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, market_cap, " +
+                "circulating_supply, timestamp) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO NOTHING";
+        static final String CMC_KLINE_1D_SELECT =
+                "SELECT symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, " +
+                        "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1D_TABLE +
+                        " WHERE timestamp >= ? AND timestamp <= ?";
+        static final int CMC_KLINE_SYMBOL = 1;
+        static final int CMC_KLINE_TIME_OPEN = 2;
+        static final int CMC_KLINE_TIME_CLOSE = 3;
+        static final int CMC_KLINE_TIME_HIGH = 4;
+        static final int CMC_KLINE_TIME_LOW = 5;
+        static final int CMC_KLINE_OPEN = 6;
+        static final int CMC_KLINE_HIGH = 7;
+        static final int CMC_KLINE_LOW = 8;
+        static final int CMC_KLINE_CLOSE = 9;
+        static final int CMC_KLINE_VOLUME = 10;
+        static final int CMC_KLINE_MARKET_CAP = 11;
+        static final int CMC_KLINE_CIRCULATING_SUPPLY = 12;
+        static final int CMC_KLINE_TIMESTAMP = 13;
     }
 
     public final static class Bybit {
