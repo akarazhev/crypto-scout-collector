@@ -92,7 +92,7 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
         return Promise.complete();
     }
 
-    public int saveLpl(final Iterable<Map<String, Object>> lpls, final long offset) throws SQLException {
+    public int saveLpl(final List<Map<String, Object>> lpls, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final boolean oldAutoCommit = c.getAutoCommit();

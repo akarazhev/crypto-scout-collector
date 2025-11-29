@@ -170,31 +170,31 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
         return Promise.complete();
     }
 
-    public int saveKline1m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline1m(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, LINEAR_KLINE_1M_INSERT);
     }
 
-    public int saveKline5m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline5m(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, LINEAR_KLINE_5M_INSERT);
     }
 
-    public int saveKline15m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline15m(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, LINEAR_KLINE_15M_INSERT);
     }
 
-    public int saveKline60m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline60m(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, LINEAR_KLINE_60M_INSERT);
     }
 
-    public int saveKline240m(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline240m(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, LINEAR_KLINE_240M_INSERT);
     }
 
-    public int saveKline1d(final Iterable<Map<String, Object>> klines, final long offset) throws SQLException {
+    public int saveKline1d(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         return saveKlines(klines, offset, LINEAR_KLINE_1D_INSERT);
     }
 
-    public int saveTicker(final Iterable<Map<String, Object>> tickers, final long offset) throws SQLException {
+    public int saveTicker(final List<Map<String, Object>> tickers, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final var oldAutoCommit = c.getAutoCommit();
@@ -387,7 +387,7 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                 BASIS_RATE_YEAR, PRE_OPEN_PRICE, PRE_QTY, CUR_PRE_LISTING_PHASE);
     }
 
-    private int saveKlines(final Iterable<Map<String, Object>> klines, final long offset, final String insertSql)
+    private int saveKlines(final List<Map<String, Object>> klines, final long offset, final String insertSql)
             throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
