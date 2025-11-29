@@ -41,7 +41,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -56,6 +55,7 @@ import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class CmcParserCollectorTest {
@@ -82,7 +82,7 @@ final class CmcParserCollectorTest {
     @Test
     void shouldCollectKline1dAndUpdateOffsets() throws Exception {
         final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
-        TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.LPL, kline), 110L));
+        TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.BTC_USD_1D, kline), 110L));
 
         TestUtils.await(collector.stop());
 
@@ -98,9 +98,7 @@ final class CmcParserCollectorTest {
         final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
         assertEquals(1, cmcParserRepository.saveKline1d(List.of(kline), 120L));
 
-        final var kdTimestamp = ((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP);
-        final var from = OffsetDateTime.parse((String) kdTimestamp);
-
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
         assertEquals(1, TestUtils.await(collector.getKline1d(from, from)).size());
     }
 
@@ -127,8 +125,7 @@ final class CmcParserCollectorTest {
     void shouldGetFgi() throws Exception {
         final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
         assertEquals(1, cmcParserRepository.saveFgi(List.of(fgi), 200L));
-        final var odt = OffsetDateTime.parse((String) fgi.get(UPDATE_TIME));
-        assertEquals(1, TestUtils.await(collector.getFgi(odt)).size());
+        assertEquals(1, TestUtils.await(collector.getFgi(toOdt(fgi.get(UPDATE_TIME)))).size());
     }
 
     @Test
@@ -138,8 +135,7 @@ final class CmcParserCollectorTest {
 
         TestUtils.await(collector.stop());
 
-        final var odt = OffsetDateTime.parse((String) fgi.get(UPDATE_TIME));
-        assertEquals(1, cmcParserRepository.getFgi(odt).size());
+        assertEquals(1, cmcParserRepository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
         assertTableCount(CMC_FGI_TABLE, 1);
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
