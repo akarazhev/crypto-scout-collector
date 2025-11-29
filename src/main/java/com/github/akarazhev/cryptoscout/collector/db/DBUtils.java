@@ -33,8 +33,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.FROM;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TO;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 
