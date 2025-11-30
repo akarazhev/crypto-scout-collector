@@ -5,7 +5,6 @@
 -- =========================
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_lpl (
-    id BIGSERIAL,
     return_coin TEXT NOT NULL,
     return_coin_icon TEXT NOT NULL,
     description TEXT NOT NULL,
@@ -15,8 +14,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_lpl (
     stake_begin_time TIMESTAMP WITH TIME ZONE NOT NULL,
     stake_end_time TIMESTAMP WITH TIME ZONE NOT NULL,
     trade_begin_time TIMESTAMP WITH TIME ZONE,
-    CONSTRAINT bybit_lpl_pkey PRIMARY KEY (id),
-    CONSTRAINT bybit_lpl_return_coin_stake_begin_uniq UNIQUE (return_coin, stake_begin_time)
+    CONSTRAINT bybit_lpl_pkey PRIMARY KEY (return_coin, stake_begin_time)
 );
 
 alter table crypto_scout.bybit_lpl OWNER TO crypto_scout_db;
