@@ -119,7 +119,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
     public int saveFgi(final List<Map<String, Object>> fgis, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(FGI_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
@@ -181,7 +181,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
     public int saveKline1d(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(CMC_KLINE_1D_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
@@ -259,7 +259,7 @@ public final class CmcParserRepository extends AbstractReactive implements React
     public int saveKline1w(final List<Map<String, Object>> klines, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(CMC_KLINE_1W_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
