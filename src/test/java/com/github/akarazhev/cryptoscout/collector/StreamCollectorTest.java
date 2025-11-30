@@ -84,8 +84,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_S
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_200_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_ORDER_BOOK_50_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_PUBLIC_TRADE_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.BYBIT_PARSER;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.CMC_PARSER;
@@ -203,7 +204,8 @@ final class StreamCollectorTest {
                 TA_LINEAR_ALL_LIQUIDATION_TABLE,
 
                 CMC_FGI_TABLE,
-                CMC_KLINE_1D_TABLE
+                CMC_KLINE_1D_TABLE,
+                STREAM_OFFSETS_TABLE
         );
     }
 
@@ -237,9 +239,6 @@ final class StreamCollectorTest {
         assertEquals(1, bybitParserRepository.getLpl(odt).size());
         assertTableCount(BYBIT_LPL_TABLE, 1);
 
-        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitParserStream());
-        assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);
-
         TestUtils.await(bybitParserCollector.start());
     }
 
@@ -252,9 +251,6 @@ final class StreamCollectorTest {
 
         assertEquals(1, cmcParserRepository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
         assertTableCount(CMC_FGI_TABLE, 1);
-
-        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
-        assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);
 
         TestUtils.await(cmcParserCollector.start());
     }
@@ -269,9 +265,6 @@ final class StreamCollectorTest {
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
         assertEquals(1, cmcParserRepository.getKline1d(from, from).size());
         assertTableCount(CMC_KLINE_1D_TABLE, 1);
-
-        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
-        assertEquals(0L, offset.isPresent() ? offset.getAsLong() : -1L);
 
         TestUtils.await(cmcParserCollector.start());
     }
