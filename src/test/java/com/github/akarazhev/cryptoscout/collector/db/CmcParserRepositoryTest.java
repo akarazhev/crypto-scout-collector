@@ -40,6 +40,7 @@ import java.util.concurrent.Executors;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
@@ -67,7 +68,7 @@ final class CmcParserRepositoryTest {
 
     @BeforeEach
     void before() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(), CMC_FGI_TABLE, CMC_KLINE_1D_TABLE);
+        DBUtils.deleteFromTables(dataSource.getDataSource(), CMC_FGI_TABLE, CMC_KLINE_1D_TABLE, CMC_KLINE_1W_TABLE);
     }
 
     @AfterAll
@@ -107,5 +108,21 @@ final class CmcParserRepositoryTest {
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
         assertEquals(1, repository.getKline1d(from, from).size());
+    }
+
+    @Test
+    void shouldSaveKline1w() throws Exception {
+        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
+        assertEquals(1, repository.saveKline1w(List.of(kline), 300L));
+        assertTableCount(CMC_KLINE_1W_TABLE, 1);
+    }
+
+    @Test
+    void shouldGetKline1w() throws Exception {
+        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
+        assertEquals(1, repository.saveKline1w(List.of(kline), 400L));
+
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
+        assertEquals(1, repository.getKline1w(from, from).size());
     }
 }

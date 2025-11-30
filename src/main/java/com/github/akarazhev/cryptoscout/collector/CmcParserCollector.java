@@ -109,6 +109,10 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
         return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1d(from, to));
     }
 
+    public Promise<List<Map<String, Object>>> getKline1w(final OffsetDateTime from, final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1w(from, to));
+    }
+
     private void scheduledFlush() {
         flush().whenComplete((_, _) ->
                 reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
@@ -137,6 +141,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
             var maxOffset = -1L;
             final var fgis = new ArrayList<Map<String, Object>>();
             final var klines1d = new ArrayList<Map<String, Object>>();
+            final var klines1w = new ArrayList<Map<String, Object>>();
             for (final var item : items) {
                 final var payload = item.payload();
                 final var source = payload.getSource();
@@ -145,6 +150,8 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
                     fgis.add(data);
                 } else if (Source.BTC_USD_1D.equals(source)) {
                     klines1d.add(data);
+                } else if (Source.BTC_USD_1W.equals(source)) {
+                    klines1w.add(data);
                 }
 
                 if (item.offset() > maxOffset) {
@@ -152,7 +159,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
                 }
             }
             // No data to insert but we still may want to advance offset in rare cases
-            if (fgis.isEmpty() && klines1d.isEmpty()) {
+            if (fgis.isEmpty() && klines1d.isEmpty() && klines1w.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.warn("Upserted CMC stream offset {} (no data batch)", maxOffset);
             } else {
@@ -160,6 +167,8 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
                 saveFgi(fgis, maxOffset);
                 klines1d.trimToSize();
                 saveKline1d(klines1d, maxOffset);
+                klines1w.trimToSize();
+                saveKline1w(klines1w, maxOffset);
             }
         });
     }
@@ -178,6 +187,15 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
             if (maxOffset >= 0) {
                 final var count = cmcParserRepository.saveKline1d(klines, maxOffset);
                 LOGGER.info("Save {} CMC 1d klines (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveKline1w(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
+        if (!klines.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = cmcParserRepository.saveKline1w(klines, maxOffset);
+                LOGGER.info("Save {} CMC 1w klines (tx) and updated offset {}", count, maxOffset);
             }
         }
     }

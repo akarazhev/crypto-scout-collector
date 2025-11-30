@@ -49,6 +49,8 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VA
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE_CLASSIFICATION;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_CIRCULATING_SUPPLY;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_CLOSE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_HIGH;
@@ -250,6 +252,84 @@ public final class CmcParserRepository extends AbstractReactive implements React
 
     public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
         return fetchRange(dataSource, CMC_KLINE_1D_SELECT, from, to,
+                SYMBOL, TIME_OPEN, TIME_CLOSE, TIME_HIGH, TIME_LOW,
+                OPEN, HIGH, LOW, CLOSE, VOLUME, MARKET_CAP2, CIRCULATING_SUPPLY, TIMESTAMP);
+    }
+
+    public int saveKline1w(final List<Map<String, Object>> klines, final long offset) throws SQLException {
+        var count = 0;
+        try (final var c = dataSource.getConnection()) {
+            final boolean oldAutoCommit = c.getAutoCommit();
+            c.setAutoCommit(false);
+            try (final var ps = c.prepareStatement(CMC_KLINE_1W_INSERT);
+                 final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
+                for (final var kline : klines) {
+                    final var row = getFirstRow(QUOTES, kline);
+                    if (row == null) {
+                        continue;
+                    }
+
+                    final var quote = getRow(QUOTE, row);
+                    if (quote == null) {
+                        continue;
+                    }
+
+                    final var symbol = (String) kline.get(SYMBOL);
+                    final var timeOpen = row.get(TIME_OPEN);
+                    final var timeClose = row.get(TIME_CLOSE);
+                    final var timeHigh = row.get(TIME_HIGH);
+                    final var timeLow = row.get(TIME_LOW);
+                    final var open = toBigDecimal(quote.get(OPEN));
+                    final var high = toBigDecimal(quote.get(HIGH));
+                    final var low = toBigDecimal(quote.get(LOW));
+                    final var close = toBigDecimal(quote.get(CLOSE));
+                    final var volume = toBigDecimal(quote.get(VOLUME));
+                    final var marketCap = toBigDecimal(quote.get(MARKET_CAP2));
+                    final var circulatingSupply = toBigDecimal(quote.get(CIRCULATING_SUPPLY));
+                    final var timestamp = quote.get(TIMESTAMP);
+
+                    if (symbol == null || timeOpen == null || timeClose == null || timeHigh == null ||
+                            timeLow == null || open == null || high == null || low == null || close == null ||
+                            volume == null || marketCap == null || circulatingSupply == null || timestamp == null) {
+                        continue;
+                    }
+
+                    ps.setString(CMC_KLINE_SYMBOL, symbol);
+                    ps.setObject(CMC_KLINE_TIME_OPEN, toOdt(timeOpen));
+                    ps.setObject(CMC_KLINE_TIME_CLOSE, toOdt(timeClose));
+                    ps.setObject(CMC_KLINE_TIME_HIGH, toOdt(timeHigh));
+                    ps.setObject(CMC_KLINE_TIME_LOW, toOdt(timeLow));
+                    ps.setBigDecimal(CMC_KLINE_OPEN, open);
+                    ps.setBigDecimal(CMC_KLINE_HIGH, high);
+                    ps.setBigDecimal(CMC_KLINE_LOW, low);
+                    ps.setBigDecimal(CMC_KLINE_CLOSE, close);
+                    ps.setBigDecimal(CMC_KLINE_VOLUME, volume);
+                    ps.setBigDecimal(CMC_KLINE_MARKET_CAP, marketCap);
+                    ps.setBigDecimal(CMC_KLINE_CIRCULATING_SUPPLY, circulatingSupply);
+                    ps.setObject(CMC_KLINE_TIMESTAMP, toOdt(timestamp));
+
+                    ps.addBatch();
+                    if (++count % batchSize == 0) {
+                        ps.executeBatch();
+                    }
+                }
+
+                ps.executeBatch();
+                updateOffset(psOffset, stream, offset);
+                c.commit();
+            } catch (final Exception ex) {
+                c.rollback();
+                throw ex;
+            } finally {
+                c.setAutoCommit(oldAutoCommit);
+            }
+        }
+
+        return count;
+    }
+
+    public List<Map<String, Object>> getKline1w(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
+        return fetchRange(dataSource, CMC_KLINE_1W_SELECT, from, to,
                 SYMBOL, TIME_OPEN, TIME_CLOSE, TIME_HIGH, TIME_LOW,
                 OPEN, HIGH, LOW, CLOSE, VOLUME, MARKET_CAP2, CIRCULATING_SUPPLY, TIMESTAMP);
     }
