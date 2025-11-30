@@ -46,8 +46,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_FGI_TABLE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CMC.CMC_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.CMC_PARSER;
