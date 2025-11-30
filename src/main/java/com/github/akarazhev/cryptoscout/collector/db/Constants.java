@@ -56,7 +56,7 @@ public final class Constants {
         // CMC fgi
         static final String FGI_INSERT = "INSERT INTO " + CMC_FGI_TABLE +
                 "(value, value_classification, update_time) VALUES " +
-                "(?, ?, ?)";
+                "(?, ?, ?) ON CONFLICT (update_time) DO NOTHING";
         static final String FGI_SELECT =
                 "SELECT value, value_classification, update_time FROM " + CMC_FGI_TABLE +
                         " WHERE update_time >= ? AND update_time <= ?";
