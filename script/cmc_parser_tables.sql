@@ -5,23 +5,20 @@
 -- =========================
 
 create TABLE IF NOT EXISTS crypto_scout.cmc_fgi (
-    id BIGSERIAL,
     value INTEGER NOT NULL,
     value_classification TEXT NOT NULL,
     update_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    CONSTRAINT fgi_pkey PRIMARY KEY (id, update_time)
+    CONSTRAINT fgi_pkey PRIMARY KEY (update_time)
 );
 
 alter table crypto_scout.cmc_fgi OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_cmc_fgi_update_time ON crypto_scout.cmc_fgi(update_time DESC);
-select public.create_hypertable('crypto_scout.cmc_fgi', 'update_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.cmc_fgi', 'update_time', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
 
 alter table crypto_scout.cmc_fgi set (
     timescaledb.compress,
-    timescaledb.compress_segmentby = 'value_classification',
-    timescaledb.compress_orderby = 'update_time DESC, id DESC'
+    timescaledb.compress_orderby = 'update_time DESC'
 );
-select add_reorder_policy('crypto_scout.cmc_fgi', 'idx_cmc_fgi_update_time');
+select public.add_compression_policy('crypto_scout.cmc_fgi', INTERVAL '35 days');
 
 -- =========================
 -- KLINE TABLES (1d/1w)
