@@ -50,6 +50,9 @@ public final class Constants {
         // CMC BTC-USD kline 1d table
         public static final String CMC_KLINE_1D_TABLE = "crypto_scout.cmc_kline_1d";
 
+        // CMC BTC-USD kline 1w table
+        public static final String CMC_KLINE_1W_TABLE = "crypto_scout.cmc_kline_1w";
+
         // CMC fgi
         static final String FGI_INSERT = "INSERT INTO " + CMC_FGI_TABLE +
                 "(value, value_classification, update_time) VALUES " +
@@ -69,6 +72,16 @@ public final class Constants {
         static final String CMC_KLINE_1D_SELECT =
                 "SELECT symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, " +
                         "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1D_TABLE +
+                        " WHERE timestamp >= ? AND timestamp <= ?";
+
+        // CMC kline 1w
+        static final String CMC_KLINE_1W_INSERT = "INSERT INTO " + CMC_KLINE_1W_TABLE +
+                "(symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, market_cap, " +
+                "circulating_supply, timestamp) " +
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO NOTHING";
+        static final String CMC_KLINE_1W_SELECT =
+                "SELECT symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, " +
+                        "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1W_TABLE +
                         " WHERE timestamp >= ? AND timestamp <= ?";
         static final int CMC_KLINE_SYMBOL = 1;
         static final int CMC_KLINE_TIME_OPEN = 2;

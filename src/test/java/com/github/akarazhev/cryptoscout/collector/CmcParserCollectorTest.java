@@ -48,6 +48,7 @@ import java.util.concurrent.Executors;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.CMC_PARSER;
@@ -80,6 +81,20 @@ final class CmcParserCollectorTest {
     }
 
     @Test
+    void shouldCollectKline1wAndUpdateOffsets() throws Exception {
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline), 210L));
+
+        TestUtils.await(collector.stop());
+
+        assertTableCount(CMC_KLINE_1W_TABLE, 1);
+        final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());
+        assertEquals(210L, offset.isPresent() ? offset.getAsLong() : 0L);
+
+        TestUtils.await(collector.start());
+    }
+
+    @Test
     void shouldCollectKline1dAndUpdateOffsets() throws Exception {
         final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
         TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.BTC_USD_1D, kline), 110L));
@@ -102,11 +117,21 @@ final class CmcParserCollectorTest {
         assertEquals(1, TestUtils.await(collector.getKline1d(from, from)).size());
     }
 
+    @Test
+    void shouldGetKline1w() throws Exception {
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        assertEquals(1, cmcParserRepository.saveKline1w(List.of(kline), 130L));
+
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
+        assertEquals(1, TestUtils.await(collector.getKline1w(from, from)).size());
+    }
+
     @BeforeEach
     void before() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 CMC_FGI_TABLE,
                 CMC_KLINE_1D_TABLE,
+                CMC_KLINE_1W_TABLE,
                 STREAM_OFFSETS_TABLE
         );
     }

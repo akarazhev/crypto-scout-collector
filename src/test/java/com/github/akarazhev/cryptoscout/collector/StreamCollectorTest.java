@@ -86,6 +86,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_S
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.TA_SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.BYBIT_PARSER;
@@ -205,6 +206,7 @@ final class StreamCollectorTest {
 
                 CMC_FGI_TABLE,
                 CMC_KLINE_1D_TABLE,
+                CMC_KLINE_1W_TABLE,
                 STREAM_OFFSETS_TABLE
         );
     }
@@ -251,6 +253,20 @@ final class StreamCollectorTest {
 
         assertEquals(1, cmcParserRepository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
         assertTableCount(CMC_FGI_TABLE, 1);
+
+        TestUtils.await(cmcParserCollector.start());
+    }
+
+    @Test
+    void testShouldCmcParserKline1wDataBeConsumed() throws Exception {
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        cmcParserStreamPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline));
+        Thread.sleep(Duration.ofSeconds(1));
+        TestUtils.await(cmcParserCollector.stop());
+
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
+        assertEquals(1, cmcParserRepository.getKline1w(from, from).size());
+        assertTableCount(CMC_KLINE_1W_TABLE, 1);
 
         TestUtils.await(cmcParserCollector.start());
     }
