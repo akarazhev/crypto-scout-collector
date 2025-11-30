@@ -55,3 +55,31 @@ alter table crypto_scout.cmc_kline_1d set (
 );
 
 select public.add_compression_policy('crypto_scout.cmc_kline_1d', INTERVAL '35 days');
+
+create TABLE IF NOT EXISTS crypto_scout.cmc_kline_1w (
+    symbol TEXT NOT NULL,
+    time_open TIMESTAMP WITH TIME ZONE NOT NULL,
+    time_close TIMESTAMP WITH TIME ZONE NOT NULL,
+    time_high TIMESTAMP WITH TIME ZONE NOT NULL,
+    time_low  TIMESTAMP WITH TIME ZONE NOT NULL,
+    open DOUBLE PRECISION NOT NULL,
+    high DOUBLE PRECISION NOT NULL,
+    low DOUBLE PRECISION NOT NULL,
+    close DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    market_cap DOUBLE PRECISION NOT NULL,
+    circulating_supply BIGINT NOT NULL,
+    timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT cmc_kline_1w_pkey PRIMARY KEY (symbol, timestamp)
+);
+
+alter table crypto_scout.cmc_kline_1w OWNER TO crypto_scout_db;
+select public.create_hypertable('crypto_scout.cmc_kline_1w', 'timestamp', chunk_time_interval => INTERVAL '3 months', if_not_exists => TRUE);
+
+alter table crypto_scout.cmc_kline_1w set (
+    timescaledb.compress,
+    timescaledb.compress_segmentby = 'symbol',
+    timescaledb.compress_orderby = 'timestamp DESC'
+);
+
+select public.add_compression_policy('crypto_scout.cmc_kline_1w', INTERVAL '35 days');
