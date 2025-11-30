@@ -142,7 +142,8 @@ public final class Constants {
         // Bybit LPL
         static final String LPL_INSERT = "INSERT INTO " + BYBIT_LPL_TABLE +
                 "(return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
-                "stake_end_time, trade_begin_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "stake_end_time, trade_begin_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (return_coin, stake_begin_time) DO NOTHING";
         static final String LPL_SELECT =
                 "SELECT return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
                 "stake_end_time, trade_begin_time FROM " + BYBIT_LPL_TABLE +
