@@ -95,7 +95,7 @@ public final class BybitParserRepository extends AbstractReactive implements Rea
     public int saveLpl(final List<Map<String, Object>> lpls, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
-            final boolean oldAutoCommit = c.getAutoCommit();
+            final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
             try (final var ps = c.prepareStatement(LPL_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
