@@ -86,7 +86,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRows;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
-import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
+import static com.github.akarazhev.jcryptolib.util.ValueUtils.toDouble;
 import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBoolean;
 
 public final class BybitTaLinearRepository extends AbstractReactive implements ReactiveService {
@@ -128,8 +128,8 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                         for (final var row : rows) {
                             final var symbol = (String) row.get(SYMBOL_NAME);
                             final var tradeTime = row.get(T);
-                            final var price = toBigDecimal(row.get(P));
-                            final var size = toBigDecimal(row.get(V));
+                            final var price = toDouble(row.get(P));
+                            final var size = toDouble(row.get(V));
                             final var takerSide = (String) row.get(SIDE);
                             final var isBlock = toBoolean(row.get(BT));
                             final var isRpi = toBoolean(row.get(RPI));
@@ -141,8 +141,8 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
 
                             ps.setString(LINEAR_PUBLIC_TRADE_SYMBOL, symbol);
                             ps.setObject(LINEAR_PUBLIC_TRADE_TRADE_TIME, toOdt(tradeTime));
-                            ps.setBigDecimal(LINEAR_PUBLIC_TRADE_PRICE, price);
-                            ps.setBigDecimal(LINEAR_PUBLIC_TRADE_SIZE, size);
+                            ps.setDouble(LINEAR_PUBLIC_TRADE_PRICE, price);
+                            ps.setDouble(LINEAR_PUBLIC_TRADE_SIZE, size);
                             ps.setString(LINEAR_PUBLIC_TRADE_TAKER_SIDE, takerSide);
                             ps.setBoolean(LINEAR_PUBLIC_TRADE_IS_BLOCK_TRADE, isBlock);
                             ps.setBoolean(LINEAR_PUBLIC_TRADE_IS_RPI, isRpi);
@@ -231,8 +231,8 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                             final var timestamp = row.get(T);
                             final var symbol = (String) row.get(SYMBOL_NAME);
                             final var positionSide = (String) row.get(SIDE);
-                            final var executedSize = toBigDecimal(row.get(V));
-                            final var bankruptcyPrice = toBigDecimal(row.get(P));
+                            final var executedSize = toDouble(row.get(V));
+                            final var bankruptcyPrice = toDouble(row.get(P));
 
                             if (symbol == null || timestamp == null || positionSide == null || executedSize == null ||
                                     bankruptcyPrice == null) {
@@ -242,8 +242,8 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                             ps.setString(LINEAR_ALL_LIQUIDATION_SYMBOL, symbol);
                             ps.setObject(LINEAR_ALL_LIQUIDATION_EVENT_TIME, toOdt(timestamp));
                             ps.setString(LINEAR_ALL_LIQUIDATION_POSITION_SIDE, positionSide);
-                            ps.setBigDecimal(LINEAR_ALL_LIQUIDATION_EXECUTED_SIZE, executedSize);
-                            ps.setBigDecimal(LINEAR_ALL_LIQUIDATION_BANKRUPTCY_PRICE, bankruptcyPrice);
+                            ps.setDouble(LINEAR_ALL_LIQUIDATION_EXECUTED_SIZE, executedSize);
+                            ps.setDouble(LINEAR_ALL_LIQUIDATION_BANKRUPTCY_PRICE, bankruptcyPrice);
 
                             ps.addBatch();
                             if (++count % batchSize == 0) {
@@ -295,8 +295,8 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                         ps.setString(LINEAR_ORDER_BOOK_SYMBOL, symbol);
                         ps.setObject(LINEAR_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
                         ps.setString(LINEAR_ORDER_BOOK_SIDE, BID);
-                        ps.setBigDecimal(LINEAR_ORDER_BOOK_PRICE, toBigDecimal(bid.getFirst()));
-                        ps.setBigDecimal(LINEAR_ORDER_BOOK_SIZE, toBigDecimal(bid.get(1)));
+                        ps.setDouble(LINEAR_ORDER_BOOK_PRICE, toDouble(bid.getFirst()));
+                        ps.setDouble(LINEAR_ORDER_BOOK_SIZE, toDouble(bid.get(1)));
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {
@@ -308,8 +308,8 @@ public final class BybitTaLinearRepository extends AbstractReactive implements R
                         ps.setString(LINEAR_ORDER_BOOK_SYMBOL, symbol);
                         ps.setObject(LINEAR_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
                         ps.setString(LINEAR_ORDER_BOOK_SIDE, ASK);
-                        ps.setBigDecimal(LINEAR_ORDER_BOOK_PRICE, toBigDecimal(ask.getFirst()));
-                        ps.setBigDecimal(LINEAR_ORDER_BOOK_SIZE, toBigDecimal(ask.get(1)));
+                        ps.setDouble(LINEAR_ORDER_BOOK_PRICE, toDouble(ask.getFirst()));
+                        ps.setDouble(LINEAR_ORDER_BOOK_SIZE, toDouble(ask.get(1)));
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {
