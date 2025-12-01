@@ -281,13 +281,13 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     if (preOpenPrice != null) {
                         ps.setDouble(LINEAR_TICKERS_PRE_OPEN_PRICE, preOpenPrice);
                     } else {
-                        ps.setNull(LINEAR_TICKERS_PRE_OPEN_PRICE, Types.NUMERIC);
+                        ps.setNull(LINEAR_TICKERS_PRE_OPEN_PRICE, Types.DOUBLE);
                     }
 
                     if (preQty != null) {
                         ps.setDouble(LINEAR_TICKERS_PRE_QTY, preQty);
                     } else {
-                        ps.setNull(LINEAR_TICKERS_PRE_QTY, Types.NUMERIC);
+                        ps.setNull(LINEAR_TICKERS_PRE_QTY, Types.DOUBLE);
                     }
 
                     if (curPreListingPhase != null && !curPreListingPhase.isBlank()) {
@@ -305,31 +305,31 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     if (basisRate != null) {
                         ps.setDouble(LINEAR_TICKERS_BASIS_RATE, basisRate);
                     } else {
-                        ps.setNull(LINEAR_TICKERS_BASIS_RATE, Types.NUMERIC);
+                        ps.setNull(LINEAR_TICKERS_BASIS_RATE, Types.DOUBLE);
                     }
 
                     if (deliveryFeeRate != null) {
                         ps.setDouble(LINEAR_TICKERS_DELIVERY_FEE_RATE, deliveryFeeRate);
                     } else {
-                        ps.setNull(LINEAR_TICKERS_DELIVERY_FEE_RATE, Types.NUMERIC);
+                        ps.setNull(LINEAR_TICKERS_DELIVERY_FEE_RATE, Types.DOUBLE);
                     }
 
                     if (predictedDeliveryPrice != null) {
                         ps.setDouble(LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE, predictedDeliveryPrice);
                     } else {
-                        ps.setNull(LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE, Types.NUMERIC);
+                        ps.setNull(LINEAR_TICKERS_PREDICTED_DELIVERY_PRICE, Types.DOUBLE);
                     }
 
                     if (basis != null) {
                         ps.setDouble(LINEAR_TICKERS_BASIS, basis);
                     } else {
-                        ps.setNull(LINEAR_TICKERS_BASIS, Types.NUMERIC);
+                        ps.setNull(LINEAR_TICKERS_BASIS, Types.DOUBLE);
                     }
 
                     if (basisRateYear != null) {
                         ps.setDouble(LINEAR_TICKERS_BASIS_RATE_YEAR, basisRateYear);
                     } else {
-                        ps.setNull(LINEAR_TICKERS_BASIS_RATE_YEAR, Types.NUMERIC);
+                        ps.setNull(LINEAR_TICKERS_BASIS_RATE_YEAR, Types.DOUBLE);
                     }
 
                     ps.addBatch();
