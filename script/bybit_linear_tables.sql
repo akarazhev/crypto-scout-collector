@@ -23,7 +23,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_tickers (
     volume_24h NUMERIC(20, 8),
     funding_interval_hour INTEGER,
     funding_cap NUMERIC(12, 8),
-    next_funding_time BIGINT,
+    next_funding_time TIMESTAMP WITH TIME ZONE,
     funding_rate NUMERIC(12, 8),
     bid1_price NUMERIC(20, 8),
     bid1_size NUMERIC(20, 8),
