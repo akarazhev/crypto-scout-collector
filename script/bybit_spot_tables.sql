@@ -8,13 +8,13 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_tickers (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    last_price NUMERIC(20, 8) NOT NULL,
-    high_price_24h NUMERIC(20, 8) NOT NULL,
-    low_price_24h NUMERIC(20, 8) NOT NULL,
-    prev_price_24h NUMERIC(20, 8) NOT NULL,
-    volume_24h NUMERIC(20, 8) NOT NULL,
-    turnover_24h NUMERIC(20, 8) NOT NULL,
-    price_24h_pcnt NUMERIC(3, 4) NOT NULL,
+    last_price DOUBLE PRECISION NOT NULL,
+    high_price_24h DOUBLE PRECISION NOT NULL,
+    low_price_24h DOUBLE PRECISION NOT NULL,
+    prev_price_24h DOUBLE PRECISION NOT NULL,
+    volume_24h DOUBLE PRECISION NOT NULL,
+    turnover_24h DOUBLE PRECISION NOT NULL,
+    price_24h_pcnt DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_spot_tickers_pkey PRIMARY KEY (id, timestamp)
 );
 alter table crypto_scout.bybit_spot_tickers OWNER TO crypto_scout_db;
@@ -41,18 +41,17 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1m (
     symbol TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time   TIMESTAMP WITH TIME ZONE NOT NULL,
-    open_price NUMERIC(20, 8) NOT NULL,
-    close_price NUMERIC(20, 8) NOT NULL,
-    high_price NUMERIC(20, 8) NOT NULL,
-    low_price NUMERIC(20, 8) NOT NULL,
-    volume NUMERIC(20, 8) NOT NULL,
-    turnover NUMERIC(20, 8) NOT NULL,
+    open_price DOUBLE PRECISION NOT NULL,
+    close_price DOUBLE PRECISION NOT NULL,
+    high_price DOUBLE PRECISION NOT NULL,
+    low_price DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    turnover DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_spot_kline_1m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_1m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
 alter table crypto_scout.bybit_spot_kline_1m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_1m_start_time ON crypto_scout.bybit_spot_kline_1m(start_time DESC);
-create index IF NOT EXISTS idx_bybit_spot_kline_1m_symbol_start ON crypto_scout.bybit_spot_kline_1m(symbol, start_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_1m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_5m (
@@ -60,18 +59,17 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_5m (
     symbol TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time   TIMESTAMP WITH TIME ZONE NOT NULL,
-    open_price NUMERIC(20, 8) NOT NULL,
-    close_price NUMERIC(20, 8) NOT NULL,
-    high_price NUMERIC(20, 8) NOT NULL,
-    low_price NUMERIC(20, 8) NOT NULL,
-    volume NUMERIC(20, 8) NOT NULL,
-    turnover NUMERIC(20, 8) NOT NULL,
+    open_price DOUBLE PRECISION NOT NULL,
+    close_price DOUBLE PRECISION NOT NULL,
+    high_price DOUBLE PRECISION NOT NULL,
+    low_price DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    turnover DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_spot_kline_5m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_5m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
 alter table crypto_scout.bybit_spot_kline_5m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_5m_start_time ON crypto_scout.bybit_spot_kline_5m(start_time DESC);
-create index IF NOT EXISTS idx_bybit_spot_kline_5m_symbol_start ON crypto_scout.bybit_spot_kline_5m(symbol, start_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_5m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_15m (
@@ -79,18 +77,17 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_15m (
     symbol TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time   TIMESTAMP WITH TIME ZONE NOT NULL,
-    open_price NUMERIC(20, 8) NOT NULL,
-    close_price NUMERIC(20, 8) NOT NULL,
-    high_price NUMERIC(20, 8) NOT NULL,
-    low_price NUMERIC(20, 8) NOT NULL,
-    volume NUMERIC(20, 8) NOT NULL,
-    turnover NUMERIC(20, 8) NOT NULL,
+    open_price DOUBLE PRECISION NOT NULL,
+    close_price DOUBLE PRECISION NOT NULL,
+    high_price DOUBLE PRECISION NOT NULL,
+    low_price DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    turnover DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_spot_kline_15m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_15m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
 alter table crypto_scout.bybit_spot_kline_15m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_15m_start_time ON crypto_scout.bybit_spot_kline_15m(start_time DESC);
-create index IF NOT EXISTS idx_bybit_spot_kline_15m_symbol_start ON crypto_scout.bybit_spot_kline_15m(symbol, start_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_15m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_60m (
@@ -98,18 +95,17 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_60m (
     symbol TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time   TIMESTAMP WITH TIME ZONE NOT NULL,
-    open_price NUMERIC(20, 8) NOT NULL,
-    close_price NUMERIC(20, 8) NOT NULL,
-    high_price NUMERIC(20, 8) NOT NULL,
-    low_price NUMERIC(20, 8) NOT NULL,
-    volume NUMERIC(20, 8) NOT NULL,
-    turnover NUMERIC(20, 8) NOT NULL,
+    open_price DOUBLE PRECISION NOT NULL,
+    close_price DOUBLE PRECISION NOT NULL,
+    high_price DOUBLE PRECISION NOT NULL,
+    low_price DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    turnover DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_spot_kline_60m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_60m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
 alter table crypto_scout.bybit_spot_kline_60m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_60m_start_time ON crypto_scout.bybit_spot_kline_60m(start_time DESC);
-create index IF NOT EXISTS idx_bybit_spot_kline_60m_symbol_start ON crypto_scout.bybit_spot_kline_60m(symbol, start_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_60m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_240m (
@@ -117,18 +113,17 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_240m (
     symbol TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time   TIMESTAMP WITH TIME ZONE NOT NULL,
-    open_price NUMERIC(20, 8) NOT NULL,
-    close_price NUMERIC(20, 8) NOT NULL,
-    high_price NUMERIC(20, 8) NOT NULL,
-    low_price NUMERIC(20, 8) NOT NULL,
-    volume NUMERIC(20, 8) NOT NULL,
-    turnover NUMERIC(20, 8) NOT NULL,
+    open_price DOUBLE PRECISION NOT NULL,
+    close_price DOUBLE PRECISION NOT NULL,
+    high_price DOUBLE PRECISION NOT NULL,
+    low_price DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    turnover DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_spot_kline_240m_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_240m_symbol_start_uniq UNIQUE (symbol, start_time)
 );
 alter table crypto_scout.bybit_spot_kline_240m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_240m_start_time ON crypto_scout.bybit_spot_kline_240m(start_time DESC);
-create index IF NOT EXISTS idx_bybit_spot_kline_240m_symbol_start ON crypto_scout.bybit_spot_kline_240m(symbol, start_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_240m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1d (
@@ -136,19 +131,18 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1d (
     symbol TEXT NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time   TIMESTAMP WITH TIME ZONE NOT NULL,
-    open_price NUMERIC(20, 8) NOT NULL,
-    close_price NUMERIC(20, 8) NOT NULL,
-    high_price NUMERIC(20, 8) NOT NULL,
-    low_price NUMERIC(20, 8) NOT NULL,
-    volume NUMERIC(20, 8) NOT NULL,
-    turnover NUMERIC(20, 8) NOT NULL,
+    open_price DOUBLE PRECISION NOT NULL,
+    close_price DOUBLE PRECISION NOT NULL,
+    high_price DOUBLE PRECISION NOT NULL,
+    low_price DOUBLE PRECISION NOT NULL,
+    volume DOUBLE PRECISION NOT NULL,
+    turnover DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_spot_kline_1d_pkey PRIMARY KEY (id, start_time),
     CONSTRAINT bybit_spot_kline_1d_symbol_start_uniq UNIQUE (symbol, start_time)
 );
 alter table crypto_scout.bybit_spot_kline_1d OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_1d_start_time ON crypto_scout.bybit_spot_kline_1d(start_time DESC);
-create index IF NOT EXISTS idx_bybit_spot_kline_1d_symbol_start ON crypto_scout.bybit_spot_kline_1d(symbol, start_time DESC);
-select public.create_hypertable('crypto_scout.bybit_spot_kline_1d', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.bybit_spot_kline_1d', 'start_time', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
 
 -- Compression settings for kline tables
 alter table crypto_scout.bybit_spot_kline_1m set (
