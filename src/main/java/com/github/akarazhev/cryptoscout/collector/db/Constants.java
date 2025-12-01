@@ -255,7 +255,8 @@ public final class Constants {
         // Spot tickers
         static final String SPOT_TICKERS_INSERT = "INSERT INTO " + SPOT_TICKERS_TABLE +
                 "(symbol, timestamp, last_price, high_price_24h, low_price_24h, prev_price_24h, " +
-                "volume_24h, turnover_24h, price_24h_pcnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "volume_24h, turnover_24h, price_24h_pcnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, timestamp) DO NOTHING";
         static final String SPOT_TICKERS_SELECT =
                 "SELECT symbol, timestamp, last_price, high_price_24h, low_price_24h, prev_price_24h, volume_24h, " +
                         "turnover_24h, price_24h_pcnt FROM " + SPOT_TICKERS_TABLE +
@@ -278,7 +279,8 @@ public final class Constants {
                 "next_funding_time, funding_rate, bid1_price, bid1_size, ask1_price, ask1_size, " +
                 "delivery_time, basis_rate, delivery_fee_rate, predicted_delivery_price, basis, " +
                 "basis_rate_year, pre_open_price, pre_qty, cur_pre_listing_phase) VALUES (" +
-                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, timestamp) DO NOTHING";
         static final String LINEAR_TICKERS_SELECT =
                 "SELECT symbol, timestamp, tick_direction, price_24h_pcnt, last_price, prev_price_24h, " +
                         "high_price_24h, low_price_24h, prev_price_1h, mark_price, index_price, open_interest, " +
