@@ -225,7 +225,7 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     final var volume24h = toBigDecimal(row.get(VOLUME_24H));
                     final var fundingIntervalHour = toBigDecimal(row.get(FUNDING_INTERVAL_HOUR)); // can be null
                     final var fundingCap = toBigDecimal(row.get(FUNDING_CAP)); // can be null
-                    final var nextFundingTime = toBigDecimal(row.get(NEXT_FUNDING_TIME));
+                    final var nextFundingTime = row.get(NEXT_FUNDING_TIME);
                     final var fundingRate = toBigDecimal(row.get(FUNDING_RATE));
                     final var bid1Price = toBigDecimal(row.get(BID1_PRICE));
                     final var bid1Size = toBigDecimal(row.get(BID1_SIZE));
@@ -266,9 +266,13 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     ps.setBigDecimal(LINEAR_TICKERS_OPEN_INTEREST_VALUE, openInterestValue);
                     ps.setBigDecimal(LINEAR_TICKERS_TURNOVER_24H, turnover24h);
                     ps.setBigDecimal(LINEAR_TICKERS_VOLUME_24H, volume24h);
-                    ps.setBigDecimal(LINEAR_TICKERS_FUNDING_INTERVAL_HOUR, fundingIntervalHour);
+                    if (fundingIntervalHour != null) {
+                        ps.setInt(LINEAR_TICKERS_FUNDING_INTERVAL_HOUR, fundingIntervalHour.intValue());
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_FUNDING_INTERVAL_HOUR, Types.INTEGER);
+                    }
                     ps.setBigDecimal(LINEAR_TICKERS_FUNDING_CAP, fundingCap);
-                    ps.setBigDecimal(LINEAR_TICKERS_NEXT_FUNDING_TIME, nextFundingTime);
+                    ps.setObject(LINEAR_TICKERS_NEXT_FUNDING_TIME, toOdt(nextFundingTime));
                     ps.setBigDecimal(LINEAR_TICKERS_FUNDING_RATE, fundingRate);
                     ps.setBigDecimal(LINEAR_TICKERS_BID1_PRICE, bid1Price);
                     ps.setBigDecimal(LINEAR_TICKERS_BID1_SIZE, bid1Size);
