@@ -8,8 +8,8 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_public_trade (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     trade_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    price NUMERIC(20, 8) NOT NULL,
-    size NUMERIC(20, 8) NOT NULL,
+    price DOUBLE PRECISION NOT NULL,
+    size DOUBLE PRECISION NOT NULL,
     taker_side TEXT NOT NULL CHECK (taker_side IN ('Buy','Sell')),
     tick_direction TEXT,
     is_block_trade BOOLEAN NOT NULL,
@@ -40,8 +40,8 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_1 (
     symbol TEXT NOT NULL,
     engine_time TIMESTAMP WITH TIME ZONE NOT NULL,
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
-    price NUMERIC(20, 8) NOT NULL,
-    size NUMERIC(20, 8) NOT NULL,
+    price DOUBLE PRECISION NOT NULL,
+    size DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_ta_linear_order_book_1_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_ta_linear_order_book_1 OWNER TO crypto_scout_db;
@@ -55,8 +55,8 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_50 (
     symbol TEXT NOT NULL,
     engine_time TIMESTAMP WITH TIME ZONE NOT NULL,
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
-    price NUMERIC(20, 8) NOT NULL,
-    size NUMERIC(20, 8) NOT NULL,
+    price DOUBLE PRECISION NOT NULL,
+    size DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_ta_linear_order_book_50_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_ta_linear_order_book_50 OWNER TO crypto_scout_db;
@@ -70,8 +70,8 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_200 (
     symbol TEXT NOT NULL,
     engine_time TIMESTAMP WITH TIME ZONE NOT NULL,
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
-    price NUMERIC(20, 8) NOT NULL,
-    size NUMERIC(20, 8) NOT NULL,
+    price DOUBLE PRECISION NOT NULL,
+    size DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_ta_linear_order_book_200_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_ta_linear_order_book_200 OWNER TO crypto_scout_db;
@@ -86,8 +86,8 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_1000 (
     symbol TEXT NOT NULL,
     engine_time TIMESTAMP WITH TIME ZONE NOT NULL,
     side TEXT NOT NULL CHECK (side IN ('bid','ask')),
-    price NUMERIC(20, 8) NOT NULL,
-    size NUMERIC(20, 8) NOT NULL,
+    price DOUBLE PRECISION NOT NULL,
+    size DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_ta_linear_order_book_1000_pkey PRIMARY KEY (id, engine_time)
 );
 alter table crypto_scout.bybit_ta_linear_order_book_1000 OWNER TO crypto_scout_db;
@@ -145,8 +145,8 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_all_liqudation (
     symbol TEXT NOT NULL,
     event_time TIMESTAMP WITH TIME ZONE NOT NULL,
     position_side TEXT NOT NULL CHECK (position_side IN ('Buy','Sell')),
-    executed_size NUMERIC(20, 8) NOT NULL,
-    bankruptcy_price NUMERIC(20, 8) NOT NULL,
+    executed_size DOUBLE PRECISION NOT NULL,
+    bankruptcy_price DOUBLE PRECISION NOT NULL,
     CONSTRAINT bybit_ta_linear_all_liqudation_pkey PRIMARY KEY (id, event_time)
 );
 alter table crypto_scout.bybit_ta_linear_all_liqudation OWNER TO crypto_scout_db;
