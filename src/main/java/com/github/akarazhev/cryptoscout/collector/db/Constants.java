@@ -324,7 +324,8 @@ public final class Constants {
 
         // Spot public trades
         static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + TA_SPOT_PUBLIC_TRADE_TABLE +
-                "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, trade_time, price, size, taker_side) DO NOTHING";
         static final String SPOT_PUBLIC_TRADE_SELECT =
                 "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
                         TA_SPOT_PUBLIC_TRADE_TABLE + " WHERE trade_time >= ? AND trade_time <= ?";
@@ -338,7 +339,8 @@ public final class Constants {
 
         // Linear public trades
         static final String LINEAR_PUBLIC_TRADE_INSERT = "INSERT INTO " + TA_LINEAR_PUBLIC_TRADE_TABLE +
-                "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
+                "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, trade_time, price, size, taker_side) DO NOTHING";
         static final String LINEAR_PUBLIC_TRADE_SELECT =
                 "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
                         TA_LINEAR_PUBLIC_TRADE_TABLE + " WHERE trade_time >= ? AND trade_time <= ?";
@@ -356,22 +358,26 @@ public final class Constants {
 
         // Spot order books (one row per level)
         static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_1_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String SPOT_ORDER_BOOK_1_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_1_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_50_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String SPOT_ORDER_BOOK_50_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_50_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_200_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String SPOT_ORDER_BOOK_200_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_200_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_1000_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String SPOT_ORDER_BOOK_1000_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_1000_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
@@ -383,22 +389,26 @@ public final class Constants {
 
         // Linear order books (one row per level)
         static final String LINEAR_ORDER_BOOK_1_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_1_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String LINEAR_ORDER_BOOK_1_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_1_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_50_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_50_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String LINEAR_ORDER_BOOK_50_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_50_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_200_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_200_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String LINEAR_ORDER_BOOK_200_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_200_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_1000_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_1000_TABLE +
-                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, engine_time, side, price) DO NOTHING";
         static final String LINEAR_ORDER_BOOK_1000_SELECT =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_1000_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
@@ -410,7 +420,8 @@ public final class Constants {
 
         // Linear all liquidation
         static final String LINEAR_ALL_LIQUIDATION_INSERT = "INSERT INTO " + TA_LINEAR_ALL_LIQUIDATION_TABLE +
-                "(symbol, event_time, position_side, executed_size, bankruptcy_price) VALUES (?, ?, ?, ?, ?)";
+                "(symbol, event_time, position_side, executed_size, bankruptcy_price) VALUES (?, ?, ?, ?, ?) " +
+                "ON CONFLICT (symbol, event_time, position_side, executed_size, bankruptcy_price) DO NOTHING";
         static final String LINEAR_ALL_LIQUIDATION_SELECT =
                 "SELECT symbol, event_time, position_side, executed_size, bankruptcy_price FROM " +
                         TA_LINEAR_ALL_LIQUIDATION_TABLE + " WHERE event_time >= ? AND event_time <= ?";
