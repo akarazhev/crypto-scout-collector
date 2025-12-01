@@ -79,7 +79,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.V;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRows;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
-import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
+import static com.github.akarazhev.jcryptolib.util.ValueUtils.toDouble;
 import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBoolean;
 
 public final class BybitTaSpotRepository extends AbstractReactive implements ReactiveService {
@@ -121,8 +121,8 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
                         for (final var row : rows) {
                             final var symbol = (String) row.get(SYMBOL_NAME);
                             final var tradeTime = row.get(T);
-                            final var price = toBigDecimal(row.get(P));
-                            final var size = toBigDecimal(row.get(V));
+                            final var price = toDouble(row.get(P));
+                            final var size = toDouble(row.get(V));
                             final var takerSide = (String) row.get(SIDE);
                             final var isBlock = toBoolean(row.get(BT));
                             final var isRpi = toBoolean(row.get(RPI));
@@ -134,8 +134,8 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
 
                             ps.setString(SPOT_PUBLIC_TRADE_SYMBOL, symbol);
                             ps.setObject(SPOT_PUBLIC_TRADE_TRADE_TIME, toOdt(tradeTime));
-                            ps.setBigDecimal(SPOT_PUBLIC_TRADE_PRICE, price);
-                            ps.setBigDecimal(SPOT_PUBLIC_TRADE_SIZE, size);
+                            ps.setDouble(SPOT_PUBLIC_TRADE_PRICE, price);
+                            ps.setDouble(SPOT_PUBLIC_TRADE_SIZE, size);
                             ps.setString(SPOT_PUBLIC_TRADE_TAKER_SIDE, takerSide);
                             ps.setBoolean(SPOT_PUBLIC_TRADE_IS_BLOCK_TRADE, isBlock);
                             ps.setBoolean(SPOT_PUBLIC_TRADE_IS_RPI, isRpi);
@@ -206,8 +206,8 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
                         ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
                         ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
                         ps.setString(SPOT_ORDER_BOOK_SIDE, BID);
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_PRICE, toBigDecimal(bid.getFirst()));
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_SIZE, toBigDecimal(bid.get(1)));
+                        ps.setDouble(SPOT_ORDER_BOOK_PRICE, toDouble(bid.getFirst()));
+                        ps.setDouble(SPOT_ORDER_BOOK_SIZE, toDouble(bid.get(1)));
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {
@@ -219,8 +219,8 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
                         ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
                         ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
                         ps.setString(SPOT_ORDER_BOOK_SIDE, ASK);
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_PRICE, toBigDecimal(ask.getFirst()));
-                        ps.setBigDecimal(SPOT_ORDER_BOOK_SIZE, toBigDecimal(ask.get(1)));
+                        ps.setDouble(SPOT_ORDER_BOOK_PRICE, toDouble(ask.getFirst()));
+                        ps.setDouble(SPOT_ORDER_BOOK_SIZE, toDouble(ask.get(1)));
 
                         ps.addBatch();
                         if (++count % batchSize == 0) {

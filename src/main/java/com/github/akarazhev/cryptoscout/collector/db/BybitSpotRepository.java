@@ -95,7 +95,7 @@ import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getSymbol;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
-import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
+import static com.github.akarazhev.jcryptolib.util.ValueUtils.toDouble;
 
 public final class BybitSpotRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -164,12 +164,12 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     final var symbol = getSymbol((String) kline.get(TOPIC_FIELD));
                     final var start = row.get(START);
                     final var end = row.get(END);
-                    final var open = toBigDecimal(row.get(OPEN));
-                    final var close = toBigDecimal(row.get(CLOSE));
-                    final var high = toBigDecimal(row.get(HIGH));
-                    final var low = toBigDecimal(row.get(LOW));
-                    final var volume = toBigDecimal(row.get(VOLUME));
-                    final var turnover = toBigDecimal(row.get(TURNOVER));
+                    final var open = toDouble(row.get(OPEN));
+                    final var close = toDouble(row.get(CLOSE));
+                    final var high = toDouble(row.get(HIGH));
+                    final var low = toDouble(row.get(LOW));
+                    final var volume = toDouble(row.get(VOLUME));
+                    final var turnover = toDouble(row.get(TURNOVER));
 
                     if (symbol == null || start == null || end == null || open == null || close == null ||
                             high == null || low == null || volume == null || turnover == null) {
@@ -179,12 +179,12 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                     ps.setString(SPOT_KLINE_SYMBOL, symbol);
                     ps.setObject(SPOT_KLINE_START_TIME, toOdt(start));
                     ps.setObject(SPOT_KLINE_END_TIME, toOdt(end));
-                    ps.setBigDecimal(SPOT_KLINE_OPEN_PRICE, open);
-                    ps.setBigDecimal(SPOT_KLINE_CLOSE_PRICE, close);
-                    ps.setBigDecimal(SPOT_KLINE_HIGH_PRICE, high);
-                    ps.setBigDecimal(SPOT_KLINE_LOW_PRICE, low);
-                    ps.setBigDecimal(SPOT_KLINE_VOLUME, volume);
-                    ps.setBigDecimal(SPOT_KLINE_TURNOVER, turnover);
+                    ps.setDouble(SPOT_KLINE_OPEN_PRICE, open);
+                    ps.setDouble(SPOT_KLINE_CLOSE_PRICE, close);
+                    ps.setDouble(SPOT_KLINE_HIGH_PRICE, high);
+                    ps.setDouble(SPOT_KLINE_LOW_PRICE, low);
+                    ps.setDouble(SPOT_KLINE_VOLUME, volume);
+                    ps.setDouble(SPOT_KLINE_TURNOVER, turnover);
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {
@@ -221,13 +221,13 @@ public final class BybitSpotRepository extends AbstractReactive implements React
 
                     final var timestamp = ticker.get(TS);
                     final var symbol = (String) row.get(SYMBOL);
-                    final var lastPrice = toBigDecimal(row.get(LAST_PRICE));
-                    final var highPrice24h = toBigDecimal(row.get(HIGH_PRICE_24H));
-                    final var lowPrice24h = toBigDecimal(row.get(LOW_PRICE_24H));
-                    final var prevPrice24h = toBigDecimal(row.get(PREV_PRICE_24H));
-                    final var volume24h = toBigDecimal(row.get(VOLUME_24H));
-                    final var turnover24h = toBigDecimal(row.get(TURNOVER_24H));
-                    final var price24hPcnt = toBigDecimal(row.get(PRICE_24H_PCNT));
+                    final var lastPrice = toDouble(row.get(LAST_PRICE));
+                    final var highPrice24h = toDouble(row.get(HIGH_PRICE_24H));
+                    final var lowPrice24h = toDouble(row.get(LOW_PRICE_24H));
+                    final var prevPrice24h = toDouble(row.get(PREV_PRICE_24H));
+                    final var volume24h = toDouble(row.get(VOLUME_24H));
+                    final var turnover24h = toDouble(row.get(TURNOVER_24H));
+                    final var price24hPcnt = toDouble(row.get(PRICE_24H_PCNT));
 
                     if (timestamp == null || symbol == null || lastPrice == null || highPrice24h == null ||
                             lowPrice24h == null || prevPrice24h == null || volume24h == null || turnover24h == null ||
@@ -237,13 +237,13 @@ public final class BybitSpotRepository extends AbstractReactive implements React
 
                     ps.setObject(SPOT_TICKERS_TIMESTAMP, toOdt(timestamp));
                     ps.setString(SPOT_TICKERS_SYMBOL, symbol);
-                    ps.setBigDecimal(SPOT_TICKERS_LAST_PRICE, lastPrice);
-                    ps.setBigDecimal(SPOT_TICKERS_HIGH_PRICE_24H, highPrice24h);
-                    ps.setBigDecimal(SPOT_TICKERS_LOW_PRICE_24H, lowPrice24h);
-                    ps.setBigDecimal(SPOT_TICKERS_PREV_PRICE_24H, prevPrice24h);
-                    ps.setBigDecimal(SPOT_TICKERS_VOLUME_24H, volume24h);
-                    ps.setBigDecimal(SPOT_TICKERS_TURNOVER_24H, turnover24h);
-                    ps.setBigDecimal(SPOT_TICKERS_PRICE_24H_PCNT, price24hPcnt);
+                    ps.setDouble(SPOT_TICKERS_LAST_PRICE, lastPrice);
+                    ps.setDouble(SPOT_TICKERS_HIGH_PRICE_24H, highPrice24h);
+                    ps.setDouble(SPOT_TICKERS_LOW_PRICE_24H, lowPrice24h);
+                    ps.setDouble(SPOT_TICKERS_PREV_PRICE_24H, prevPrice24h);
+                    ps.setDouble(SPOT_TICKERS_VOLUME_24H, volume24h);
+                    ps.setDouble(SPOT_TICKERS_TURNOVER_24H, turnover24h);
+                    ps.setDouble(SPOT_TICKERS_PRICE_24H_PCNT, price24hPcnt);
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {
