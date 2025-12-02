@@ -260,7 +260,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
             final var linearOrders50 = new ArrayList<Map<String, Object>>();
             final var linearOrders200 = new ArrayList<Map<String, Object>>();
             final var linearOrders1000 = new ArrayList<Map<String, Object>>();
-            final var linearAllLiqudation = new ArrayList<Map<String, Object>>();
+            final var linearAllLiquidation = new ArrayList<Map<String, Object>>();
             for (final var item : items) {
                 final var payload = item.payload();
                 final var source = payload.getSource();
@@ -311,7 +311,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
                         }
                     } else if (topic.contains(ALL_LIQUIDATION)) {
                         if (isSnapshot(data)) {
-                            linearAllLiqudation.add(data);
+                            linearAllLiquidation.add(data);
                         }
                     }
                 }
@@ -324,7 +324,7 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
             if (spotPublicTrades.isEmpty() && spotOrders1.isEmpty() && spotOrders50.isEmpty() &&
                     spotOrders200.isEmpty() && spotOrders1000.isEmpty() &&
                     linearPublicTrades.isEmpty() && linearOrders1.isEmpty() && linearOrders50.isEmpty() &&
-                    linearOrders200.isEmpty() && linearOrders1000.isEmpty() && linearAllLiqudation.isEmpty()) {
+                    linearOrders200.isEmpty() && linearOrders1000.isEmpty() && linearAllLiquidation.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.warn("Upserted Bybit stream offset {} (no data batch)", maxOffset);
             } else {
@@ -350,8 +350,8 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
                 saveLinearOrderBook200(linearOrders200, maxOffset);
                 linearOrders1000.trimToSize();
                 saveLinearOrderBook1000(linearOrders1000, maxOffset);
-                linearAllLiqudation.trimToSize();
-                saveLinearAllLiquidation(linearAllLiqudation, maxOffset);
+                linearAllLiquidation.trimToSize();
+                saveLinearAllLiquidation(linearAllLiquidation, maxOffset);
             }
         });
     }
@@ -456,11 +456,11 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         }
     }
 
-    private void saveLinearAllLiquidation(final List<Map<String, Object>> allLiqudations, final long maxOffset)
+    private void saveLinearAllLiquidation(final List<Map<String, Object>> allLiquidations, final long maxOffset)
             throws SQLException {
-        if (!allLiqudations.isEmpty()) {
+        if (!allLiquidations.isEmpty()) {
             if (maxOffset >= 0) {
-                final var count = bybitTaLinearRepository.saveAllLiquidation(allLiqudations, maxOffset);
+                final var count = bybitTaLinearRepository.saveAllLiquidation(allLiquidations, maxOffset);
                 LOGGER.info("Save {} linear all liquidations (tx) and updated offset {}", count, maxOffset);
             }
         }

@@ -70,7 +70,7 @@ backups.
         - `crypto_scout.bybit_linear_kline_60m` (confirmed klines)
         - `crypto_scout.bybit_linear_public_trade` (1 row per trade)
         - `crypto_scout.bybit_linear_order_book_200` (1 row per book level)
-        - `crypto_scout.bybit_linear_all_liqudation` (all-liquidations stream)
+        - `crypto_scout.bybit_linear_all_liquidation` (all-liquidations stream)
           Adds indexes, hypertables, compression (7‑day threshold), reorder, and retention policies.
 
 - Secrets & configuration (gitignored examples)
@@ -181,7 +181,7 @@ Application container: `crypto-scout-collector`
     - `crypto_scout.bybit_linear_public_trade` — primary key `(id, trade_time)`; unique `(symbol, trade_time)`.
     - `crypto_scout.bybit_linear_order_book_200` — primary key `(id, engine_time)`; indexes on `(symbol, engine_time)`
       and `(symbol, side, price)`.
-    - `crypto_scout.bybit_linear_all_liqudation` — primary key `(id, event_time)`; indexes on `(symbol, event_time)`.
+    - `crypto_scout.bybit_linear_all_liquidation` — primary key `(id, event_time)`; indexes on `(symbol, event_time)`.
 - External offset tracking for CMC, Bybit metrics, and Bybit spot streams:
     - `StreamConsumer` starts consumers from DB offset and disables server-side tracking.
     - `CmcParserCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.

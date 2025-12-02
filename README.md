@@ -81,7 +81,7 @@ are executed in lexical order:
     - `crypto_scout.bybit_linear_kline_60m` (confirmed klines)
     - `crypto_scout.bybit_linear_public_trade` (1 row per trade)
     - `crypto_scout.bybit_linear_order_book_200` (1 row per book level)
-    - `crypto_scout.bybit_linear_all_liqudation` (all-liquidations stream)
+    - `crypto_scout.bybit_linear_all_liquidation` (all-liquidations stream)
     - Indexes, hypertables, compression, reorder, and retention policies
 
 ## Containers: TimescaleDB + Backups
