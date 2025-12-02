@@ -134,7 +134,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1d (
 alter table crypto_scout.bybit_spot_kline_1d OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_1d_start_time ON crypto_scout.bybit_spot_kline_1d(start_time DESC);
 create index IF NOT EXISTS idx_bybit_spot_kline_1d_end_time ON crypto_scout.bybit_spot_kline_1d(symbol, end_time DESC);
-select public.create_hypertable('crypto_scout.bybit_spot_kline_1d', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.bybit_spot_kline_1d', 'start_time', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
 
 -- Compression settings for kline tables
 alter table crypto_scout.bybit_spot_kline_1m set (
