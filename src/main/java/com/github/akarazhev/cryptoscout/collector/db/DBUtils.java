@@ -62,6 +62,30 @@ final class DBUtils {
         return results;
     }
 
+    static List<Map<String, Object>> fetchRangeBySymbol(final DataSource dataSource, final String sql, final String symbol,
+                                                        final OffsetDateTime from, final OffsetDateTime to,
+                                                        final String... columns) throws SQLException {
+        final var results = new ArrayList<Map<String, Object>>();
+        try (final var c = dataSource.getConnection();
+             final var ps = c.prepareStatement(sql)) {
+            ps.setString(1, symbol);
+            ps.setObject(2, from);
+            ps.setObject(3, to);
+            try (final var rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    final var row = new HashMap<String, Object>();
+                    for (var i = 0; i < columns.length; i++) {
+                        row.put(columns[i], rs.getObject(i + 1));
+                    }
+
+                    results.add(row);
+                }
+            }
+        }
+
+        return results;
+    }
+
     static void updateOffset(final PreparedStatement ps, final String stream, final long offset) throws SQLException {
         ps.setString(STREAM, stream);
         ps.setLong(LAST_OFFSET, offset);

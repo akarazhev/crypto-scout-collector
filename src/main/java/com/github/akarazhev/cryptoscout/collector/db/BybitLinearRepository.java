@@ -50,6 +50,12 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_60M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_240M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1D_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1M_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_5M_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_15M_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_60M_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_240M_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1D_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_CLOSE_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_END_TIME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_HIGH_PRICE;
@@ -95,6 +101,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_VOLUME_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRangeBySymbol;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
@@ -357,8 +364,20 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
+    public List<Map<String, Object>> getKline1m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, LINEAR_KLINE_1M_SELECT_BY_SYMBOL, symbol, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
+    }
+
     public List<Map<String, Object>> getKline5m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
         return fetchRange(dataSource, LINEAR_KLINE_5M_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
+    }
+
+    public List<Map<String, Object>> getKline5m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, LINEAR_KLINE_5M_SELECT_BY_SYMBOL, symbol, from, to,
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
@@ -367,8 +386,20 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
+    public List<Map<String, Object>> getKline15m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, LINEAR_KLINE_15M_SELECT_BY_SYMBOL, symbol, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
+    }
+
     public List<Map<String, Object>> getKline60m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
         return fetchRange(dataSource, LINEAR_KLINE_60M_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
+    }
+
+    public List<Map<String, Object>> getKline60m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, LINEAR_KLINE_60M_SELECT_BY_SYMBOL, symbol, from, to,
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
@@ -377,8 +408,20 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
+    public List<Map<String, Object>> getKline240m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, LINEAR_KLINE_240M_SELECT_BY_SYMBOL, symbol, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
+    }
+
     public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
         return fetchRange(dataSource, LINEAR_KLINE_1D_SELECT, from, to,
+                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
+    }
+
+    public List<Map<String, Object>> getKline1d(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, LINEAR_KLINE_1D_SELECT_BY_SYMBOL, symbol, from, to,
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
