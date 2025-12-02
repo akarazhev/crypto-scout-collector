@@ -4,7 +4,7 @@ In this `crypto-scout-collector-db` project we are going to check and update the
 the data received from the Bybit websocket: `bybit_linear_tickers`, `bybit_linear_kline_1m`, `bybit_linear_kline_5m`,
 `bybit_linear_kline_15m`, `bybit_linear_kline_60m`, `bybit_linear_kline_240m`, `bybit_linear_kline_1d`,
 `bybit_linear_public_trade`, `bybit_linear_order_book_1`, `bybit_linear_order_book_50`,`bybit_linear_order_book_200`,
-`bybit_linear_order_book_1000`, `bybit_linear_all_liqudation`. Table schemas must be in normalized form and optimal to
+`bybit_linear_order_book_1000`, `bybit_linear_all_liquidation`. Table schemas must be in normalized form and optimal to
 perform analysis and efficient saving the data. Data removal and compression must be done with: `retention` and
 `compression` policies.
 
@@ -1240,4 +1240,4 @@ Parameters to save:
 - `v`: string. Executed size.
 - `p`: string. Bankruptcy price.
 
-The `all liquidation` data must be saved in normalized form in the following table: `bybit_linear_all_liqudation`.
+The `all liquidation` data must be saved in normalized form in the following table: `bybit_linear_all_liquidation`.

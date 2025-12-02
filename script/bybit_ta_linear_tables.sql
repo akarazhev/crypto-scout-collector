@@ -139,25 +139,25 @@ select add_retention_policy('crypto_scout.bybit_ta_linear_order_book_1000', inte
 -- TA ALL LIQUIDATION (normalized)
 -- =========================
 
-create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_all_liqudation (
+create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_all_liquidation (
     id BIGSERIAL,
     symbol TEXT NOT NULL,
     event_time TIMESTAMP WITH TIME ZONE NOT NULL,
     position_side TEXT NOT NULL CHECK (position_side IN ('Buy','Sell')),
     executed_size DOUBLE PRECISION NOT NULL,
     bankruptcy_price DOUBLE PRECISION NOT NULL,
-    CONSTRAINT bybit_ta_linear_all_liqudation_pkey PRIMARY KEY (id, event_time)
+    CONSTRAINT bybit_ta_linear_all_liquidation_pkey PRIMARY KEY (id, event_time)
 );
-alter table crypto_scout.bybit_ta_linear_all_liqudation OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_ta_linear_all_liqudation_event_time ON crypto_scout.bybit_ta_linear_all_liqudation(event_time DESC);
-create index IF NOT EXISTS idx_bybit_ta_linear_all_liqudation_symbol_time ON crypto_scout.bybit_ta_linear_all_liqudation(symbol, event_time DESC);
-select public.create_hypertable('crypto_scout.bybit_ta_linear_all_liqudation', 'event_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+alter table crypto_scout.bybit_ta_linear_all_liquidation OWNER TO crypto_scout_db;
+create index IF NOT EXISTS idx_bybit_ta_linear_all_liquidation_event_time ON crypto_scout.bybit_ta_linear_all_liquidation(event_time DESC);
+create index IF NOT EXISTS idx_bybit_ta_linear_all_liquidation_symbol_time ON crypto_scout.bybit_ta_linear_all_liquidation(symbol, event_time DESC);
+select public.create_hypertable('crypto_scout.bybit_ta_linear_all_liquidation', 'event_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
-alter table crypto_scout.bybit_ta_linear_all_liqudation set (
+alter table crypto_scout.bybit_ta_linear_all_liquidation set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol, position_side',
     timescaledb.compress_orderby = 'event_time DESC, id DESC'
 );
-select add_compression_policy('crypto_scout.bybit_ta_linear_all_liqudation', interval '1 month');
-select add_reorder_policy('crypto_scout.bybit_ta_linear_all_liqudation', 'idx_bybit_ta_linear_all_liqudation_event_time');
-select add_retention_policy('crypto_scout.bybit_ta_linear_all_liqudation', interval '365 days');
+select add_compression_policy('crypto_scout.bybit_ta_linear_all_liquidation', interval '1 month');
+select add_reorder_policy('crypto_scout.bybit_ta_linear_all_liquidation', 'idx_bybit_ta_linear_all_liquidation_event_time');
+select add_retention_policy('crypto_scout.bybit_ta_linear_all_liquidation', interval '365 days');
