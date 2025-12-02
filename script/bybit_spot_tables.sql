@@ -48,6 +48,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1m (
 );
 alter table crypto_scout.bybit_spot_kline_1m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_1m_start_time ON crypto_scout.bybit_spot_kline_1m(start_time DESC);
+create index IF NOT EXISTS idx_bybit_spot_kline_1m_end_time ON crypto_scout.bybit_spot_kline_1m(symbol, end_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_1m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_5m (
@@ -64,6 +65,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_5m (
 );
 alter table crypto_scout.bybit_spot_kline_5m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_5m_start_time ON crypto_scout.bybit_spot_kline_5m(start_time DESC);
+create index IF NOT EXISTS idx_bybit_spot_kline_5m_end_time ON crypto_scout.bybit_spot_kline_5m(symbol, end_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_5m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_15m (
@@ -80,6 +82,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_15m (
 );
 alter table crypto_scout.bybit_spot_kline_15m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_15m_start_time ON crypto_scout.bybit_spot_kline_15m(start_time DESC);
+create index IF NOT EXISTS idx_bybit_spot_kline_15m_end_time ON crypto_scout.bybit_spot_kline_15m(symbol, end_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_15m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_60m (
@@ -96,6 +99,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_60m (
 );
 alter table crypto_scout.bybit_spot_kline_60m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_60m_start_time ON crypto_scout.bybit_spot_kline_60m(start_time DESC);
+create index IF NOT EXISTS idx_bybit_spot_kline_60m_end_time ON crypto_scout.bybit_spot_kline_60m(symbol, end_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_60m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_240m (
@@ -112,6 +116,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_240m (
 );
 alter table crypto_scout.bybit_spot_kline_240m OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_240m_start_time ON crypto_scout.bybit_spot_kline_240m(start_time DESC);
+create index IF NOT EXISTS idx_bybit_spot_kline_240m_end_time ON crypto_scout.bybit_spot_kline_240m(symbol, end_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_240m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1d (
@@ -128,6 +133,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_spot_kline_1d (
 );
 alter table crypto_scout.bybit_spot_kline_1d OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_spot_kline_1d_start_time ON crypto_scout.bybit_spot_kline_1d(start_time DESC);
+create index IF NOT EXISTS idx_bybit_spot_kline_1d_end_time ON crypto_scout.bybit_spot_kline_1d(symbol, end_time DESC);
 select public.create_hypertable('crypto_scout.bybit_spot_kline_1d', 'start_time', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
 
 -- Compression settings for kline tables
