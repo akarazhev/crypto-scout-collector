@@ -129,11 +129,27 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         };
     }
 
+    public Promise<List<Map<String, Object>>> getKline1m(final Type type, final String symbol,
+                                                         final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline1m(symbol, from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline1m(symbol, from, to));
+        };
+    }
+
     public Promise<List<Map<String, Object>>> getKline5m(final Type type, final OffsetDateTime from,
                                                          final OffsetDateTime to) {
         return switch (type) {
             case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline5m(from, to));
             case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline5m(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline5m(final Type type, final String symbol,
+                                                         final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline5m(symbol, from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline5m(symbol, from, to));
         };
     }
 
@@ -145,11 +161,29 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         };
     }
 
+    public Promise<List<Map<String, Object>>> getKline15m(final Type type, final String symbol,
+                                                          final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline15m(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline15m(symbol, from, to));
+        };
+    }
+
     public Promise<List<Map<String, Object>>> getKline60m(final Type type, final OffsetDateTime from,
                                                           final OffsetDateTime to) {
         return switch (type) {
             case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline60m(from, to));
             case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline60m(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline60m(final Type type, final String symbol,
+                                                          final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline60m(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline60m(symbol, from, to));
         };
     }
 
@@ -161,11 +195,28 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         };
     }
 
+    public Promise<List<Map<String, Object>>> getKline240m(final Type type, final String symbol,
+                                                           final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline240m(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline240m(symbol, from, to));
+        };
+    }
+
     public Promise<List<Map<String, Object>>> getKline1d(final Type type, final OffsetDateTime from,
                                                          final OffsetDateTime to) {
         return switch (type) {
             case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline1d(from, to));
             case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline1d(from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getKline1d(final Type type, final String symbol,
+                                                         final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline1d(symbol, from, to));
+            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline1d(symbol, from, to));
         };
     }
 
