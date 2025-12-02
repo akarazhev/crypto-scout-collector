@@ -232,7 +232,7 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     final var volume24h = toDouble(row.get(VOLUME_24H));
                     final var fundingIntervalHour = toDouble(row.get(FUNDING_INTERVAL_HOUR)); // can be null
                     final var fundingCap = toDouble(row.get(FUNDING_CAP)); // can be null
-                    final var nextFundingTime = row.get(NEXT_FUNDING_TIME);
+                    final var nextFundingTime = (String) row.get(NEXT_FUNDING_TIME);
                     final var fundingRate = toDouble(row.get(FUNDING_RATE));
                     final var bid1Price = toDouble(row.get(BID1_PRICE));
                     final var bid1Size = toDouble(row.get(BID1_SIZE));
@@ -278,8 +278,14 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                     } else {
                         ps.setNull(LINEAR_TICKERS_FUNDING_INTERVAL_HOUR, Types.INTEGER);
                     }
-                    ps.setDouble(LINEAR_TICKERS_FUNDING_CAP, fundingCap);
-                    ps.setObject(LINEAR_TICKERS_NEXT_FUNDING_TIME, toOdt(nextFundingTime));
+
+                    if (fundingCap != null) {
+                        ps.setDouble(LINEAR_TICKERS_FUNDING_CAP, fundingCap);
+                    } else {
+                        ps.setNull(LINEAR_TICKERS_FUNDING_CAP, Types.DOUBLE);
+                    }
+
+                    ps.setObject(LINEAR_TICKERS_NEXT_FUNDING_TIME, toOdt(Long.parseLong(nextFundingTime)));
                     ps.setDouble(LINEAR_TICKERS_FUNDING_RATE, fundingRate);
                     ps.setDouble(LINEAR_TICKERS_BID1_PRICE, bid1Price);
                     ps.setDouble(LINEAR_TICKERS_BID1_SIZE, bid1Size);
