@@ -6,12 +6,13 @@
 
 create TABLE IF NOT EXISTS crypto_scout.cmc_fgi (
     value INTEGER NOT NULL,
-    value_classification TEXT NOT NULL,
+    value_classification TEXT NOT NULL CHECK (value_classification IN ('Extreme Fear','Fear','Neutral','Greed','Extreme Greed')),
     update_time TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT fgi_pkey PRIMARY KEY (update_time)
 );
 
 alter table crypto_scout.cmc_fgi OWNER TO crypto_scout_db;
+create index IF NOT EXISTS idx_cmc_fgi_update_time ON crypto_scout.cmc_fgi(update_time DESC);
 select public.create_hypertable('crypto_scout.cmc_fgi', 'update_time', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
 
 alter table crypto_scout.cmc_fgi set (
@@ -19,6 +20,7 @@ alter table crypto_scout.cmc_fgi set (
     timescaledb.compress_orderby = 'update_time DESC'
 );
 select public.add_compression_policy('crypto_scout.cmc_fgi', INTERVAL '35 days');
+select public.add_reorder_policy('crypto_scout.cmc_fgi', 'idx_cmc_fgi_update_time');
 
 -- =========================
 -- KLINE TABLES (1d/1w)
@@ -43,6 +45,7 @@ create TABLE IF NOT EXISTS crypto_scout.cmc_kline_1d (
 );
 
 alter table crypto_scout.cmc_kline_1d OWNER TO crypto_scout_db;
+create index IF NOT EXISTS idx_cmc_kline_1d_symbol_time ON crypto_scout.cmc_kline_1d(symbol, timestamp DESC);
 select public.create_hypertable('crypto_scout.cmc_kline_1d', 'timestamp', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
 
 alter table crypto_scout.cmc_kline_1d set (
@@ -52,6 +55,7 @@ alter table crypto_scout.cmc_kline_1d set (
 );
 
 select public.add_compression_policy('crypto_scout.cmc_kline_1d', INTERVAL '35 days');
+select public.add_reorder_policy('crypto_scout.cmc_kline_1d', 'idx_cmc_kline_1d_symbol_time');
 
 create TABLE IF NOT EXISTS crypto_scout.cmc_kline_1w (
     symbol TEXT NOT NULL,
@@ -71,6 +75,7 @@ create TABLE IF NOT EXISTS crypto_scout.cmc_kline_1w (
 );
 
 alter table crypto_scout.cmc_kline_1w OWNER TO crypto_scout_db;
+create index IF NOT EXISTS idx_cmc_kline_1w_symbol_time ON crypto_scout.cmc_kline_1w(symbol, timestamp DESC);
 select public.create_hypertable('crypto_scout.cmc_kline_1w', 'timestamp', chunk_time_interval => INTERVAL '3 months', if_not_exists => TRUE);
 
 alter table crypto_scout.cmc_kline_1w set (
@@ -80,3 +85,4 @@ alter table crypto_scout.cmc_kline_1w set (
 );
 
 select public.add_compression_policy('crypto_scout.cmc_kline_1w', INTERVAL '35 days');
+select public.add_reorder_policy('crypto_scout.cmc_kline_1w', 'idx_cmc_kline_1w_symbol_time');

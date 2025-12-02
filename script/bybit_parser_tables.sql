@@ -27,4 +27,4 @@ alter table crypto_scout.bybit_lpl set (
     timescaledb.compress_segmentby = 'return_coin',
     timescaledb.compress_orderby = 'stake_begin_time DESC'
 );
-select add_compression_policy('crypto_scout.bybit_lpl', interval '35 days');
+select public.add_compression_policy('crypto_scout.bybit_lpl', interval '35 days');
