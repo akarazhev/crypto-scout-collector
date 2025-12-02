@@ -7,7 +7,7 @@
 create TABLE IF NOT EXISTS crypto_scout.bybit_linear_tickers (
     symbol TEXT NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE NOT NULL,
-    tick_direction TEXT,
+    tick_direction TEXT CHECK (tick_direction IS NULL OR tick_direction IN ('PlusTick','MinusTick','ZeroPlusTick','ZeroMinusTick')),
     price_24h_pcnt DOUBLE PRECISION,
     last_price DOUBLE PRECISION,
     prev_price_24h DOUBLE PRECISION,
@@ -40,7 +40,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_tickers (
     CONSTRAINT bybit_linear_tickers_pkey PRIMARY KEY (symbol, timestamp)
 );
 alter table crypto_scout.bybit_linear_tickers OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_linear_tickers_timestamp ON crypto_scout.bybit_linear_tickers(timestamp DESC);
+create index IF NOT EXISTS idx_bybit_linear_tickers_symbol_time ON crypto_scout.bybit_linear_tickers(symbol, timestamp DESC);
 select public.create_hypertable('crypto_scout.bybit_linear_tickers', 'timestamp', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
 
 alter table crypto_scout.bybit_linear_tickers set (
@@ -48,9 +48,9 @@ alter table crypto_scout.bybit_linear_tickers set (
     timescaledb.compress_segmentby = 'symbol',
     timescaledb.compress_orderby = 'timestamp DESC'
 );
-select add_compression_policy('crypto_scout.bybit_linear_tickers', interval '1 month');
-select add_reorder_policy('crypto_scout.bybit_linear_tickers', 'idx_bybit_linear_tickers_timestamp');
-select add_retention_policy('crypto_scout.bybit_linear_tickers', interval '365 days');
+select public.add_compression_policy('crypto_scout.bybit_linear_tickers', interval '1 month');
+select public.add_reorder_policy('crypto_scout.bybit_linear_tickers', 'idx_bybit_linear_tickers_symbol_time');
+select public.add_retention_policy('crypto_scout.bybit_linear_tickers', interval '365 days');
 
 -- =========================
 -- KLINE TABLES (1m/5m/15m/60m/240m/1d)
@@ -70,9 +70,9 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_1m (
     CONSTRAINT bybit_linear_kline_1m_pkey PRIMARY KEY (symbol, start_time)
 );
 alter table crypto_scout.bybit_linear_kline_1m OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_linear_kline_1m_start_time ON crypto_scout.bybit_linear_kline_1m(start_time DESC);
 create index IF NOT EXISTS idx_bybit_linear_kline_1m_end_time ON crypto_scout.bybit_linear_kline_1m(symbol, end_time DESC);
-select public.create_hypertable('crypto_scout.bybit_linear_kline_1m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+create index IF NOT EXISTS idx_bybit_linear_kline_1m_symbol_start_time ON crypto_scout.bybit_linear_kline_1m(symbol, start_time DESC);
+select public.create_hypertable('crypto_scout.bybit_linear_kline_1m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE, partitioning_column => 'symbol', number_partitions => 16);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_5m (
     symbol TEXT NOT NULL,
@@ -87,9 +87,9 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_5m (
     CONSTRAINT bybit_linear_kline_5m_pkey PRIMARY KEY (symbol, start_time)
 );
 alter table crypto_scout.bybit_linear_kline_5m OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_linear_kline_5m_start_time ON crypto_scout.bybit_linear_kline_5m(start_time DESC);
 create index IF NOT EXISTS idx_bybit_linear_kline_5m_end_time ON crypto_scout.bybit_linear_kline_5m(symbol, end_time DESC);
-select public.create_hypertable('crypto_scout.bybit_linear_kline_5m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+create index IF NOT EXISTS idx_bybit_linear_kline_5m_symbol_start_time ON crypto_scout.bybit_linear_kline_5m(symbol, start_time DESC);
+select public.create_hypertable('crypto_scout.bybit_linear_kline_5m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE, partitioning_column => 'symbol', number_partitions => 16);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_15m (
     symbol TEXT NOT NULL,
@@ -104,9 +104,9 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_15m (
     CONSTRAINT bybit_linear_kline_15m_pkey PRIMARY KEY (symbol, start_time)
 );
 alter table crypto_scout.bybit_linear_kline_15m OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_linear_kline_15m_start_time ON crypto_scout.bybit_linear_kline_15m(start_time DESC);
 create index IF NOT EXISTS idx_bybit_linear_kline_15m_end_time ON crypto_scout.bybit_linear_kline_15m(symbol, end_time DESC);
-select public.create_hypertable('crypto_scout.bybit_linear_kline_15m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+create index IF NOT EXISTS idx_bybit_linear_kline_15m_symbol_start_time ON crypto_scout.bybit_linear_kline_15m(symbol, start_time DESC);
+select public.create_hypertable('crypto_scout.bybit_linear_kline_15m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE, partitioning_column => 'symbol', number_partitions => 16);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_60m (
     symbol TEXT NOT NULL,
@@ -121,9 +121,9 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_60m (
     CONSTRAINT bybit_linear_kline_60m_pkey PRIMARY KEY (symbol, start_time)
 );
 alter table crypto_scout.bybit_linear_kline_60m OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_linear_kline_60m_start_time ON crypto_scout.bybit_linear_kline_60m(start_time DESC);
 create index IF NOT EXISTS idx_bybit_linear_kline_60m_end_time ON crypto_scout.bybit_linear_kline_60m(symbol, end_time DESC);
-select public.create_hypertable('crypto_scout.bybit_linear_kline_60m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+create index IF NOT EXISTS idx_bybit_linear_kline_60m_symbol_start_time ON crypto_scout.bybit_linear_kline_60m(symbol, start_time DESC);
+select public.create_hypertable('crypto_scout.bybit_linear_kline_60m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE, partitioning_column => 'symbol', number_partitions => 16);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_240m (
     symbol TEXT NOT NULL,
@@ -138,9 +138,9 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_240m (
     CONSTRAINT bybit_linear_kline_240m_pkey PRIMARY KEY (symbol, start_time)
 );
 alter table crypto_scout.bybit_linear_kline_240m OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_linear_kline_240m_start_time ON crypto_scout.bybit_linear_kline_240m(start_time DESC);
 create index IF NOT EXISTS idx_bybit_linear_kline_240m_end_time ON crypto_scout.bybit_linear_kline_240m(symbol, end_time DESC);
-select public.create_hypertable('crypto_scout.bybit_linear_kline_240m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+create index IF NOT EXISTS idx_bybit_linear_kline_240m_symbol_start_time ON crypto_scout.bybit_linear_kline_240m(symbol, start_time DESC);
+select public.create_hypertable('crypto_scout.bybit_linear_kline_240m', 'start_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE, partitioning_column => 'symbol', number_partitions => 16);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_1d (
     symbol TEXT NOT NULL,
@@ -155,9 +155,9 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_linear_kline_1d (
     CONSTRAINT bybit_linear_kline_1d_pkey PRIMARY KEY (symbol, start_time)
 );
 alter table crypto_scout.bybit_linear_kline_1d OWNER TO crypto_scout_db;
-create index IF NOT EXISTS idx_bybit_linear_kline_1d_start_time ON crypto_scout.bybit_linear_kline_1d(start_time DESC);
 create index IF NOT EXISTS idx_bybit_linear_kline_1d_end_time ON crypto_scout.bybit_linear_kline_1d(symbol, end_time DESC);
-select public.create_hypertable('crypto_scout.bybit_linear_kline_1d', 'start_time', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE);
+create index IF NOT EXISTS idx_bybit_linear_kline_1d_symbol_start_time ON crypto_scout.bybit_linear_kline_1d(symbol, start_time DESC);
+select public.create_hypertable('crypto_scout.bybit_linear_kline_1d', 'start_time', chunk_time_interval => INTERVAL '1 month', if_not_exists => TRUE, partitioning_column => 'symbol', number_partitions => 16);
 
 -- Compression settings for kline tables
 alter table crypto_scout.bybit_linear_kline_1m set (
@@ -192,25 +192,25 @@ alter table crypto_scout.bybit_linear_kline_1d set (
 );
 
 -- Compression policies for kline tables
-select add_compression_policy('crypto_scout.bybit_linear_kline_1m', interval '1 month');
-select add_compression_policy('crypto_scout.bybit_linear_kline_5m', interval '1 month');
-select add_compression_policy('crypto_scout.bybit_linear_kline_15m', interval '1 month');
-select add_compression_policy('crypto_scout.bybit_linear_kline_60m', interval '1 month');
-select add_compression_policy('crypto_scout.bybit_linear_kline_240m', interval '1 month');
-select add_compression_policy('crypto_scout.bybit_linear_kline_1d', interval '1 month');
+select public.add_compression_policy('crypto_scout.bybit_linear_kline_1m', interval '14 days');
+select public.add_compression_policy('crypto_scout.bybit_linear_kline_5m', interval '14 days');
+select public.add_compression_policy('crypto_scout.bybit_linear_kline_15m', interval '14 days');
+select public.add_compression_policy('crypto_scout.bybit_linear_kline_60m', interval '14 days');
+select public.add_compression_policy('crypto_scout.bybit_linear_kline_240m', interval '14 days');
+select public.add_compression_policy('crypto_scout.bybit_linear_kline_1d', interval '1 month');
 
 -- Reorder policies for kline tables
-select add_reorder_policy('crypto_scout.bybit_linear_kline_1m', 'idx_bybit_linear_kline_1m_start_time');
-select add_reorder_policy('crypto_scout.bybit_linear_kline_5m', 'idx_bybit_linear_kline_5m_start_time');
-select add_reorder_policy('crypto_scout.bybit_linear_kline_15m', 'idx_bybit_linear_kline_15m_start_time');
-select add_reorder_policy('crypto_scout.bybit_linear_kline_60m', 'idx_bybit_linear_kline_60m_start_time');
-select add_reorder_policy('crypto_scout.bybit_linear_kline_240m', 'idx_bybit_linear_kline_240m_start_time');
-select add_reorder_policy('crypto_scout.bybit_linear_kline_1d', 'idx_bybit_linear_kline_1d_start_time');
+select public.add_reorder_policy('crypto_scout.bybit_linear_kline_1m', 'idx_bybit_linear_kline_1m_symbol_start_time');
+select public.add_reorder_policy('crypto_scout.bybit_linear_kline_5m', 'idx_bybit_linear_kline_5m_symbol_start_time');
+select public.add_reorder_policy('crypto_scout.bybit_linear_kline_15m', 'idx_bybit_linear_kline_15m_symbol_start_time');
+select public.add_reorder_policy('crypto_scout.bybit_linear_kline_60m', 'idx_bybit_linear_kline_60m_symbol_start_time');
+select public.add_reorder_policy('crypto_scout.bybit_linear_kline_240m', 'idx_bybit_linear_kline_240m_symbol_start_time');
+select public.add_reorder_policy('crypto_scout.bybit_linear_kline_1d', 'idx_bybit_linear_kline_1d_symbol_start_time');
 
 -- Retention policies for kline tables
-select add_retention_policy('crypto_scout.bybit_linear_kline_1m', interval '365 days');
-select add_retention_policy('crypto_scout.bybit_linear_kline_5m', interval '365 days');
-select add_retention_policy('crypto_scout.bybit_linear_kline_15m', interval '365 days');
-select add_retention_policy('crypto_scout.bybit_linear_kline_60m', interval '365 days');
-select add_retention_policy('crypto_scout.bybit_linear_kline_240m', interval '365 days');
-select add_retention_policy('crypto_scout.bybit_linear_kline_1d', interval '365 days');
+select public.add_retention_policy('crypto_scout.bybit_linear_kline_1m', interval '365 days');
+select public.add_retention_policy('crypto_scout.bybit_linear_kline_5m', interval '365 days');
+select public.add_retention_policy('crypto_scout.bybit_linear_kline_15m', interval '365 days');
+select public.add_retention_policy('crypto_scout.bybit_linear_kline_60m', interval '365 days');
+select public.add_retention_policy('crypto_scout.bybit_linear_kline_240m', interval '365 days');
+select public.add_retention_policy('crypto_scout.bybit_linear_kline_1d', interval '365 days');
