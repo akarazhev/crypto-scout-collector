@@ -21,8 +21,8 @@ select public.create_hypertable('crypto_scout.bybit_ta_linear_public_trade', 'tr
 
 alter table crypto_scout.bybit_ta_linear_public_trade set (
     timescaledb.compress,
-    timescaledb.compress_segmentby = 'symbol',
-    timescaledb.compress_orderby = 'trade_time DESC'
+    timescaledb.compress_segmentby = 'symbol, taker_side',
+    timescaledb.compress_orderby = 'trade_time DESC, price DESC, size DESC'
 );
 select add_compression_policy('crypto_scout.bybit_ta_linear_public_trade', interval '1 month');
 select add_reorder_policy('crypto_scout.bybit_ta_linear_public_trade', 'idx_bybit_ta_linear_public_trade_trade_time');
@@ -89,22 +89,22 @@ select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_1000', 
 alter table crypto_scout.bybit_ta_linear_order_book_1 set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol, side',
-    timescaledb.compress_orderby = 'engine_time DESC, price DESC'
+    timescaledb.compress_orderby = 'engine_time DESC, price DESC, size DESC'
 );
 alter table crypto_scout.bybit_ta_linear_order_book_50 set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol, side',
-    timescaledb.compress_orderby = 'engine_time DESC, price DESC'
+    timescaledb.compress_orderby = 'engine_time DESC, price DESC, size DESC'
 );
 alter table crypto_scout.bybit_ta_linear_order_book_200 set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol, side',
-    timescaledb.compress_orderby = 'engine_time DESC, price DESC'
+    timescaledb.compress_orderby = 'engine_time DESC, price DESC, size DESC'
 );
 alter table crypto_scout.bybit_ta_linear_order_book_1000 set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol, side',
-    timescaledb.compress_orderby = 'engine_time DESC, price DESC'
+    timescaledb.compress_orderby = 'engine_time DESC, price DESC, size DESC'
 );
 
 -- Compression policies for order book tables
@@ -144,7 +144,7 @@ select public.create_hypertable('crypto_scout.bybit_ta_linear_all_liqudation', '
 alter table crypto_scout.bybit_ta_linear_all_liqudation set (
     timescaledb.compress,
     timescaledb.compress_segmentby = 'symbol, position_side',
-    timescaledb.compress_orderby = 'event_time DESC'
+    timescaledb.compress_orderby = 'event_time DESC, executed_size DESC, bankruptcy_price DESC'
 );
 select add_compression_policy('crypto_scout.bybit_ta_linear_all_liqudation', interval '1 month');
 select add_reorder_policy('crypto_scout.bybit_ta_linear_all_liqudation', 'idx_bybit_ta_linear_all_liqudation_event_time');
