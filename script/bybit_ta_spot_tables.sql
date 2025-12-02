@@ -23,9 +23,9 @@ alter table crypto_scout.bybit_ta_spot_public_trade set (
     timescaledb.compress_segmentby = 'symbol',
     timescaledb.compress_orderby = 'trade_time DESC'
 );
-select add_compression_policy('crypto_scout.bybit_ta_spot_public_trade', interval '7 days');
+select add_compression_policy('crypto_scout.bybit_ta_spot_public_trade', interval '1 month');
 select add_reorder_policy('crypto_scout.bybit_ta_spot_public_trade', 'idx_bybit_ta_spot_public_trade_trade_time');
-select add_retention_policy('crypto_scout.bybit_ta_spot_public_trade', interval '180 days');
+select add_retention_policy('crypto_scout.bybit_ta_spot_public_trade', interval '365 days');
 
 -- =========================
 -- TA ORDER BOOKS (1/50/200/1000)
@@ -107,10 +107,10 @@ alter table crypto_scout.bybit_ta_spot_order_book_1000 set (
 );
 
 -- Compression policies for order book tables
-select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_1', interval '7 days');
-select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_50', interval '7 days');
-select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_200', interval '7 days');
-select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_1000', interval '7 days');
+select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_1', interval '1 month');
+select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_50', interval '1 month');
+select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_200', interval '1 month');
+select add_compression_policy('crypto_scout.bybit_ta_spot_order_book_1000', interval '1 month');
 
 -- Reorder policies for order book tables
 select add_reorder_policy('crypto_scout.bybit_ta_spot_order_book_1', 'idx_bybit_ta_spot_order_book_1_engine_time');
@@ -119,7 +119,7 @@ select add_reorder_policy('crypto_scout.bybit_ta_spot_order_book_200', 'idx_bybi
 select add_reorder_policy('crypto_scout.bybit_ta_spot_order_book_1000', 'idx_bybit_ta_spot_order_book_1000_engine_time');
 
 -- Retention policies for order book tables
-select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_1', interval '7 days');
-select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_50', interval '7 days');
-select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_200', interval '7 days');
-select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_1000', interval '7 days');
+select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_1', interval '365 days');
+select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_50', interval '365 days');
+select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_200', interval '365 days');
+select add_retention_policy('crypto_scout.bybit_ta_spot_order_book_1000', interval '365 days');
