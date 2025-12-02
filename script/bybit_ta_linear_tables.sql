@@ -44,7 +44,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_1 (
 alter table crypto_scout.bybit_ta_linear_order_book_1 OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_1_engine_time ON crypto_scout.bybit_ta_linear_order_book_1(engine_time DESC);
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_1_symbol_side_price ON crypto_scout.bybit_ta_linear_order_book_1(symbol, side, price);
-select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_1', 'engine_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_1', 'engine_time', chunk_time_interval => INTERVAL '12 hours', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_50 (
     symbol TEXT NOT NULL,
@@ -57,7 +57,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_50 (
 alter table crypto_scout.bybit_ta_linear_order_book_50 OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_50_engine_time ON crypto_scout.bybit_ta_linear_order_book_50(engine_time DESC);
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_50_symbol_side_price ON crypto_scout.bybit_ta_linear_order_book_50(symbol, side, price);
-select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_50', 'engine_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_50', 'engine_time', chunk_time_interval => INTERVAL '12 hours', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_200 (
     symbol TEXT NOT NULL,
@@ -70,7 +70,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_200 (
 alter table crypto_scout.bybit_ta_linear_order_book_200 OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_200_engine_time ON crypto_scout.bybit_ta_linear_order_book_200(engine_time DESC);
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_200_symbol_side_price ON crypto_scout.bybit_ta_linear_order_book_200(symbol, side, price);
-select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_200', 'engine_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_200', 'engine_time', chunk_time_interval => INTERVAL '12 hours', if_not_exists => TRUE);
 
 create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_1000 (
     symbol TEXT NOT NULL,
@@ -83,7 +83,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_order_book_1000 (
 alter table crypto_scout.bybit_ta_linear_order_book_1000 OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_1000_engine_time ON crypto_scout.bybit_ta_linear_order_book_1000(engine_time DESC);
 create index IF NOT EXISTS idx_bybit_ta_linear_order_book_1000_symbol_side_price ON crypto_scout.bybit_ta_linear_order_book_1000(symbol, side, price);
-select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_1000', 'engine_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.bybit_ta_linear_order_book_1000', 'engine_time', chunk_time_interval => INTERVAL '12 hours', if_not_exists => TRUE);
 
 -- Compression settings for order book tables
 alter table crypto_scout.bybit_ta_linear_order_book_1 set (
@@ -139,7 +139,7 @@ create TABLE IF NOT EXISTS crypto_scout.bybit_ta_linear_all_liqudation (
 );
 alter table crypto_scout.bybit_ta_linear_all_liqudation OWNER TO crypto_scout_db;
 create index IF NOT EXISTS idx_bybit_ta_linear_all_liqudation_event_time ON crypto_scout.bybit_ta_linear_all_liqudation(event_time DESC);
-select public.create_hypertable('crypto_scout.bybit_ta_linear_all_liqudation', 'event_time', chunk_time_interval => INTERVAL '1 day', if_not_exists => TRUE);
+select public.create_hypertable('crypto_scout.bybit_ta_linear_all_liqudation', 'event_time', chunk_time_interval => INTERVAL '7 days', if_not_exists => TRUE);
 
 alter table crypto_scout.bybit_ta_linear_all_liqudation set (
     timescaledb.compress,
