@@ -20,8 +20,8 @@ select public.create_hypertable('crypto_scout.bybit_ta_spot_public_trade', 'trad
 
 alter table crypto_scout.bybit_ta_spot_public_trade set (
     timescaledb.compress,
-    timescaledb.compress_segmentby = 'symbol',
-    timescaledb.compress_orderby = 'trade_time DESC'
+    timescaledb.compress_segmentby = 'symbol, taker_side',
+    timescaledb.compress_orderby = 'trade_time DESC, price DESC, size DESC'
 );
 select add_compression_policy('crypto_scout.bybit_ta_spot_public_trade', interval '1 month');
 select add_reorder_policy('crypto_scout.bybit_ta_spot_public_trade', 'idx_bybit_ta_spot_public_trade_trade_time');

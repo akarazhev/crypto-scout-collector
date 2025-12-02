@@ -5,7 +5,8 @@ services:
     image: timescale/timescaledb:latest-pg17
     container_name: crypto-scout-collector-db
     cpus: "2.00"
-    memory: 8G
+    mem_limit: "8g"
+    mem_reservation: "4g"
     shm_size: "1g"
     ulimits:
       nofile:
@@ -75,9 +76,9 @@ services:
       - -c
       - pg_stat_statements.max=10000
       - -c
-      - timescaledb.max_background_workers=32
+      - timescaledb.max_background_workers=96
       - -c
-      - max_worker_processes=64
+      - max_worker_processes=192
       - -c
       - track_io_timing=on
       - -c
