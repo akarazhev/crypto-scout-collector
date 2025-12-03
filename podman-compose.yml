@@ -24,6 +24,8 @@ services:
       - ./script/cmc_parser_tables.sql:/docker-entrypoint-initdb.d/05_cmc_parser_tables.sql:ro
       - ./script/bybit_parser_tables.sql:/docker-entrypoint-initdb.d/06_bybit_parser_tables.sql:ro
       - ./script/btc_usd_daily_inserts.sql:/docker-entrypoint-initdb.d/07_btc_usd_daily_inserts.sql:ro
+      - ./script/btc_usd_weekly_inserts.sql:/docker-entrypoint-initdb.d/08_btc_usd_weekly_inserts.sql:ro
+      - ./script/fgi_daily_inserts.sql:/docker-entrypoint-initdb.d/09_fgi_daily_inserts.sql:ro
     networks:
       - crypto-scout-bridge
     env_file:
