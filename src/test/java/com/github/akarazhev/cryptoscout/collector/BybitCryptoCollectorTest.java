@@ -204,7 +204,7 @@ final class BybitCryptoCollectorTest {
                 OffsetDateTime.now(ZoneOffset.UTC))).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, TestUtils.await(collector.getTicker(BybitCryptoCollector.Type.BYBIT_SPOT, tickersFrom,
+        assertEquals(1, TestUtils.await(collector.getTicker(BybitCryptoCollector.Type.BYBIT_SPOT, BTC_USDT, tickersFrom,
                 OffsetDateTime.now(ZoneOffset.UTC))).size());
     }
 
@@ -250,7 +250,7 @@ final class BybitCryptoCollectorTest {
         assertEquals(1, spotRepository.getKline1d(BTC_USDT, fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, spotRepository.getTicker(tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getTicker(BTC_USDT, tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitCryptoStream());
         assertEquals(700L, offset.isPresent() ? offset.getAsLong() : 0L);
@@ -304,7 +304,7 @@ final class BybitCryptoCollectorTest {
                 OffsetDateTime.now(ZoneOffset.UTC))).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, TestUtils.await(collector.getTicker(BybitCryptoCollector.Type.BYBIT_LINEAR, tickersFrom,
+        assertEquals(1, TestUtils.await(collector.getTicker(BybitCryptoCollector.Type.BYBIT_LINEAR, BTC_USDT, tickersFrom,
                 OffsetDateTime.now(ZoneOffset.UTC))).size());
     }
 
@@ -350,7 +350,7 @@ final class BybitCryptoCollectorTest {
         assertEquals(1, linearRepository.getKline1d(BTC_USDT, fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, linearRepository.getTicker(tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getTicker(BTC_USDT, tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitCryptoStream());
         assertEquals(1400L, offset.isPresent() ? offset.getAsLong() : 0L);

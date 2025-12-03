@@ -202,6 +202,6 @@ final class BybitSpotRepositoryTest {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
         assertEquals(1, repository.saveTicker(List.of(tickers), 1400L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, repository.getTicker(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getTicker(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 }

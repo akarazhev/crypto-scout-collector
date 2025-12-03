@@ -61,7 +61,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_VOLUME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_HIGH_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_LAST_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_LOW_PRICE_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_PREV_PRICE_24H;
@@ -94,7 +94,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_TURNOVER_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_TICKERS_VOLUME_24H;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRangeBySymbol;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CLOSE;
@@ -395,8 +394,9 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
-    public List<Map<String, Object>> getTicker(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, LINEAR_TICKERS_SELECT, from, to,
+    public List<Map<String, Object>> getTicker(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, LINEAR_TICKERS_SELECT_BY_SYMBOL, symbol, from, to,
                 SYMBOL, TS, TICK_DIRECTION, PRICE_24H_PCNT, LAST_PRICE, PREV_PRICE_24H, HIGH_PRICE_24H,
                 LOW_PRICE_24H, PREV_PRICE_1H, MARK_PRICE, INDEX_PRICE, OPEN_INTEREST, OPEN_INTEREST_VALUE, TURNOVER_24H,
                 VOLUME_24H, FUNDING_INTERVAL_HOUR, FUNDING_CAP, NEXT_FUNDING_TIME, FUNDING_RATE, BID1_PRICE, BID1_SIZE,

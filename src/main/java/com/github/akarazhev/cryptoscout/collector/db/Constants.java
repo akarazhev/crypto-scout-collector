@@ -287,10 +287,10 @@ public final class Constants {
                 "(symbol, timestamp, last_price, high_price_24h, low_price_24h, prev_price_24h, " +
                 "volume_24h, turnover_24h, price_24h_pcnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT (symbol, timestamp) DO NOTHING";
-        static final String SPOT_TICKERS_SELECT =
+        static final String SPOT_TICKERS_SELECT_BY_SYMBOL =
                 "SELECT symbol, timestamp, last_price, high_price_24h, low_price_24h, prev_price_24h, volume_24h, " +
                         "turnover_24h, price_24h_pcnt FROM " + SPOT_TICKERS_TABLE +
-                        " WHERE timestamp >= ? AND timestamp <= ?";
+                        " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
         static final int SPOT_TICKERS_SYMBOL = 1;
         static final int SPOT_TICKERS_TIMESTAMP = 2;
         static final int SPOT_TICKERS_LAST_PRICE = 3;
@@ -311,14 +311,14 @@ public final class Constants {
                 "basis_rate_year, pre_open_price, pre_qty, cur_pre_listing_phase) VALUES (" +
                 "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT (symbol, timestamp) DO NOTHING";
-        static final String LINEAR_TICKERS_SELECT =
+        static final String LINEAR_TICKERS_SELECT_BY_SYMBOL =
                 "SELECT symbol, timestamp, tick_direction, price_24h_pcnt, last_price, prev_price_24h, " +
                         "high_price_24h, low_price_24h, prev_price_1h, mark_price, index_price, open_interest, " +
                         "open_interest_value, turnover_24h, volume_24h, funding_interval_hour, funding_cap, " +
                         "next_funding_time, funding_rate, bid1_price, bid1_size, ask1_price, ask1_size, " +
                         "delivery_time, basis_rate, delivery_fee_rate, predicted_delivery_price, basis, " +
                         "basis_rate_year, pre_open_price, pre_qty, cur_pre_listing_phase FROM " + LINEAR_TICKERS_TABLE +
-                        " WHERE timestamp >= ? AND timestamp <= ?";
+                        " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
         static final int LINEAR_TICKERS_SYMBOL = 1;
         static final int LINEAR_TICKERS_TIMESTAMP = 2;
         static final int LINEAR_TICKERS_TICK_DIRECTION = 3;

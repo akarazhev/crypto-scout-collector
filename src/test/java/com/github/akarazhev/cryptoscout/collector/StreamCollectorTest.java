@@ -414,7 +414,7 @@ final class StreamCollectorTest {
         assertEquals(1, spotRepository.getKline1d(BTC_USDT, fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, spotRepository.getTicker(tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getTicker(BTC_USDT, tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         TestUtils.await(bybitCryptoCollector.start());
     }
@@ -467,7 +467,7 @@ final class StreamCollectorTest {
         assertEquals(1, linearRepository.getKline1d(BTC_USDT, fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, linearRepository.getTicker(tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getTicker(BTC_USDT, tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         TestUtils.await(bybitCryptoCollector.start());
     }
