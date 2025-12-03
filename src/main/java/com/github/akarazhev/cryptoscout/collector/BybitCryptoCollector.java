@@ -121,14 +121,6 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         return Promise.complete();
     }
 
-    public Promise<List<Map<String, Object>>> getKline1m(final Type type, final OffsetDateTime from,
-                                                         final OffsetDateTime to) {
-        return switch (type) {
-            case BYBIT_SPOT -> Promise.ofBlocking(executor, () -> bybitSpotRepository.getKline1m(from, to));
-            case BYBIT_LINEAR -> Promise.ofBlocking(executor, () -> bybitLinearRepository.getKline1m(from, to));
-        };
-    }
-
     public Promise<List<Map<String, Object>>> getKline1m(final Type type, final String symbol,
                                                          final OffsetDateTime from, final OffsetDateTime to) {
         return switch (type) {

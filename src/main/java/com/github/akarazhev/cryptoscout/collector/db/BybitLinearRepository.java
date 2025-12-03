@@ -44,7 +44,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINE
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_240M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_5M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_60M_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_5M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_15M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_60M_SELECT;
@@ -363,11 +362,6 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
         }
 
         return count;
-    }
-
-    public List<Map<String, Object>> getKline1m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, LINEAR_KLINE_1M_SELECT, from, to,
-                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
     public List<Map<String, Object>> getKline1m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)

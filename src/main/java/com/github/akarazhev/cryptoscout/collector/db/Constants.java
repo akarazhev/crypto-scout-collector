@@ -162,9 +162,6 @@ public final class Constants {
         static final String SPOT_KLINE_1M_INSERT = "INSERT INTO " + SPOT_KLINE_1M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_1M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + SPOT_KLINE_1M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_1M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + SPOT_KLINE_1M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
@@ -227,9 +224,6 @@ public final class Constants {
         static final String LINEAR_KLINE_1M_INSERT = "INSERT INTO " + LINEAR_KLINE_1M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String LINEAR_KLINE_1M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + LINEAR_KLINE_1M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_1M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + LINEAR_KLINE_1M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";

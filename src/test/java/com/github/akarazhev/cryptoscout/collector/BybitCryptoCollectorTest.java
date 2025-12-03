@@ -82,6 +82,7 @@ import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Symbol.BTC_USDT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class BybitCryptoCollectorTest {
@@ -189,8 +190,8 @@ final class BybitCryptoCollectorTest {
         final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
-        assertEquals(1, TestUtils.await(collector.getKline1m(BybitCryptoCollector.Type.BYBIT_SPOT, from1,
-                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline1m(BybitCryptoCollector.Type.BYBIT_SPOT,
+                BTC_USDT, from1, OffsetDateTime.now(ZoneOffset.UTC))).size());
         assertEquals(1, TestUtils.await(collector.getKline5m(BybitCryptoCollector.Type.BYBIT_SPOT, from5,
                 OffsetDateTime.now(ZoneOffset.UTC))).size());
         assertEquals(1, TestUtils.await(collector.getKline15m(BybitCryptoCollector.Type.BYBIT_SPOT, from15,
@@ -241,7 +242,7 @@ final class BybitCryptoCollectorTest {
         final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
-        assertEquals(1, spotRepository.getKline1m(from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getKline1m(BTC_USDT, from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, spotRepository.getKline5m(from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, spotRepository.getKline15m(from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, spotRepository.getKline60m(from60, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -289,8 +290,8 @@ final class BybitCryptoCollectorTest {
         final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
-        assertEquals(1, TestUtils.await(collector.getKline1m(BybitCryptoCollector.Type.BYBIT_LINEAR, from1,
-                OffsetDateTime.now(ZoneOffset.UTC))).size());
+        assertEquals(1, TestUtils.await(collector.getKline1m(BybitCryptoCollector.Type.BYBIT_LINEAR, BTC_USDT,
+                from1, OffsetDateTime.now(ZoneOffset.UTC))).size());
         assertEquals(1, TestUtils.await(collector.getKline5m(BybitCryptoCollector.Type.BYBIT_LINEAR, from5,
                 OffsetDateTime.now(ZoneOffset.UTC))).size());
         assertEquals(1, TestUtils.await(collector.getKline15m(BybitCryptoCollector.Type.BYBIT_LINEAR, from15,
@@ -341,7 +342,7 @@ final class BybitCryptoCollectorTest {
         final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
-        assertEquals(1, linearRepository.getKline1m(from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getKline1m(BTC_USDT, from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, linearRepository.getKline5m(from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, linearRepository.getKline15m(from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, linearRepository.getKline60m(from60, OffsetDateTime.now(ZoneOffset.UTC)).size());

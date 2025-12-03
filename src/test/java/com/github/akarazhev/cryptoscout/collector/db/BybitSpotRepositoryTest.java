@@ -52,6 +52,7 @@ import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Symbol.BTC_USDT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class BybitSpotRepositoryTest {
@@ -148,7 +149,7 @@ final class BybitSpotRepositoryTest {
         final var start = ((Map<?, ?>)((List<?>) k1.get(DATA)).getFirst()).get(START);
         assertEquals(1, repository.saveKline1m(List.of(k1), 800L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline1m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getKline1m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test

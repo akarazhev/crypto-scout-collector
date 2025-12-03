@@ -97,6 +97,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.STAKE_BEG
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Symbol.BTC_USDT;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
@@ -405,7 +406,7 @@ final class StreamCollectorTest {
         final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
-        assertEquals(1, spotRepository.getKline1m(from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getKline1m(BTC_USDT, from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, spotRepository.getKline5m(from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, spotRepository.getKline15m(from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, spotRepository.getKline60m(from60, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -458,7 +459,7 @@ final class StreamCollectorTest {
         final var from240 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) k240Start), ZoneOffset.UTC);
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
-        assertEquals(1, linearRepository.getKline1m(from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getKline1m(BTC_USDT, from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, linearRepository.getKline5m(from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, linearRepository.getKline15m(from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
         assertEquals(1, linearRepository.getKline60m(from60, OffsetDateTime.now(ZoneOffset.UTC)).size());
