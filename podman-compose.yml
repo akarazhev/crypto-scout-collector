@@ -121,8 +121,10 @@ services:
     ports:
       - "8083:8083"
     depends_on:
-      - crypto-scout-collector-db
-      - crypto-scout-collector-backup
+      crypto-scout-collector-db:
+        condition: service_healthy
+      crypto-scout-collector-backup:
+        condition: service_started
     security_opt:
       - no-new-privileges=true
     read_only: true
