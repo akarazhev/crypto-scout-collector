@@ -58,10 +58,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TAKER_SIDE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TRADE_TIME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_SELECT_BY_SYMBOL;
@@ -261,21 +257,9 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
                 SYMBOL_NAME, T, P, V, SIDE, BT, RPI);
     }
 
-    public List<Map<String, Object>> getOrderBook1(final OffsetDateTime from, final OffsetDateTime to)
-            throws SQLException {
-        return fetchRange(dataSource, SPOT_ORDER_BOOK_1_SELECT, from, to,
-                SYMBOL_NAME, CTS, SIDE, P, V);
-    }
-
     public List<Map<String, Object>> getOrderBook1(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
             throws SQLException {
         return fetchRangeBySymbol(dataSource, SPOT_ORDER_BOOK_1_SELECT_BY_SYMBOL, symbol, from, to,
-                SYMBOL_NAME, CTS, SIDE, P, V);
-    }
-
-    public List<Map<String, Object>> getOrderBook50(final OffsetDateTime from, final OffsetDateTime to)
-            throws SQLException {
-        return fetchRange(dataSource, SPOT_ORDER_BOOK_50_SELECT, from, to,
                 SYMBOL_NAME, CTS, SIDE, P, V);
     }
 
@@ -285,21 +269,9 @@ public final class BybitTaSpotRepository extends AbstractReactive implements Rea
                 SYMBOL_NAME, CTS, SIDE, P, V);
     }
 
-    public List<Map<String, Object>> getOrderBook200(final OffsetDateTime from, final OffsetDateTime to)
-            throws SQLException {
-        return fetchRange(dataSource, SPOT_ORDER_BOOK_200_SELECT, from, to,
-                SYMBOL_NAME, CTS, SIDE, P, V);
-    }
-
     public List<Map<String, Object>> getOrderBook200(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
             throws SQLException {
         return fetchRangeBySymbol(dataSource, SPOT_ORDER_BOOK_200_SELECT_BY_SYMBOL, symbol, from, to,
-                SYMBOL_NAME, CTS, SIDE, P, V);
-    }
-
-    public List<Map<String, Object>> getOrderBook1000(final OffsetDateTime from, final OffsetDateTime to)
-            throws SQLException {
-        return fetchRange(dataSource, SPOT_ORDER_BOOK_1000_SELECT, from, to,
                 SYMBOL_NAME, CTS, SIDE, P, V);
     }
 

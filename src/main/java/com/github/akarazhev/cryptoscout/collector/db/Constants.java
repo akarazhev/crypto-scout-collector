@@ -393,33 +393,21 @@ public final class Constants {
         // Spot order books (one row per level)
         static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_1_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_1_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_1_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_1_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_50_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_50_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_50_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_50_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_50_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_200_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_200_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_200_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_200_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_200_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String SPOT_ORDER_BOOK_1000_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_1000_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String SPOT_ORDER_BOOK_1000_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_SPOT_ORDER_BOOK_1000_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
@@ -432,33 +420,21 @@ public final class Constants {
         // Linear order books (one row per level)
         static final String LINEAR_ORDER_BOOK_1_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ORDER_BOOK_1_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_1_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_1_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_1_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_50_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_50_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ORDER_BOOK_50_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_50_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_50_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_50_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_200_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_200_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ORDER_BOOK_200_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_200_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_200_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_200_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_1000_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ORDER_BOOK_1000_SELECT =
-                "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_1000_TABLE + " WHERE engine_time >= ? AND engine_time <= ?";
         static final String LINEAR_ORDER_BOOK_1000_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
                         TA_LINEAR_ORDER_BOOK_1000_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";

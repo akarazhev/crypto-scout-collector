@@ -68,6 +68,7 @@ import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Symbol.BTC_USDT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 final class BybitTaCryptoCollectorTest {
@@ -150,13 +151,13 @@ final class BybitTaCryptoCollectorTest {
         final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
 
         assertEquals(getOrderBookLevelsCount(ob1),
-                TestUtils.await(collector.getOrderBook1(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from1, from1)).size());
+                TestUtils.await(collector.getOrderBook1(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT, BTC_USDT, from1, from1)).size());
         assertEquals(getOrderBookLevelsCount(ob50),
-                TestUtils.await(collector.getOrderBook50(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from50, from50)).size());
+                TestUtils.await(collector.getOrderBook50(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT, BTC_USDT, from50, from50)).size());
         assertEquals(getOrderBookLevelsCount(ob200),
-                TestUtils.await(collector.getOrderBook200(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from200, from200)).size());
+                TestUtils.await(collector.getOrderBook200(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT, BTC_USDT, from200, from200)).size());
         assertEquals(getOrderBookLevelsCount(ob1000),
-                TestUtils.await(collector.getOrderBook1000(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,from1000, from1000)).size());
+                TestUtils.await(collector.getOrderBook1000(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT, BTC_USDT, from1000, from1000)).size());
     }
 
     @Test
@@ -184,10 +185,10 @@ final class BybitTaCryptoCollectorTest {
         final var from200 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
         final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
 
-        assertEquals(getOrderBookLevelsCount(ob1), taSpotRepository.getOrderBook1(from1, from1).size());
-        assertEquals(getOrderBookLevelsCount(ob50), taSpotRepository.getOrderBook50(from50, from50).size());
-        assertEquals(getOrderBookLevelsCount(ob200), taSpotRepository.getOrderBook200(from200, from200).size());
-        assertEquals(getOrderBookLevelsCount(ob1000), taSpotRepository.getOrderBook1000(from1000, from1000).size());
+        assertEquals(getOrderBookLevelsCount(ob1), taSpotRepository.getOrderBook1(BTC_USDT, from1, from1).size());
+        assertEquals(getOrderBookLevelsCount(ob50), taSpotRepository.getOrderBook50(BTC_USDT, from50, from50).size());
+        assertEquals(getOrderBookLevelsCount(ob200), taSpotRepository.getOrderBook200(BTC_USDT, from200, from200).size());
+        assertEquals(getOrderBookLevelsCount(ob1000), taSpotRepository.getOrderBook1000(BTC_USDT, from1000, from1000).size());
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitTaCryptoStream());
         assertEquals(500L, offset.isPresent() ? offset.getAsLong() : 0L);
@@ -222,13 +223,13 @@ final class BybitTaCryptoCollectorTest {
         final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
 
         assertEquals(getOrderBookLevelsCount(ob1),
-                TestUtils.await(collector.getOrderBook1(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from1, from1)).size());
+                TestUtils.await(collector.getOrderBook1(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR, BTC_USDT, from1, from1)).size());
         assertEquals(getOrderBookLevelsCount(ob50),
-                TestUtils.await(collector.getOrderBook50(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from50, from50)).size());
+                TestUtils.await(collector.getOrderBook50(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR, BTC_USDT, from50, from50)).size());
         assertEquals(getOrderBookLevelsCount(ob200),
-                TestUtils.await(collector.getOrderBook200(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from200, from200)).size());
+                TestUtils.await(collector.getOrderBook200(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR, BTC_USDT, from200, from200)).size());
         assertEquals(getOrderBookLevelsCount(ob1000),
-                TestUtils.await(collector.getOrderBook1000(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,from1000, from1000)).size());
+                TestUtils.await(collector.getOrderBook1000(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR, BTC_USDT, from1000, from1000)).size());
         final var tAl = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
         final var fromAl = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tAl), ZoneOffset.UTC);
         assertEquals(1, TestUtils.await(collector.getAllLiquidation(fromAl, fromAl)).size());
@@ -260,10 +261,10 @@ final class BybitTaCryptoCollectorTest {
         final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
         final var from200 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
         final var from1000 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
-        assertEquals(getOrderBookLevelsCount(ob1), taLinearRepository.getOrderBook1(from1, from1).size());
-        assertEquals(getOrderBookLevelsCount(ob50), taLinearRepository.getOrderBook50(from50, from50).size());
-        assertEquals(getOrderBookLevelsCount(ob200), taLinearRepository.getOrderBook200(from200, from200).size());
-        assertEquals(getOrderBookLevelsCount(ob1000), taLinearRepository.getOrderBook1000(from1000, from1000).size());
+        assertEquals(getOrderBookLevelsCount(ob1), taLinearRepository.getOrderBook1(BTC_USDT, from1, from1).size());
+        assertEquals(getOrderBookLevelsCount(ob50), taLinearRepository.getOrderBook50(BTC_USDT, from50, from50).size());
+        assertEquals(getOrderBookLevelsCount(ob200), taLinearRepository.getOrderBook200(BTC_USDT, from200, from200).size());
+        assertEquals(getOrderBookLevelsCount(ob1000), taLinearRepository.getOrderBook1000(BTC_USDT, from1000, from1000).size());
 
         final var tAl = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
         final var fromAl = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tAl), ZoneOffset.UTC);

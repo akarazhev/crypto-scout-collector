@@ -52,6 +52,7 @@ import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Symbol.BTC_USDT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -152,7 +153,7 @@ final class BybitTaSpotRepositoryTest {
         final var expected = getOrderBookLevelsCount(ob1);
         assertEquals(expected, repository.saveOrderBook1(List.of(ob1), 700L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
-        assertEquals(expected, repository.getOrderBook1(from, from).size());
+        assertEquals(expected, repository.getOrderBook1(BTC_USDT, from, from).size());
     }
 
     @Test
@@ -161,7 +162,7 @@ final class BybitTaSpotRepositoryTest {
         final var expected = getOrderBookLevelsCount(ob50);
         assertEquals(expected, repository.saveOrderBook50(List.of(ob50), 800L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
-        assertEquals(expected, repository.getOrderBook50(from, from).size());
+        assertEquals(expected, repository.getOrderBook50(BTC_USDT, from, from).size());
     }
 
     @Test
@@ -170,7 +171,7 @@ final class BybitTaSpotRepositoryTest {
         final var expected = getOrderBookLevelsCount(ob200);
         assertEquals(expected, repository.saveOrderBook200(List.of(ob200), 900L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
-        assertEquals(expected, repository.getOrderBook200(from, from).size());
+        assertEquals(expected, repository.getOrderBook200(BTC_USDT, from, from).size());
     }
 
     @Test
@@ -179,6 +180,6 @@ final class BybitTaSpotRepositoryTest {
         final var expected = getOrderBookLevelsCount(ob1000);
         assertEquals(expected, repository.saveOrderBook1000(List.of(ob1000), 1000L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
-        assertEquals(expected, repository.getOrderBook1000(from, from).size());
+        assertEquals(expected, repository.getOrderBook1000(BTC_USDT, from, from).size());
     }
 }
