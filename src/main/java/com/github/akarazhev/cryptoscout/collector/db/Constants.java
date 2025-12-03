@@ -36,8 +36,10 @@ public final class Constants {
 
         // Time range
         static final int SYMBOL = 1;
-        static final int FROM = 2;
-        static final int TO = 3;
+        static final int FROM_WITH_SYMBOL = 2;
+        static final int TO_WITH_SYMBOL = 3;
+        static final int FROM = 1;
+        static final int TO = 2;
     }
 
     public final static class Cmc {

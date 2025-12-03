@@ -33,11 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM_WITH_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.SYMBOL;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO_WITH_SYMBOL;
 
 final class DBUtils {
 
@@ -48,8 +48,8 @@ final class DBUtils {
         try (final var c = dataSource.getConnection();
              final var ps = c.prepareStatement(sql)) {
             ps.setString(SYMBOL, symbol);
-            ps.setObject(FROM, from);
-            ps.setObject(TO, to);
+            ps.setObject(FROM_WITH_SYMBOL, from);
+            ps.setObject(TO_WITH_SYMBOL, to);
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();
