@@ -407,11 +407,11 @@ final class StreamCollectorTest {
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
         assertEquals(1, spotRepository.getKline1m(BTC_USDT, from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, spotRepository.getKline5m(from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, spotRepository.getKline15m(from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, spotRepository.getKline60m(from60, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, spotRepository.getKline240m(from240, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, spotRepository.getKline1d(fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getKline5m(BTC_USDT, from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getKline15m(BTC_USDT, from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getKline60m(BTC_USDT, from60, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getKline240m(BTC_USDT, from240, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, spotRepository.getKline1d(BTC_USDT, fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
         assertEquals(1, spotRepository.getTicker(tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());
@@ -460,11 +460,11 @@ final class StreamCollectorTest {
         final var fromD = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) kdStart), ZoneOffset.UTC);
 
         assertEquals(1, linearRepository.getKline1m(BTC_USDT, from1, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, linearRepository.getKline5m(from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, linearRepository.getKline15m(from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, linearRepository.getKline60m(from60, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, linearRepository.getKline240m(from240, OffsetDateTime.now(ZoneOffset.UTC)).size());
-        assertEquals(1, linearRepository.getKline1d(fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getKline5m(BTC_USDT, from5, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getKline15m(BTC_USDT, from15, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getKline60m(BTC_USDT, from60, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getKline240m(BTC_USDT, from240, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, linearRepository.getKline1d(BTC_USDT, fromD, OffsetDateTime.now(ZoneOffset.UTC)).size());
 
         final var tickersFrom = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
         assertEquals(1, linearRepository.getTicker(tickersFrom, OffsetDateTime.now(ZoneOffset.UTC)).size());

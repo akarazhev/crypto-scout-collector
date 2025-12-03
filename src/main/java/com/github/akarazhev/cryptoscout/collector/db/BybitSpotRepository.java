@@ -37,18 +37,13 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_SELECT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_SELECT_BY_SYMBOL;
@@ -277,19 +272,9 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
-    public List<Map<String, Object>> getKline5m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, SPOT_KLINE_5M_SELECT, from, to,
-                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
-    }
-
     public List<Map<String, Object>> getKline5m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
             throws SQLException {
         return fetchRangeBySymbol(dataSource, SPOT_KLINE_5M_SELECT_BY_SYMBOL, symbol, from, to,
-                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
-    }
-
-    public List<Map<String, Object>> getKline15m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, SPOT_KLINE_15M_SELECT, from, to,
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
@@ -299,30 +284,15 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
-    public List<Map<String, Object>> getKline60m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, SPOT_KLINE_60M_SELECT, from, to,
-                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
-    }
-
     public List<Map<String, Object>> getKline60m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
             throws SQLException {
         return fetchRangeBySymbol(dataSource, SPOT_KLINE_60M_SELECT_BY_SYMBOL, symbol, from, to,
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 
-    public List<Map<String, Object>> getKline240m(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, SPOT_KLINE_240M_SELECT, from, to,
-                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
-    }
-
     public List<Map<String, Object>> getKline240m(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
             throws SQLException {
         return fetchRangeBySymbol(dataSource, SPOT_KLINE_240M_SELECT_BY_SYMBOL, symbol, from, to,
-                SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
-    }
-
-    public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, SPOT_KLINE_1D_SELECT, from, to,
                 SYMBOL, START, END, OPEN, CLOSE, HIGH, LOW, VOLUME, TURNOVER);
     }
 

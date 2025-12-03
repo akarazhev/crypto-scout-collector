@@ -158,7 +158,7 @@ final class BybitLinearRepositoryTest {
         final var start = ((Map<?, ?>) ((List<?>) k5.get(DATA)).getFirst()).get(START);
         assertEquals(1, repository.saveKline5m(List.of(k5), 900L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline5m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getKline5m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
@@ -167,7 +167,7 @@ final class BybitLinearRepositoryTest {
         final var start = ((Map<?, ?>) ((List<?>) k15.get(DATA)).getFirst()).get(START);
         assertEquals(1, repository.saveKline15m(List.of(k15), 1000L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline15m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getKline15m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
@@ -176,7 +176,7 @@ final class BybitLinearRepositoryTest {
         final var start = ((Map<?, ?>) ((List<?>) k60.get(DATA)).getFirst()).get(START);
         assertEquals(1, repository.saveKline60m(List.of(k60), 1100L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline60m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getKline60m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
@@ -185,7 +185,7 @@ final class BybitLinearRepositoryTest {
         final var start = ((Map<?, ?>) ((List<?>) k240.get(DATA)).getFirst()).get(START);
         assertEquals(1, repository.saveKline240m(List.of(k240), 1200L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline240m(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getKline240m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
@@ -194,7 +194,7 @@ final class BybitLinearRepositoryTest {
         final var start = ((Map<?, ?>) ((List<?>) kd.get(DATA)).getFirst()).get(START);
         assertEquals(1, repository.saveKline1d(List.of(kd), 1300L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline1d(from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getKline1d(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
