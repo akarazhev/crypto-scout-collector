@@ -144,7 +144,7 @@ final class BybitTaSpotRepositoryTest {
         assertEquals(expected, repository.savePublicTrade(List.of(pt), 600L));
         final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
-        assertEquals(expected, repository.getPublicTrade(from, from).size());
+        assertEquals(expected, repository.getPublicTrade(BTC_USDT, from, from).size());
     }
 
     @Test

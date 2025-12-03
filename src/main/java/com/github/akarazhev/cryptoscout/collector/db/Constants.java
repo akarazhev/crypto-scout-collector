@@ -355,9 +355,6 @@ public final class Constants {
         // Spot public trades
         static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + TA_SPOT_PUBLIC_TRADE_TABLE +
                 "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        static final String SPOT_PUBLIC_TRADE_SELECT =
-                "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
-                        TA_SPOT_PUBLIC_TRADE_TABLE + " WHERE trade_time >= ? AND trade_time <= ?";
         static final String SPOT_PUBLIC_TRADE_SELECT_BY_SYMBOL =
                 "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
                         TA_SPOT_PUBLIC_TRADE_TABLE + " WHERE symbol = ? AND trade_time >= ? AND trade_time <= ?";
@@ -372,9 +369,6 @@ public final class Constants {
         // Linear public trades
         static final String LINEAR_PUBLIC_TRADE_INSERT = "INSERT INTO " + TA_LINEAR_PUBLIC_TRADE_TABLE +
                 "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        static final String LINEAR_PUBLIC_TRADE_SELECT =
-                "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
-                        TA_LINEAR_PUBLIC_TRADE_TABLE + " WHERE trade_time >= ? AND trade_time <= ?";
         static final String LINEAR_PUBLIC_TRADE_SELECT_BY_SYMBOL =
                 "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
                         TA_LINEAR_PUBLIC_TRADE_TABLE + " WHERE symbol = ? AND trade_time >= ? AND trade_time <= ?";
@@ -447,9 +441,6 @@ public final class Constants {
         // Linear all liquidation
         static final String LINEAR_ALL_LIQUIDATION_INSERT = "INSERT INTO " + TA_LINEAR_ALL_LIQUIDATION_TABLE +
                 "(symbol, event_time, position_side, executed_size, bankruptcy_price) VALUES (?, ?, ?, ?, ?)";
-        static final String LINEAR_ALL_LIQUIDATION_SELECT =
-                "SELECT symbol, event_time, position_side, executed_size, bankruptcy_price FROM " +
-                        TA_LINEAR_ALL_LIQUIDATION_TABLE + " WHERE event_time >= ? AND event_time <= ?";
         static final String LINEAR_ALL_LIQUIDATION_SELECT_BY_SYMBOL =
                 "SELECT symbol, event_time, position_side, executed_size, bankruptcy_price FROM " +
                         TA_LINEAR_ALL_LIQUIDATION_TABLE + " WHERE symbol = ? AND event_time >= ? AND event_time <= ?";

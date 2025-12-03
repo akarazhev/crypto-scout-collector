@@ -159,15 +159,6 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
         };
     }
 
-    public Promise<List<Map<String, Object>>> getPublicTrade(final Type type, final OffsetDateTime from,
-                                                             final OffsetDateTime to) {
-        return switch (type) {
-            case BYBIT_TA_SPOT -> Promise.ofBlocking(executor, () -> bybitTaSpotRepository.getPublicTrade(from, to));
-            case BYBIT_TA_LINEAR ->
-                    Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getPublicTrade(from, to));
-        };
-    }
-
     public Promise<List<Map<String, Object>>> getPublicTrade(final Type type, final String symbol,
                                                              final OffsetDateTime from, final OffsetDateTime to) {
         return switch (type) {
@@ -176,10 +167,6 @@ public final class BybitTaCryptoCollector extends AbstractReactive implements Re
             case BYBIT_TA_LINEAR ->
                     Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getPublicTrade(symbol, from, to));
         };
-    }
-
-    public Promise<List<Map<String, Object>>> getAllLiquidation(final OffsetDateTime from, final OffsetDateTime to) {
-        return Promise.ofBlocking(executor, () -> bybitTaLinearRepository.getAllLiquidation(from, to));
     }
 
     public Promise<List<Map<String, Object>>> getAllLiquidation(final String symbol, final OffsetDateTime from,

@@ -143,7 +143,7 @@ final class BybitTaCryptoCollectorTest {
         final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
         final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
         assertEquals(getRowsCount(pt), TestUtils.await(collector.getPublicTrade(BybitTaCryptoCollector.Type.BYBIT_TA_SPOT,
-                fromPt, fromPt)).size());
+                BTC_USDT, fromPt, fromPt)).size());
 
         final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
         final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
@@ -178,7 +178,7 @@ final class BybitTaCryptoCollectorTest {
 
         final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
         final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
-        assertEquals(getRowsCount(pt), taSpotRepository.getPublicTrade(fromPt, fromPt).size());
+        assertEquals(getRowsCount(pt), taSpotRepository.getPublicTrade(BTC_USDT, fromPt, fromPt).size());
 
         final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
         final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
@@ -215,7 +215,7 @@ final class BybitTaCryptoCollectorTest {
         final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
         final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
         assertEquals(getRowsCount(pt), TestUtils.await(collector.getPublicTrade(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR,
-                fromPt, fromPt)).size());
+                BTC_USDT, fromPt, fromPt)).size());
 
         final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
         final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
@@ -232,7 +232,7 @@ final class BybitTaCryptoCollectorTest {
                 TestUtils.await(collector.getOrderBook1000(BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR, BTC_USDT, from1000, from1000)).size());
         final var tAl = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
         final var fromAl = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tAl), ZoneOffset.UTC);
-        assertEquals(1, TestUtils.await(collector.getAllLiquidation(fromAl, fromAl)).size());
+        assertEquals(1, TestUtils.await(collector.getAllLiquidation(BTC_USDT, fromAl, fromAl)).size());
     }
 
     @Test
@@ -255,7 +255,7 @@ final class BybitTaCryptoCollectorTest {
 
         final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
         final var fromPt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
-        assertEquals(getRowsCount(pt), taLinearRepository.getPublicTrade(fromPt, fromPt).size());
+        assertEquals(getRowsCount(pt), taLinearRepository.getPublicTrade(BTC_USDT, fromPt, fromPt).size());
 
         final var from1 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
         final var from50 = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
@@ -268,7 +268,7 @@ final class BybitTaCryptoCollectorTest {
 
         final var tAl = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
         final var fromAl = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tAl), ZoneOffset.UTC);
-        assertEquals(1, taLinearRepository.getAllLiquidation(fromAl, fromAl).size());
+        assertEquals(1, taLinearRepository.getAllLiquidation(BTC_USDT, fromAl, fromAl).size());
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitTaCryptoStream());
         assertEquals(1100L, offset.isPresent() ? offset.getAsLong() : 0L);
