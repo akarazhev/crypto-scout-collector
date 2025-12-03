@@ -54,6 +54,7 @@ import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.cryptoscout.test.MockData.Source.CMC_PARSER;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.SYMBOL;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
@@ -114,7 +115,8 @@ final class CmcParserCollectorTest {
         assertEquals(1, cmcParserRepository.saveKline1d(List.of(kline), 120L));
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
-        assertEquals(1, TestUtils.await(collector.getKline1d(from, from)).size());
+        final var symbol = (String) kline.get(SYMBOL);
+        assertEquals(1, TestUtils.await(collector.getKline1d(symbol, from, from)).size());
     }
 
     @Test
@@ -123,7 +125,8 @@ final class CmcParserCollectorTest {
         assertEquals(1, cmcParserRepository.saveKline1w(List.of(kline), 130L));
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
-        assertEquals(1, TestUtils.await(collector.getKline1w(from, from)).size());
+        final var symbol = (String) kline.get(SYMBOL);
+        assertEquals(1, TestUtils.await(collector.getKline1w(symbol, from, from)).size());
     }
 
     @BeforeEach

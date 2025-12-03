@@ -105,12 +105,14 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
         return Promise.ofBlocking(executor, () -> cmcParserRepository.getFgi(odt));
     }
 
-    public Promise<List<Map<String, Object>>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) {
-        return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1d(from, to));
+    public Promise<List<Map<String, Object>>> getKline1d(final String symbol, final OffsetDateTime from,
+                                                         final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1d(symbol, from, to));
     }
 
-    public Promise<List<Map<String, Object>>> getKline1w(final OffsetDateTime from, final OffsetDateTime to) {
-        return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1w(from, to));
+    public Promise<List<Map<String, Object>>> getKline1w(final String symbol, final OffsetDateTime from,
+                                                         final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1w(symbol, from, to));
     }
 
     private void scheduledFlush() {

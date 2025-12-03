@@ -48,9 +48,9 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_UP
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE_CLASSIFICATION;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_CIRCULATING_SUPPLY;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_CLOSE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_HIGH;
@@ -66,7 +66,7 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KL
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_VOLUME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
-import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRange;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRangeBySymbol;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CIRCULATING_SUPPLY;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.HIGH;
@@ -250,8 +250,9 @@ public final class CmcParserRepository extends AbstractReactive implements React
         return count;
     }
 
-    public List<Map<String, Object>> getKline1d(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, CMC_KLINE_1D_SELECT, from, to,
+    public List<Map<String, Object>> getKline1d(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, CMC_KLINE_1D_SELECT_BY_SYMBOL, symbol, from, to,
                 SYMBOL, TIME_OPEN, TIME_CLOSE, TIME_HIGH, TIME_LOW,
                 OPEN, HIGH, LOW, CLOSE, VOLUME, MARKET_CAP2, CIRCULATING_SUPPLY, TIMESTAMP);
     }
@@ -328,8 +329,9 @@ public final class CmcParserRepository extends AbstractReactive implements React
         return count;
     }
 
-    public List<Map<String, Object>> getKline1w(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
-        return fetchRange(dataSource, CMC_KLINE_1W_SELECT, from, to,
+    public List<Map<String, Object>> getKline1w(final String symbol, final OffsetDateTime from, final OffsetDateTime to)
+            throws SQLException {
+        return fetchRangeBySymbol(dataSource, CMC_KLINE_1W_SELECT_BY_SYMBOL, symbol, from, to,
                 SYMBOL, TIME_OPEN, TIME_CLOSE, TIME_HIGH, TIME_LOW,
                 OPEN, HIGH, LOW, CLOSE, VOLUME, MARKET_CAP2, CIRCULATING_SUPPLY, TIMESTAMP);
     }

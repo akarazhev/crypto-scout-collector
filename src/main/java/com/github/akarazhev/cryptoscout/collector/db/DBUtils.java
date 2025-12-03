@@ -34,33 +34,12 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.LAST_OFFSET;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM;
 
 final class DBUtils {
-
-    static List<Map<String, Object>> fetchRange(final DataSource dataSource, final String sql, final OffsetDateTime from,
-                                                final OffsetDateTime to, final String... columns) throws SQLException {
-        final var results = new ArrayList<Map<String, Object>>();
-        try (final var c = dataSource.getConnection();
-             final var ps = c.prepareStatement(sql)) {
-            ps.setObject(FROM, from);
-            ps.setObject(TO, to);
-            try (final var rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    final var row = new HashMap<String, Object>();
-                    for (var i = 0; i < columns.length; i++) {
-                        row.put(columns[i], rs.getObject(i + 1));
-                    }
-
-                    results.add(row);
-                }
-            }
-        }
-
-        return results;
-    }
 
     static List<Map<String, Object>> fetchRangeBySymbol(final DataSource dataSource, final String sql, final String symbol,
                                                         final OffsetDateTime from, final OffsetDateTime to,
@@ -68,9 +47,9 @@ final class DBUtils {
         final var results = new ArrayList<Map<String, Object>>();
         try (final var c = dataSource.getConnection();
              final var ps = c.prepareStatement(sql)) {
-            ps.setString(1, symbol);
-            ps.setObject(2, from);
-            ps.setObject(3, to);
+            ps.setString(SYMBOL, symbol);
+            ps.setObject(FROM, from);
+            ps.setObject(TO, to);
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();

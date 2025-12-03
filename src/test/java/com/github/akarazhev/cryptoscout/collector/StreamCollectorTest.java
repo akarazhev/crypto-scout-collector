@@ -99,6 +99,7 @@ import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Symbol.BTC_USDT;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.SYMBOL;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
@@ -266,7 +267,8 @@ final class StreamCollectorTest {
         TestUtils.await(cmcParserCollector.stop());
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
-        assertEquals(1, cmcParserRepository.getKline1w(from, from).size());
+        final var symbol = (String) kline.get(SYMBOL);
+        assertEquals(1, cmcParserRepository.getKline1w(symbol, from, from).size());
         assertTableCount(CMC_KLINE_1W_TABLE, 1);
 
         TestUtils.await(cmcParserCollector.start());
@@ -280,7 +282,8 @@ final class StreamCollectorTest {
         TestUtils.await(cmcParserCollector.stop());
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
-        assertEquals(1, cmcParserRepository.getKline1d(from, from).size());
+        final var symbol = (String) kline.get(SYMBOL);
+        assertEquals(1, cmcParserRepository.getKline1d(symbol, from, from).size());
         assertTableCount(CMC_KLINE_1D_TABLE, 1);
 
         TestUtils.await(cmcParserCollector.start());

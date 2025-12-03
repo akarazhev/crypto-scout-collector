@@ -35,8 +35,9 @@ public final class Constants {
         }
 
         // Time range
-        static final int FROM = 1;
-        static final int TO = 2;
+        static final int SYMBOL = 1;
+        static final int FROM = 2;
+        static final int TO = 3;
     }
 
     public final static class Cmc {
@@ -69,20 +70,20 @@ public final class Constants {
                 "(symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, market_cap, " +
                 "circulating_supply, timestamp) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO NOTHING";
-        static final String CMC_KLINE_1D_SELECT =
+        static final String CMC_KLINE_1D_SELECT_BY_SYMBOL =
                 "SELECT symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, " +
                         "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1D_TABLE +
-                        " WHERE timestamp >= ? AND timestamp <= ?";
+                        " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
 
         // CMC kline 1w
         static final String CMC_KLINE_1W_INSERT = "INSERT INTO " + CMC_KLINE_1W_TABLE +
                 "(symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, market_cap, " +
                 "circulating_supply, timestamp) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, timestamp) DO NOTHING";
-        static final String CMC_KLINE_1W_SELECT =
+        static final String CMC_KLINE_1W_SELECT_BY_SYMBOL =
                 "SELECT symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, " +
                         "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1W_TABLE +
-                        " WHERE timestamp >= ? AND timestamp <= ?";
+                        " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
         static final int CMC_KLINE_SYMBOL = 1;
         static final int CMC_KLINE_TIME_OPEN = 2;
         static final int CMC_KLINE_TIME_CLOSE = 3;
