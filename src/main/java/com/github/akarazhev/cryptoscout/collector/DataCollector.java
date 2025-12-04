@@ -25,7 +25,7 @@
 package com.github.akarazhev.cryptoscout.collector;
 
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
-import com.github.akarazhev.jcryptolib.stream.Command;
+import com.github.akarazhev.jcryptolib.stream.Message;
 import com.github.akarazhev.jcryptolib.util.JsonUtils;
 import com.rabbitmq.client.CancelCallback;
 import com.rabbitmq.client.Channel;
@@ -89,9 +89,9 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                     try {
                         final var body = delivery.getBody();
                         reactor.execute(() -> Promise.ofBlocking(executor, () -> {
-                            @SuppressWarnings("unchecked") final var command =
-                                    (Command<OffsetDateTime[]>) JsonUtils.bytes2Object(body, Command.class);
-                            process(command);
+                            @SuppressWarnings("unchecked") final var message =
+                                    (Message<OffsetDateTime[]>) JsonUtils.bytes2Object(body, Message.class);
+                            process(message);
                         }));
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     } catch (final Exception e) {
@@ -101,7 +101,7 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                             LOGGER.debug("Error nacking AMQP message", ex);
                         }
 
-                        LOGGER.error("Failed to parse/process command message", e);
+                        LOGGER.error("Failed to parse/process message", e);
                     }
                 };
 
@@ -148,8 +148,9 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
         });
     }
 
-    private Promise<Void> process(final Command<OffsetDateTime[]> command) {
-        LOGGER.info("Received command: id={}, from={}, size={}", command.id(), command.from(), command.size());
-        return Promise.complete();
+    private void process(final Message<OffsetDateTime[]> message) {
+        final var command = message.command();
+        LOGGER.info("Received message with command of type={}, source={}, method={}", command.getType(), command.getSource(),
+                command.getMethod());
     }
 }

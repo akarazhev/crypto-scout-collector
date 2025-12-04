@@ -36,7 +36,6 @@ import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.test.AmqpTestConsumer;
 import com.github.akarazhev.cryptoscout.test.AmqpTestPublisher;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
-import com.github.akarazhev.jcryptolib.stream.Command;
 import com.rabbitmq.client.ConnectionFactory;
 import io.activej.eventloop.Eventloop;
 import io.activej.promise.TestUtils;
