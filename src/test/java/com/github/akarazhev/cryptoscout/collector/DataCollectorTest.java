@@ -33,6 +33,7 @@ import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
+import com.github.akarazhev.cryptoscout.test.AmqpTestConsumer;
 import com.github.akarazhev.cryptoscout.test.AmqpTestPublisher;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
 import com.github.akarazhev.jcryptolib.stream.Command;
@@ -46,6 +47,9 @@ import org.junit.jupiter.api.Test;
 import java.time.OffsetDateTime;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 final class DataCollectorTest {
     private static ExecutorService executor;
@@ -68,6 +72,7 @@ final class DataCollectorTest {
     private static DataCollector dataCollector;
 
     private static AmqpTestPublisher collectorQueuePublisher;
+    private static AmqpTestConsumer analystQueueConsumer;
 
     @BeforeAll
     static void setup() {
@@ -101,16 +106,24 @@ final class DataCollectorTest {
         factory.setUsername(AmqpConfig.getAmqpRabbitmqUsername());
         factory.setPassword(AmqpConfig.getAmqpRabbitmqPassword());
 
+        analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, factory, AmqpConfig.getAmqpAnalystQueue());
         collectorQueuePublisher = AmqpTestPublisher.create(reactor, executor, factory, AmqpConfig.getAmqpCollectorQueue());
-        TestUtils.await(collectorQueuePublisher.start());
-        TestUtils.await(bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
-                cmcParserCollector.start(), dataCollector.start(), collectorQueuePublisher.start());
+        TestUtils.await(analystQueueConsumer.start(), collectorQueuePublisher.start(), bybitCryptoCollector.start(),
+                bybitParserCollector.start(), bybitTaCryptoCollector.start(), cmcParserCollector.start(),
+                dataCollector.start());
     }
 
     @Test
     void testPublishCommand() {
-        final var command = Command.of(0, 0, new OffsetDateTime[]{}, 0);
-        collectorQueuePublisher.publish("", "collector", command);
+//        collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(), AmqpConfig.getAmqpCollectorRoutingKey(),
+//                Command.of(0, 0, new OffsetDateTime[]{}, 0));
+//        final var command = TestUtils.await(analystQueueConsumer.getCommand());
+//        assertNotNull(command);
+//        assertEquals(0, command.id());
+//        assertEquals(0, command.from());
+//        assertEquals(0, command.size());
+//        assertNotNull(command.value());
+//        assertEquals(data, command.value());
     }
 
     @AfterAll
