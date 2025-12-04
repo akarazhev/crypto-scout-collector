@@ -83,7 +83,7 @@ final class CmcParserCollectorTest {
 
     @Test
     void shouldCollectKline1wAndUpdateOffsets() throws Exception {
-        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_W);
         TestUtils.await(collector.save(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline), 210L));
 
         TestUtils.await(collector.stop());
@@ -121,7 +121,7 @@ final class CmcParserCollectorTest {
 
     @Test
     void shouldGetKline1w() throws Exception {
-        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_W);
         assertEquals(1, cmcParserRepository.saveKline1w(List.of(kline), 130L));
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));

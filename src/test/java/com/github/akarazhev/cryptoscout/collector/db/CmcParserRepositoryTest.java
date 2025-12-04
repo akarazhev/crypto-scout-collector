@@ -114,14 +114,14 @@ final class CmcParserRepositoryTest {
 
     @Test
     void shouldSaveKline1w() throws Exception {
-        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
+        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_W);
         assertEquals(1, repository.saveKline1w(List.of(kline), 300L));
         assertTableCount(CMC_KLINE_1W_TABLE, 1);
     }
 
     @Test
     void shouldGetKline1w() throws Exception {
-        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
+        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_W);
         assertEquals(1, repository.saveKline1w(List.of(kline), 400L));
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));

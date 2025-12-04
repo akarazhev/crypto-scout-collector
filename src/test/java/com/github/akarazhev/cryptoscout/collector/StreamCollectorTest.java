@@ -261,7 +261,7 @@ final class StreamCollectorTest {
 
     @Test
     void testShouldCmcParserKline1wDataBeConsumed() throws Exception {
-        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_D);
+        final var kline = MockData.get(CMC_PARSER, MockData.Type.KLINE_W);
         cmcParserStreamPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline));
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cmcParserCollector.stop());
