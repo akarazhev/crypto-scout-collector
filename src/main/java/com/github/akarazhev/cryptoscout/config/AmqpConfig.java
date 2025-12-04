@@ -36,6 +36,7 @@ import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_TA_CRYPTO_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_COLLECTOR_QUEUE;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_COLLECTOR_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CRYPTO_SCOUT_EXCHANGE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_RABBITMQ_HOST;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_RABBITMQ_PASSWORD;
@@ -86,6 +87,10 @@ public final class AmqpConfig {
 
     public static String getAmqpCryptoScoutExchange() {
         return AppConfig.getAsString(AMQP_CRYPTO_SCOUT_EXCHANGE);
+    }
+
+    public static String getAmqpCollectorRoutingKey() {
+        return AppConfig.getAsString(AMQP_COLLECTOR_ROUTING_KEY);
     }
 
     public static String getAmqpCollectorQueue() {

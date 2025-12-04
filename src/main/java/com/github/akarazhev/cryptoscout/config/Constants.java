@@ -44,6 +44,7 @@ final class Constants {
         static final String AMQP_BYBIT_PARSER_STREAM = "amqp.bybit.parser.stream";
         static final String AMQP_CMC_PARSER_STREAM = "amqp.cmc.parser.stream";
         static final String AMQP_CRYPTO_SCOUT_EXCHANGE = "amqp.crypto.scout.exchange";
+        static final String AMQP_COLLECTOR_ROUTING_KEY = "amqp.collector.routing.key";
         static final String AMQP_COLLECTOR_QUEUE = "amqp.collector.queue";
         static final String AMQP_CHATBOT_QUEUE = "amqp.chatbot.queue";
         static final String AMQP_ANALYST_QUEUE = "amqp.analyst.queue";
