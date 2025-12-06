@@ -157,7 +157,45 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                         final var args = message.value();
                         cmcParserCollector.getKline1d((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
                                 whenResult(klines -> {
-                                    // TODO: send to a queue
+                                    switch (command.getSource()) {
+                                        case Source.CHATBOT ->
+                                                chatbotPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                                                        AmqpConfig.getAmqpChatbotRoutingKey(), Message.of(new Message.Command() {
+                                                            @Override
+                                                            public Type getType() {
+                                                                return Type.RESPONSE;
+                                                            }
+
+                                                            @Override
+                                                            public String getSource() {
+                                                                return Source.COLLECTOR;
+                                                            }
+
+                                                            @Override
+                                                            public String getMethod() {
+                                                                return Method.CMC_PARSER_GET_FGI;
+                                                            }
+                                                        }, klines));
+
+                                        case Source.ANALYST ->
+                                                analystPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                                                        AmqpConfig.getAmqpAnalystRoutingKey(), Message.of(new Message.Command() {
+                                                            @Override
+                                                            public Type getType() {
+                                                                return Type.RESPONSE;
+                                                            }
+
+                                                            @Override
+                                                            public String getSource() {
+                                                                return Source.COLLECTOR;
+                                                            }
+
+                                                            @Override
+                                                            public String getMethod() {
+                                                                return Method.CMC_PARSER_GET_FGI;
+                                                            }
+                                                        }, klines));
+                                    }
                                 });
                     }
 
@@ -165,7 +203,45 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                         final var args = message.value();
                         cmcParserCollector.getKline1w((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
                                 whenResult(klines -> {
-                                    // TODO: send to a queue
+                                    switch (command.getSource()) {
+                                        case Source.CHATBOT ->
+                                                chatbotPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                                                        AmqpConfig.getAmqpChatbotRoutingKey(), Message.of(new Message.Command() {
+                                                            @Override
+                                                            public Type getType() {
+                                                                return Type.RESPONSE;
+                                                            }
+
+                                                            @Override
+                                                            public String getSource() {
+                                                                return Source.COLLECTOR;
+                                                            }
+
+                                                            @Override
+                                                            public String getMethod() {
+                                                                return Method.CMC_PARSER_GET_FGI;
+                                                            }
+                                                        }, klines));
+
+                                        case Source.ANALYST ->
+                                                analystPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                                                        AmqpConfig.getAmqpAnalystRoutingKey(), Message.of(new Message.Command() {
+                                                            @Override
+                                                            public Type getType() {
+                                                                return Type.RESPONSE;
+                                                            }
+
+                                                            @Override
+                                                            public String getSource() {
+                                                                return Source.COLLECTOR;
+                                                            }
+
+                                                            @Override
+                                                            public String getMethod() {
+                                                                return Method.CMC_PARSER_GET_FGI;
+                                                            }
+                                                        }, klines));
+                                    }
                                 });
                     }
 
@@ -173,7 +249,45 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                         final var args = message.value();
                         cmcParserCollector.getFgi((OffsetDateTime) args[0], (OffsetDateTime) args[1]).
                                 whenResult(fgis -> {
-                                    // TODO: send to a queue
+                                    switch (command.getSource()) {
+                                        case Source.CHATBOT ->
+                                                chatbotPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                                                        AmqpConfig.getAmqpChatbotRoutingKey(), Message.of(new Message.Command() {
+                                                            @Override
+                                                            public Type getType() {
+                                                                return Type.RESPONSE;
+                                                            }
+
+                                                            @Override
+                                                            public String getSource() {
+                                                                return Source.COLLECTOR;
+                                                            }
+
+                                                            @Override
+                                                            public String getMethod() {
+                                                                return Method.CMC_PARSER_GET_FGI;
+                                                            }
+                                                        }, fgis));
+
+                                        case Source.ANALYST ->
+                                                analystPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                                                        AmqpConfig.getAmqpAnalystRoutingKey(), Message.of(new Message.Command() {
+                                                            @Override
+                                                            public Type getType() {
+                                                                return Type.RESPONSE;
+                                                            }
+
+                                                            @Override
+                                                            public String getSource() {
+                                                                return Source.COLLECTOR;
+                                                            }
+
+                                                            @Override
+                                                            public String getMethod() {
+                                                                return Method.CMC_PARSER_GET_FGI;
+                                                            }
+                                                        }, fgis));
+                                    }
                                 });
                     }
                 }
@@ -182,8 +296,22 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
     }
 
     static class Method {
+        private Method() {
+            throw new UnsupportedOperationException();
+        }
+
         public static final String CMC_PARSER_GET_KLINE_1D = "cmcParser.getKline1d";
         public static final String CMC_PARSER_GET_KLINE_1W = "cmcParser.getKline1w";
         public static final String CMC_PARSER_GET_FGI = "cmcParser.getFgi";
+    }
+
+    static class Source {
+        private Source() {
+            throw new UnsupportedOperationException();
+        }
+
+        public static final String COLLECTOR = "collector";
+        public static final String ANALYST = "analyst";
+        public static final String CHATBOT = "chatbot";
     }
 }
