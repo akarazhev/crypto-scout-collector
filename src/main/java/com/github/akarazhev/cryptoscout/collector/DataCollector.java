@@ -168,6 +168,14 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                                     // TODO: send to a queue
                                 });
                     }
+
+                    case Method.CMC_PARSER_GET_FGI -> {
+                        final var args = message.value();
+                        cmcParserCollector.getFgi((OffsetDateTime) args[0], (OffsetDateTime) args[1]).
+                                whenResult(fgis -> {
+                                    // TODO: send to a queue
+                                });
+                    }
                 }
             }
         }
@@ -176,5 +184,6 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
     static class Method {
         public static final String CMC_PARSER_GET_KLINE_1D = "cmcParser.getKline1d";
         public static final String CMC_PARSER_GET_KLINE_1W = "cmcParser.getKline1w";
+        public static final String CMC_PARSER_GET_FGI = "cmcParser.getFgi";
     }
 }
