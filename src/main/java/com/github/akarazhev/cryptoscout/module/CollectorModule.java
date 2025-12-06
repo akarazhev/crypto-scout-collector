@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.module;
 
+import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
 import com.github.akarazhev.cryptoscout.collector.AmqpPublisher;
 import com.github.akarazhev.cryptoscout.collector.BybitTaCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.DataCollector;
@@ -165,15 +166,23 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    @Eager
-    private DataCollector dataCollector(final NioReactor reactor, final Executor executor,
+    private DataCollector dataCollector(final NioReactor reactor,
                                         final BybitCryptoCollector bybitCryptoCollector,
                                         final BybitTaCryptoCollector bybitTaCryptoCollector,
                                         final BybitParserCollector bybitParserCollector,
                                         final CmcParserCollector cmcParserCollector,
                                         @Named("chatbotPublisher") final AmqpPublisher chatbotPublisher,
                                         @Named("analystPublisher") final AmqpPublisher analystPublisher) {
-        return DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
+        return DataCollector.create(reactor, bybitCryptoCollector, bybitTaCryptoCollector,
                 bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
+    }
+
+    @Provides
+    @Named("collectorConsumer")
+    @Eager
+    private AmqpConsumer collectorConsumer(final NioReactor reactor, final Executor executor,
+                                           final DataCollector dataCollector) {
+        return AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(), "collector-consumer",
+                AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
     }
 }

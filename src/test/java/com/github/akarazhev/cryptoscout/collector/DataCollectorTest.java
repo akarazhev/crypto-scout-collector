@@ -70,6 +70,7 @@ final class DataCollectorTest {
     private static AmqpPublisher chatbotPublisher;
     private static AmqpPublisher analystPublisher;
     private static DataCollector dataCollector;
+    private static AmqpConsumer collectorConsumer;
 
     private static AmqpTestPublisher collectorQueuePublisher;
     private static AmqpTestConsumer analystQueueConsumer;
@@ -103,8 +104,10 @@ final class DataCollectorTest {
         analystPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 "analyst-publisher", AmqpConfig.getAmqpAnalystQueue());
 
-        dataCollector = DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
+        dataCollector = DataCollector.create(reactor, bybitCryptoCollector, bybitTaCryptoCollector,
                 bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
+        collectorConsumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+                "collector-consumer", AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
 
         analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpAnalystQueue());
@@ -113,9 +116,9 @@ final class DataCollectorTest {
         collectorQueuePublisher = AmqpTestPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpCollectorQueue());
         TestUtils.await(analystQueueConsumer.start(), chatbotQueueConsumer.start(), collectorQueuePublisher.start(),
-                chatbotPublisher.start(), analystPublisher.start(),
+                chatbotPublisher.start(), analystPublisher.start(), collectorConsumer.start(),
                 bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
-                cmcParserCollector.start(), dataCollector.start());
+                cmcParserCollector.start());
     }
 
     @Test
@@ -138,11 +141,11 @@ final class DataCollectorTest {
                         .whenComplete(() -> collectorQueuePublisher.stop()
                                 .whenComplete(() -> chatbotPublisher.stop()
                                         .whenComplete(() -> analystPublisher.stop()
-                                                .whenComplete(() -> bybitCryptoCollector.stop()
-                                                        .whenComplete(() -> bybitParserCollector.stop()
-                                                                .whenComplete(() -> bybitTaCryptoCollector.stop()
-                                                                        .whenComplete(() -> cmcParserCollector.stop()
-                                                                                .whenComplete(() -> dataCollector.stop()
+                                                .whenComplete(() -> collectorConsumer.stop()
+                                                        .whenComplete(() -> bybitCryptoCollector.stop()
+                                                                .whenComplete(() -> bybitParserCollector.stop()
+                                                                        .whenComplete(() -> bybitTaCryptoCollector.stop()
+                                                                                .whenComplete(() -> cmcParserCollector.stop()
                                                                                         .whenComplete(() -> dataSource.stop()
                                                                                                 .whenComplete(() -> reactor.breakEventloop()
                                                                                                 ))))))))))));
