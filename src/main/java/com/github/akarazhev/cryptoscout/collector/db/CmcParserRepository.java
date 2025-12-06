@@ -158,12 +158,12 @@ public final class CmcParserRepository extends AbstractReactive implements React
         return count;
     }
 
-    public List<Map<String, Object>> getFgi(final OffsetDateTime odt) throws SQLException {
+    public List<Map<String, Object>> getFgi(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
         final var results = new ArrayList<Map<String, Object>>();
         try (final var c = dataSource.getConnection()) {
             final var ps = c.prepareStatement(FGI_SELECT);
-            ps.setObject(FROM, odt);
-            ps.setObject(TO, odt);
+            ps.setObject(FROM, from);
+            ps.setObject(TO, to);
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();

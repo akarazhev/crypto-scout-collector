@@ -92,7 +92,8 @@ final class CmcParserRepositoryTest {
     void shouldGetFgi() throws Exception {
         final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
         assertEquals(1, repository.saveFgi(List.of(fgi), 200L));
-        assertEquals(1, repository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
+        final var odt = toOdt(fgi.get(UPDATE_TIME));
+        assertEquals(1, repository.getFgi(odt, odt).size());
     }
 
     @Test

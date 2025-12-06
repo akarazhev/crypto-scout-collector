@@ -153,7 +153,8 @@ final class CmcParserCollectorTest {
     void shouldGetFgi() throws Exception {
         final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
         assertEquals(1, cmcParserRepository.saveFgi(List.of(fgi), 200L));
-        assertEquals(1, TestUtils.await(collector.getFgi(toOdt(fgi.get(UPDATE_TIME)))).size());
+        final var odt = toOdt(fgi.get(UPDATE_TIME));
+        assertEquals(1, TestUtils.await(collector.getFgi(odt, odt)).size());
     }
 
     @Test
@@ -163,7 +164,8 @@ final class CmcParserCollectorTest {
 
         TestUtils.await(collector.stop());
 
-        assertEquals(1, cmcParserRepository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
+        final var odt = toOdt(fgi.get(UPDATE_TIME));
+        assertEquals(1, cmcParserRepository.getFgi(odt, odt).size());
         assertTableCount(CMC_FGI_TABLE, 1);
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpCmcParserStream());

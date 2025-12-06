@@ -253,7 +253,8 @@ final class StreamCollectorTest {
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cmcParserCollector.stop());
 
-        assertEquals(1, cmcParserRepository.getFgi(toOdt(fgi.get(UPDATE_TIME))).size());
+        final var odt = toOdt(fgi.get(UPDATE_TIME));
+        assertEquals(1, cmcParserRepository.getFgi(odt, odt).size());
         assertTableCount(CMC_FGI_TABLE, 1);
 
         TestUtils.await(cmcParserCollector.start());

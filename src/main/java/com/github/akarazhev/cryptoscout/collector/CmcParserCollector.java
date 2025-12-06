@@ -101,8 +101,8 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
         return Promise.complete();
     }
 
-    public Promise<List<Map<String, Object>>> getFgi(final OffsetDateTime odt) {
-        return Promise.ofBlocking(executor, () -> cmcParserRepository.getFgi(odt));
+    public Promise<List<Map<String, Object>>> getFgi(final OffsetDateTime from, final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> cmcParserRepository.getFgi(from, to));
     }
 
     public Promise<List<Map<String, Object>>> getKline1d(final String symbol, final OffsetDateTime from,
