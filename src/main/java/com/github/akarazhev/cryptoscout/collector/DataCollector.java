@@ -90,7 +90,7 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                         final var body = delivery.getBody();
                         reactor.execute(() -> Promise.ofBlocking(executor, () -> {
                             @SuppressWarnings("unchecked") final var message =
-                                    (Message<OffsetDateTime[]>) JsonUtils.bytes2Object(body, Message.class);
+                                    (Message<Object[]>) JsonUtils.bytes2Object(body, Message.class);
                             process(message);
                         }));
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
@@ -148,9 +148,33 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
         });
     }
 
-    private void process(final Message<OffsetDateTime[]> message) {
+    private void process(final Message<Object[]> message) {
         final var command = message.command();
-        LOGGER.info("Received message with command of type={}, source={}, method={}", command.getType(), command.getSource(),
-                command.getMethod());
+        switch (command.getType()) {
+            case Message.Command.Type.REQUEST -> {
+                switch (command.getMethod()) {
+                    case Method.CMC_PARSER_GET_KLINE_1D -> {
+                        final var args = message.value();
+                        cmcParserCollector.getKline1d((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
+                                whenResult(klines -> {
+                                    // TODO: send to a queue
+                                });
+                    }
+
+                    case Method.CMC_PARSER_GET_KLINE_1W -> {
+                        final var args = message.value();
+                        cmcParserCollector.getKline1w((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
+                                whenResult(klines -> {
+                                    // TODO: send to a queue
+                                });
+                    }
+                }
+            }
+        }
+    }
+
+    static class Method {
+        public static final String CMC_PARSER_GET_KLINE_1D = "cmcParser.getKline1d";
+        public static final String CMC_PARSER_GET_KLINE_1W = "cmcParser.getKline1w";
     }
 }
