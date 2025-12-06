@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.module;
 
+import com.github.akarazhev.cryptoscout.collector.AmqpPublisher;
 import com.github.akarazhev.cryptoscout.collector.BybitTaCryptoCollector;
 import com.github.akarazhev.cryptoscout.collector.DataCollector;
 import com.github.akarazhev.cryptoscout.collector.StreamCollector;
@@ -38,7 +39,9 @@ import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import io.activej.inject.annotation.Eager;
+import io.activej.inject.annotation.Named;
 import io.activej.inject.annotation.Provides;
 import io.activej.inject.module.AbstractModule;
 import io.activej.reactor.nio.NioReactor;
@@ -146,13 +149,31 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
+    @Named("chatbotPublisher")
+    @Eager
+    private AmqpPublisher chatbotPublisher(final NioReactor reactor, final Executor executor) {
+        return AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(), "chatbot-publisher",
+                AmqpConfig.getAmqpChatbotQueue());
+    }
+
+    @Provides
+    @Named("analystPublisher")
+    @Eager
+    private AmqpPublisher analystPublisher(final NioReactor reactor, final Executor executor) {
+        return AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(), "analyst-publisher",
+                AmqpConfig.getAmqpAnalystQueue());
+    }
+
+    @Provides
     @Eager
     private DataCollector dataCollector(final NioReactor reactor, final Executor executor,
                                         final BybitCryptoCollector bybitCryptoCollector,
                                         final BybitTaCryptoCollector bybitTaCryptoCollector,
                                         final BybitParserCollector bybitParserCollector,
-                                        final CmcParserCollector cmcParserCollector) {
+                                        final CmcParserCollector cmcParserCollector,
+                                        @Named("chatbotPublisher") final AmqpPublisher chatbotPublisher,
+                                        @Named("analystPublisher") final AmqpPublisher analystPublisher) {
         return DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
-                bybitParserCollector, cmcParserCollector);
+                bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
     }
 }

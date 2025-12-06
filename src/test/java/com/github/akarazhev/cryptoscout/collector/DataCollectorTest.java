@@ -36,7 +36,6 @@ import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.test.AmqpTestConsumer;
 import com.github.akarazhev.cryptoscout.test.AmqpTestPublisher;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
-import com.rabbitmq.client.ConnectionFactory;
 import io.activej.eventloop.Eventloop;
 import io.activej.promise.TestUtils;
 import org.junit.jupiter.api.AfterAll;
@@ -68,6 +67,8 @@ final class DataCollectorTest {
     private static BybitTaCryptoCollector bybitTaCryptoCollector;
     private static CmcParserCollector cmcParserCollector;
 
+    private static AmqpPublisher chatbotPublisher;
+    private static AmqpPublisher analystPublisher;
     private static DataCollector dataCollector;
 
     private static AmqpTestPublisher collectorQueuePublisher;
@@ -97,19 +98,22 @@ final class DataCollectorTest {
                 taSpotRepository, taLinearRepository);
         cmcParserCollector = CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
 
+        chatbotPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+                "chatbot-publisher", AmqpConfig.getAmqpChatbotQueue());
+        analystPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+                "analyst-publisher", AmqpConfig.getAmqpAnalystQueue());
+
         dataCollector = DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
-                bybitParserCollector, cmcParserCollector);
+                bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
 
-        final var factory = new ConnectionFactory();
-        factory.setHost(AmqpConfig.getAmqpRabbitmqHost());
-        factory.setPort(AmqpConfig.getAmqpRabbitmqPort());
-        factory.setUsername(AmqpConfig.getAmqpRabbitmqUsername());
-        factory.setPassword(AmqpConfig.getAmqpRabbitmqPassword());
-
-        analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, factory, AmqpConfig.getAmqpAnalystQueue());
-        chatbotQueueConsumer = AmqpTestConsumer.create(reactor, executor, factory, AmqpConfig.getAmqpChatbotQueue());
-        collectorQueuePublisher = AmqpTestPublisher.create(reactor, executor, factory, AmqpConfig.getAmqpCollectorQueue());
+        analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+                AmqpConfig.getAmqpAnalystQueue());
+        chatbotQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+                AmqpConfig.getAmqpChatbotQueue());
+        collectorQueuePublisher = AmqpTestPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+                AmqpConfig.getAmqpCollectorQueue());
         TestUtils.await(analystQueueConsumer.start(), chatbotQueueConsumer.start(), collectorQueuePublisher.start(),
+                chatbotPublisher.start(), analystPublisher.start(),
                 bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
                 cmcParserCollector.start(), dataCollector.start());
     }
@@ -132,14 +136,16 @@ final class DataCollectorTest {
         reactor.post(() -> analystQueueConsumer.stop()
                 .whenComplete(() -> chatbotQueueConsumer.stop()
                         .whenComplete(() -> collectorQueuePublisher.stop()
-                                .whenComplete(() -> bybitCryptoCollector.stop()
-                                        .whenComplete(() -> bybitParserCollector.stop()
-                                                .whenComplete(() -> bybitTaCryptoCollector.stop()
-                                                        .whenComplete(() -> cmcParserCollector.stop()
-                                                                .whenComplete(() -> dataCollector.stop()
-                                                                        .whenComplete(() -> dataSource.stop()
-                                                                                .whenComplete(() -> reactor.breakEventloop()
-                                                                                ))))))))));
+                                .whenComplete(() -> chatbotPublisher.stop()
+                                        .whenComplete(() -> analystPublisher.stop()
+                                                .whenComplete(() -> bybitCryptoCollector.stop()
+                                                        .whenComplete(() -> bybitParserCollector.stop()
+                                                                .whenComplete(() -> bybitTaCryptoCollector.stop()
+                                                                        .whenComplete(() -> cmcParserCollector.stop()
+                                                                                .whenComplete(() -> dataCollector.stop()
+                                                                                        .whenComplete(() -> dataSource.stop()
+                                                                                                .whenComplete(() -> reactor.breakEventloop()
+                                                                                                ))))))))))));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();

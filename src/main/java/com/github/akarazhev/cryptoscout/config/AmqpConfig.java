@@ -119,13 +119,17 @@ public final class AmqpConfig {
         return AppConfig.getAsInt(AMQP_RABBITMQ_PORT);
     }
 
-    public static Connection getConnection() throws IOException, TimeoutException {
+    public static ConnectionFactory getConnectionFactory() {
         final var factory = new ConnectionFactory();
         factory.setHost(AmqpConfig.getAmqpRabbitmqHost());
         factory.setPort(AmqpConfig.getAmqpRabbitmqPort());
         factory.setUsername(AmqpConfig.getAmqpRabbitmqUsername());
         factory.setPassword(AmqpConfig.getAmqpRabbitmqPassword());
-        return factory.newConnection(CONNECTION_NAME);
+        return factory;
+    }
+
+    public static Connection getConnection() throws IOException, TimeoutException {
+        return getConnectionFactory().newConnection(CONNECTION_NAME);
     }
 
     public static Environment getEnvironment() {

@@ -49,6 +49,8 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
     private final BybitTaCryptoCollector bybitTaCryptoCollector;
     private final BybitParserCollector bybitParserCollector;
     private final CmcParserCollector cmcParserCollector;
+    private final AmqpPublisher chatbotPublisher;
+    private final AmqpPublisher analystPublisher;
     private volatile Connection connection;
     private volatile Channel channel;
     private volatile String consumerTag;
@@ -57,22 +59,28 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                                        final BybitCryptoCollector bybitCryptoCollector,
                                        final BybitTaCryptoCollector bybitTaCryptoCollector,
                                        final BybitParserCollector bybitParserCollector,
-                                       final CmcParserCollector cmcParserCollector) {
+                                       final CmcParserCollector cmcParserCollector,
+                                       final AmqpPublisher chatbotPublisher,
+                                       final AmqpPublisher analystPublisher) {
         return new DataCollector(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector, bybitParserCollector,
-                cmcParserCollector);
+                cmcParserCollector, chatbotPublisher, analystPublisher);
     }
 
     private DataCollector(final NioReactor reactor, final Executor executor,
                           final BybitCryptoCollector bybitCryptoCollector,
                           final BybitTaCryptoCollector bybitTaCryptoCollector,
                           final BybitParserCollector bybitParserCollector,
-                          final CmcParserCollector cmcParserCollector) {
+                          final CmcParserCollector cmcParserCollector,
+                          final AmqpPublisher chatbotPublisher,
+                          final AmqpPublisher analystPublisher) {
         super(reactor);
         this.executor = executor;
         this.bybitCryptoCollector = bybitCryptoCollector;
         this.bybitTaCryptoCollector = bybitTaCryptoCollector;
         this.bybitParserCollector = bybitParserCollector;
         this.cmcParserCollector = cmcParserCollector;
+        this.chatbotPublisher = chatbotPublisher;
+        this.analystPublisher = analystPublisher;
     }
 
     @Override
@@ -156,142 +164,55 @@ public final class DataCollector extends AbstractReactive implements ReactiveSer
                     case Method.CMC_PARSER_GET_KLINE_1D -> {
                         final var args = message.value();
                         cmcParserCollector.getKline1d((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
-                                whenResult(klines -> {
-                                    switch (command.getSource()) {
-                                        case Source.CHATBOT ->
-                                                chatbotPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                                                        AmqpConfig.getAmqpChatbotRoutingKey(), Message.of(new Message.Command() {
-                                                            @Override
-                                                            public Type getType() {
-                                                                return Type.RESPONSE;
-                                                            }
-
-                                                            @Override
-                                                            public String getSource() {
-                                                                return Source.COLLECTOR;
-                                                            }
-
-                                                            @Override
-                                                            public String getMethod() {
-                                                                return Method.CMC_PARSER_GET_FGI;
-                                                            }
-                                                        }, klines));
-
-                                        case Source.ANALYST ->
-                                                analystPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                                                        AmqpConfig.getAmqpAnalystRoutingKey(), Message.of(new Message.Command() {
-                                                            @Override
-                                                            public Type getType() {
-                                                                return Type.RESPONSE;
-                                                            }
-
-                                                            @Override
-                                                            public String getSource() {
-                                                                return Source.COLLECTOR;
-                                                            }
-
-                                                            @Override
-                                                            public String getMethod() {
-                                                                return Method.CMC_PARSER_GET_FGI;
-                                                            }
-                                                        }, klines));
-                                    }
-                                });
+                                whenResult(klines -> publishResponse(command.getSource(), Method.CMC_PARSER_GET_KLINE_1D, klines));
                     }
 
                     case Method.CMC_PARSER_GET_KLINE_1W -> {
                         final var args = message.value();
                         cmcParserCollector.getKline1w((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
-                                whenResult(klines -> {
-                                    switch (command.getSource()) {
-                                        case Source.CHATBOT ->
-                                                chatbotPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                                                        AmqpConfig.getAmqpChatbotRoutingKey(), Message.of(new Message.Command() {
-                                                            @Override
-                                                            public Type getType() {
-                                                                return Type.RESPONSE;
-                                                            }
-
-                                                            @Override
-                                                            public String getSource() {
-                                                                return Source.COLLECTOR;
-                                                            }
-
-                                                            @Override
-                                                            public String getMethod() {
-                                                                return Method.CMC_PARSER_GET_FGI;
-                                                            }
-                                                        }, klines));
-
-                                        case Source.ANALYST ->
-                                                analystPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                                                        AmqpConfig.getAmqpAnalystRoutingKey(), Message.of(new Message.Command() {
-                                                            @Override
-                                                            public Type getType() {
-                                                                return Type.RESPONSE;
-                                                            }
-
-                                                            @Override
-                                                            public String getSource() {
-                                                                return Source.COLLECTOR;
-                                                            }
-
-                                                            @Override
-                                                            public String getMethod() {
-                                                                return Method.CMC_PARSER_GET_FGI;
-                                                            }
-                                                        }, klines));
-                                    }
-                                });
+                                whenResult(klines -> publishResponse(command.getSource(), Method.CMC_PARSER_GET_KLINE_1W, klines));
                     }
 
                     case Method.CMC_PARSER_GET_FGI -> {
                         final var args = message.value();
                         cmcParserCollector.getFgi((OffsetDateTime) args[0], (OffsetDateTime) args[1]).
-                                whenResult(fgis -> {
-                                    switch (command.getSource()) {
-                                        case Source.CHATBOT ->
-                                                chatbotPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                                                        AmqpConfig.getAmqpChatbotRoutingKey(), Message.of(new Message.Command() {
-                                                            @Override
-                                                            public Type getType() {
-                                                                return Type.RESPONSE;
-                                                            }
-
-                                                            @Override
-                                                            public String getSource() {
-                                                                return Source.COLLECTOR;
-                                                            }
-
-                                                            @Override
-                                                            public String getMethod() {
-                                                                return Method.CMC_PARSER_GET_FGI;
-                                                            }
-                                                        }, fgis));
-
-                                        case Source.ANALYST ->
-                                                analystPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                                                        AmqpConfig.getAmqpAnalystRoutingKey(), Message.of(new Message.Command() {
-                                                            @Override
-                                                            public Type getType() {
-                                                                return Type.RESPONSE;
-                                                            }
-
-                                                            @Override
-                                                            public String getSource() {
-                                                                return Source.COLLECTOR;
-                                                            }
-
-                                                            @Override
-                                                            public String getMethod() {
-                                                                return Method.CMC_PARSER_GET_FGI;
-                                                            }
-                                                        }, fgis));
-                                    }
-                                });
+                                whenResult(fgis -> publishResponse(command.getSource(), Method.CMC_PARSER_GET_FGI, fgis));
                     }
                 }
             }
+        }
+    }
+
+    private <T> void publishResponse(final String source, final String method, final T data) {
+        final var responseCommand = new Message.Command() {
+            @Override
+            public Type getType() {
+                return Type.RESPONSE;
+            }
+
+            @Override
+            public String getSource() {
+                return Source.COLLECTOR;
+            }
+
+            @Override
+            public String getMethod() {
+                return method;
+            }
+        };
+
+        switch (source) {
+            case Source.CHATBOT -> chatbotPublisher.publish(
+                    AmqpConfig.getAmqpCryptoScoutExchange(),
+                    AmqpConfig.getAmqpChatbotRoutingKey(),
+                    Message.of(responseCommand, data)
+            );
+            case Source.ANALYST -> analystPublisher.publish(
+                    AmqpConfig.getAmqpCryptoScoutExchange(),
+                    AmqpConfig.getAmqpAnalystRoutingKey(),
+                    Message.of(responseCommand, data)
+            );
+            default -> LOGGER.warn("Unknown source for response: {}", source);
         }
     }
 
