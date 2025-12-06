@@ -33,8 +33,10 @@ import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_QUEUE;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_TA_CRYPTO_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_QUEUE;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_COLLECTOR_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_COLLECTOR_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CRYPTO_SCOUT_EXCHANGE;
@@ -101,8 +103,16 @@ public final class AmqpConfig {
         return AppConfig.getAsString(AMQP_CHATBOT_QUEUE);
     }
 
+    public static String getAmqpChatbotRoutingKey() {
+        return AppConfig.getAsString(AMQP_CHATBOT_ROUTING_KEY);
+    }
+
     public static String getAmqpAnalystQueue() {
         return AppConfig.getAsString(AMQP_ANALYST_QUEUE);
+    }
+
+    public static String getAmqpAnalystRoutingKey() {
+        return AppConfig.getAsString(AMQP_ANALYST_ROUTING_KEY);
     }
 
     public static int getAmqpRabbitmqPort() {
