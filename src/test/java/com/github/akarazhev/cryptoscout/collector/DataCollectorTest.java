@@ -134,21 +134,17 @@ final class DataCollectorTest {
         assertEquals(1, cmcParserRepository.saveFgi(List.of(fgi), 100L));
         assertTableCount(CMC_FGI_TABLE, 1);
         final var odt = toOdt(fgi.get(UPDATE_TIME));
-        collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                 AmqpConfig.getAmqpCollectorRoutingKey(),
                 Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt}));
-//        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-//                AmqpConfig.getAmqpCollectorRoutingKey(),
-//                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-//                        DataCollector.Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt})));
-//        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-//        assertNotNull(message);
-//        assertEquals(Message.Type.RESPONSE, message.command().type());
-//        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-//        assertEquals(DataCollector.Method.CMC_PARSER_GET_FGI, message.command().method());
-//        assertNotNull(message.value());
-//        assertEquals(cmcParserRepository.getFgi(odt, odt), message.value());
+                        DataCollector.Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt})));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
+        assertEquals(DataCollector.Method.CMC_PARSER_GET_FGI, message.command().method());
+        assertNotNull(message.value());
+        assertEquals(cmcParserRepository.getFgi(odt, odt), message.value());
     }
 
     @AfterAll

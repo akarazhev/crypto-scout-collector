@@ -80,7 +80,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                 final DeliverCallback deliver = (_, delivery) -> {
                     try {
                         final var body = delivery.getBody();
-                        reactor.execute(() -> Promise.ofBlocking(executor, () -> messageHandler.accept(body)));
+                        reactor.execute(() -> messageHandler.accept(body));
                         channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                     } catch (final Exception e) {
                         try {
