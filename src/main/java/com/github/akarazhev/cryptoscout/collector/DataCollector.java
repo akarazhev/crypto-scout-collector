@@ -27,17 +27,20 @@ package com.github.akarazhev.cryptoscout.collector;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.jcryptolib.stream.Message;
 import com.github.akarazhev.jcryptolib.util.JsonUtils;
+import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 
 public final class DataCollector extends AbstractReactive {
     private final static Logger LOGGER = LoggerFactory.getLogger(DataCollector.class);
+    private final Executor executor;
     private final BybitCryptoCollector bybitCryptoCollector;
     private final BybitTaCryptoCollector bybitTaCryptoCollector;
     private final BybitParserCollector bybitParserCollector;
@@ -46,17 +49,19 @@ public final class DataCollector extends AbstractReactive {
     private final AmqpPublisher analystPublisher;
 
     public static DataCollector create(final NioReactor reactor,
+                                       final Executor executor,
                                        final BybitCryptoCollector bybitCryptoCollector,
                                        final BybitTaCryptoCollector bybitTaCryptoCollector,
                                        final BybitParserCollector bybitParserCollector,
                                        final CmcParserCollector cmcParserCollector,
                                        final AmqpPublisher chatbotPublisher,
                                        final AmqpPublisher analystPublisher) {
-        return new DataCollector(reactor, bybitCryptoCollector, bybitTaCryptoCollector, bybitParserCollector,
+        return new DataCollector(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector, bybitParserCollector,
                 cmcParserCollector, chatbotPublisher, analystPublisher);
     }
 
     private DataCollector(final NioReactor reactor,
+                          final Executor executor,
                           final BybitCryptoCollector bybitCryptoCollector,
                           final BybitTaCryptoCollector bybitTaCryptoCollector,
                           final BybitParserCollector bybitParserCollector,
@@ -64,6 +69,7 @@ public final class DataCollector extends AbstractReactive {
                           final AmqpPublisher chatbotPublisher,
                           final AmqpPublisher analystPublisher) {
         super(reactor);
+        this.executor = executor;
         this.bybitCryptoCollector = bybitCryptoCollector;
         this.bybitTaCryptoCollector = bybitTaCryptoCollector;
         this.bybitParserCollector = bybitParserCollector;
@@ -72,14 +78,11 @@ public final class DataCollector extends AbstractReactive {
         this.analystPublisher = analystPublisher;
     }
 
+    @SuppressWarnings("unchecked")
     public void handleMessage(final byte[] body) {
-        try {
-            @SuppressWarnings("unchecked") final var message =
-                    (Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class);
-            process(message);
-        } catch (final Exception e) {
-            LOGGER.error("Failed to process message", e);
-        }
+        Promise.ofBlocking(executor, () -> (Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class))
+                .whenResult(this::process)
+                .whenException(e -> LOGGER.error("Failed to process message", e));
     }
 
     private void process(final Message<List<Object>> message) {

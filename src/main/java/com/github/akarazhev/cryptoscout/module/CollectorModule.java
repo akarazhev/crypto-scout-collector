@@ -171,13 +171,14 @@ public final class CollectorModule extends AbstractModule {
 
     @Provides
     private DataCollector dataCollector(final NioReactor reactor,
+                                        final Executor executor,
                                         final BybitCryptoCollector bybitCryptoCollector,
                                         final BybitTaCryptoCollector bybitTaCryptoCollector,
                                         final BybitParserCollector bybitParserCollector,
                                         final CmcParserCollector cmcParserCollector,
                                         @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher,
                                         @Named(ANALYST_PUBLISHER) final AmqpPublisher analystPublisher) {
-        return DataCollector.create(reactor, bybitCryptoCollector, bybitTaCryptoCollector,
+        return DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
                 bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
     }
 

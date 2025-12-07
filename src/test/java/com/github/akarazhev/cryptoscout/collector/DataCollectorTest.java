@@ -111,7 +111,7 @@ final class DataCollectorTest {
         analystPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 "analyst-publisher", AmqpConfig.getAmqpAnalystQueue());
 
-        dataCollector = DataCollector.create(reactor, bybitCryptoCollector, bybitTaCryptoCollector,
+        dataCollector = DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
                 bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
         collectorConsumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 "collector-consumer", AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
