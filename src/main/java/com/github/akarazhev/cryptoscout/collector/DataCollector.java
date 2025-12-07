@@ -32,7 +32,9 @@ import io.activej.reactor.nio.NioReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.OffsetDateTime;
+import java.util.List;
+
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 
 public final class DataCollector extends AbstractReactive {
     private final static Logger LOGGER = LoggerFactory.getLogger(DataCollector.class);
@@ -73,35 +75,35 @@ public final class DataCollector extends AbstractReactive {
     public void handleMessage(final byte[] body) {
         try {
             @SuppressWarnings("unchecked") final var message =
-                    (Message<Object[]>) JsonUtils.bytes2Object(body, Message.class);
+                    (Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class);
             process(message);
         } catch (final Exception e) {
             LOGGER.error("Failed to process message", e);
         }
     }
 
-    private void process(final Message<Object[]> message) {
+    private void process(final Message<List<Object>> message) {
         final var command = message.command();
         switch (command.type()) {
             case Message.Type.REQUEST -> {
                 switch (command.method()) {
                     case Method.CMC_PARSER_GET_KLINE_1D -> {
                         final var args = message.value();
-                        cmcParserCollector.getKline1d((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
+                        cmcParserCollector.getKline1d((String) args.get(0), toOdt(args.get(1)), toOdt(args.get(2))).
                                 whenResult(klines ->
                                         publishResponse(command.source(), Method.CMC_PARSER_GET_KLINE_1D, klines));
                     }
 
                     case Method.CMC_PARSER_GET_KLINE_1W -> {
                         final var args = message.value();
-                        cmcParserCollector.getKline1w((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
+                        cmcParserCollector.getKline1w((String) args.get(0), toOdt(args.get(1)), toOdt(args.get(2))).
                                 whenResult(klines ->
                                         publishResponse(command.source(), Method.CMC_PARSER_GET_KLINE_1W, klines));
                     }
 
                     case Method.CMC_PARSER_GET_FGI -> {
                         final var args = message.value();
-                        cmcParserCollector.getFgi((OffsetDateTime) args[0], (OffsetDateTime) args[1]).
+                        cmcParserCollector.getFgi(toOdt(args.get(0)), toOdt(args.get(1))).
                                 whenResult(fgis ->
                                         publishResponse(command.source(), Method.CMC_PARSER_GET_FGI, fgis));
                     }
