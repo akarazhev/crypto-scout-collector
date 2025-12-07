@@ -82,25 +82,28 @@ public final class DataCollector extends AbstractReactive {
 
     private void process(final Message<Object[]> message) {
         final var command = message.command();
-        switch (command.getType()) {
-            case Message.Command.Type.REQUEST -> {
-                switch (command.getMethod()) {
+        switch (command.type()) {
+            case Message.Type.REQUEST -> {
+                switch (command.method()) {
                     case Method.CMC_PARSER_GET_KLINE_1D -> {
                         final var args = message.value();
                         cmcParserCollector.getKline1d((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
-                                whenResult(klines -> publishResponse(command.getSource(), Method.CMC_PARSER_GET_KLINE_1D, klines));
+                                whenResult(klines ->
+                                        publishResponse(command.source(), Method.CMC_PARSER_GET_KLINE_1D, klines));
                     }
 
                     case Method.CMC_PARSER_GET_KLINE_1W -> {
                         final var args = message.value();
                         cmcParserCollector.getKline1w((String) args[0], (OffsetDateTime) args[1], (OffsetDateTime) args[2]).
-                                whenResult(klines -> publishResponse(command.getSource(), Method.CMC_PARSER_GET_KLINE_1W, klines));
+                                whenResult(klines ->
+                                        publishResponse(command.source(), Method.CMC_PARSER_GET_KLINE_1W, klines));
                     }
 
                     case Method.CMC_PARSER_GET_FGI -> {
                         final var args = message.value();
                         cmcParserCollector.getFgi((OffsetDateTime) args[0], (OffsetDateTime) args[1]).
-                                whenResult(fgis -> publishResponse(command.getSource(), Method.CMC_PARSER_GET_FGI, fgis));
+                                whenResult(fgis ->
+                                        publishResponse(command.source(), Method.CMC_PARSER_GET_FGI, fgis));
                     }
                 }
             }
@@ -108,34 +111,20 @@ public final class DataCollector extends AbstractReactive {
     }
 
     private <T> void publishResponse(final String source, final String method, final T data) {
-        final var responseCommand = new Message.Command() {
-            @Override
-            public Type getType() {
-                return Type.RESPONSE;
-            }
-
-            @Override
-            public String getSource() {
-                return Source.COLLECTOR;
-            }
-
-            @Override
-            public String getMethod() {
-                return method;
-            }
-        };
-
+        final var command = Message.Command.of(Message.Type.RESPONSE, Source.COLLECTOR, method);
         switch (source) {
             case Source.CHATBOT -> chatbotPublisher.publish(
                     AmqpConfig.getAmqpCryptoScoutExchange(),
                     AmqpConfig.getAmqpChatbotRoutingKey(),
-                    Message.of(responseCommand, data)
+                    Message.of(command, data)
             );
+
             case Source.ANALYST -> analystPublisher.publish(
                     AmqpConfig.getAmqpCryptoScoutExchange(),
                     AmqpConfig.getAmqpAnalystRoutingKey(),
-                    Message.of(responseCommand, data)
+                    Message.of(command, data)
             );
+
             default -> LOGGER.warn("Unknown source for response: {}", source);
         }
     }

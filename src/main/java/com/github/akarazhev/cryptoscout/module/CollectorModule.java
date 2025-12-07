@@ -49,6 +49,10 @@ import io.activej.reactor.nio.NioReactor;
 
 import java.util.concurrent.Executor;
 
+import static com.github.akarazhev.cryptoscout.module.Constants.Config.ANALYST_PUBLISHER;
+import static com.github.akarazhev.cryptoscout.module.Constants.Config.CHATBOT_PUBLISHER;
+import static com.github.akarazhev.cryptoscout.module.Constants.Config.COLLECTOR_CONSUMER;
+
 public final class CollectorModule extends AbstractModule {
 
     private CollectorModule() {
@@ -150,7 +154,7 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    @Named("chatbotPublisher")
+    @Named(CHATBOT_PUBLISHER)
     @Eager
     private AmqpPublisher chatbotPublisher(final NioReactor reactor, final Executor executor) {
         return AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(), "chatbot-publisher",
@@ -158,7 +162,7 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    @Named("analystPublisher")
+    @Named(ANALYST_PUBLISHER)
     @Eager
     private AmqpPublisher analystPublisher(final NioReactor reactor, final Executor executor) {
         return AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(), "analyst-publisher",
@@ -171,14 +175,14 @@ public final class CollectorModule extends AbstractModule {
                                         final BybitTaCryptoCollector bybitTaCryptoCollector,
                                         final BybitParserCollector bybitParserCollector,
                                         final CmcParserCollector cmcParserCollector,
-                                        @Named("chatbotPublisher") final AmqpPublisher chatbotPublisher,
-                                        @Named("analystPublisher") final AmqpPublisher analystPublisher) {
+                                        @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher,
+                                        @Named(ANALYST_PUBLISHER) final AmqpPublisher analystPublisher) {
         return DataCollector.create(reactor, bybitCryptoCollector, bybitTaCryptoCollector,
                 bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
     }
 
     @Provides
-    @Named("collectorConsumer")
+    @Named(COLLECTOR_CONSUMER)
     @Eager
     private AmqpConsumer collectorConsumer(final NioReactor reactor, final Executor executor,
                                            final DataCollector dataCollector) {

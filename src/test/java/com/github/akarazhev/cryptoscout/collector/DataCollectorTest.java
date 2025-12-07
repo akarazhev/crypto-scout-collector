@@ -35,17 +35,21 @@ import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.test.AmqpTestConsumer;
 import com.github.akarazhev.cryptoscout.test.AmqpTestPublisher;
+import com.github.akarazhev.cryptoscout.test.MockData;
 import com.github.akarazhev.cryptoscout.test.PodmanCompose;
+import com.github.akarazhev.jcryptolib.stream.Message;
 import io.activej.eventloop.Eventloop;
 import io.activej.promise.TestUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
+import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -122,16 +126,21 @@ final class DataCollectorTest {
     }
 
     @Test
-    void testPublishCommand() {
-//        collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(), AmqpConfig.getAmqpCollectorRoutingKey(),
-//                Command.of(0, 0, new OffsetDateTime[]{}, 0));
-//        final var command = TestUtils.await(analystQueueConsumer.getCommand());
-//        assertNotNull(command);
-//        assertEquals(0, command.id());
-//        assertEquals(0, command.from());
-//        assertEquals(0, command.size());
-//        assertNotNull(command.value());
-//        assertEquals(data, command.value());
+    void testShouldCmcParserDataBeProcessed() throws Exception {
+        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        assertEquals(1, cmcParserRepository.saveFgi(List.of(fgi), 100L));
+        assertTableCount(CMC_FGI_TABLE, 1);
+        final var command = Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
+                DataCollector.Method.CMC_PARSER_GET_FGI);
+        collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(), AmqpConfig.getAmqpCollectorRoutingKey(),
+                Message.of(command, fgi));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
+        assertEquals(DataCollector.Method.CMC_PARSER_GET_FGI, message.command().method());
+        assertNotNull(message.value());
+        assertEquals(fgi, message.value());
     }
 
     @AfterAll
