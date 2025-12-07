@@ -48,6 +48,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
+import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
+
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -130,17 +133,17 @@ final class DataCollectorTest {
         final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
         assertEquals(1, cmcParserRepository.saveFgi(List.of(fgi), 100L));
         assertTableCount(CMC_FGI_TABLE, 1);
-        final var command = Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                DataCollector.Method.CMC_PARSER_GET_FGI);
+        final var odt = toOdt(fgi.get(UPDATE_TIME));
         collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(), AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(command, fgi));
+                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
+                        DataCollector.Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt}));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
         assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
         assertEquals(DataCollector.Method.CMC_PARSER_GET_FGI, message.command().method());
         assertNotNull(message.value());
-        assertEquals(fgi, message.value());
+        assertEquals(cmcParserRepository.getFgi(odt, odt), message.value());
     }
 
     @AfterAll
