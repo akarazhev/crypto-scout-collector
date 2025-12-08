@@ -140,10 +140,9 @@ final class DataCollectorTest {
                 AmqpConfig.getAmqpChatbotQueue());
         collectorQueuePublisher = AmqpTestPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpCollectorQueue());
-        TestUtils.await(analystQueueConsumer.start(), chatbotQueueConsumer.start(), collectorQueuePublisher.start(),
-                chatbotPublisher.start(), analystPublisher.start(), collectorConsumer.start(),
-                bybitCryptoCollector.start(), bybitParserCollector.start(), bybitTaCryptoCollector.start(),
-                cmcParserCollector.start());
+        TestUtils.await(collectorQueuePublisher.start(), chatbotPublisher.start(), analystPublisher.start(),
+                collectorConsumer.start(), bybitCryptoCollector.start(), bybitParserCollector.start(),
+                bybitTaCryptoCollector.start(), cmcParserCollector.start());
     }
 
     @Test
@@ -153,10 +152,11 @@ final class DataCollectorTest {
         assertTableCount(CMC_FGI_TABLE, 1);
         final var odt = toOdt(fgi.get(UPDATE_TIME));
 
-        collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                 AmqpConfig.getAmqpCollectorRoutingKey(),
                 Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt}));
+                        DataCollector.Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt}))
+                .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
@@ -164,7 +164,6 @@ final class DataCollectorTest {
         assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
         assertEquals(DataCollector.Method.CMC_PARSER_GET_FGI, message.command().method());
         assertNotNull(message.value());
-//        assertEquals(cmcParserRepository.getFgi(odt, odt).size(), ((List) message.value()).size());
     }
 
     @Test
