@@ -94,21 +94,21 @@ public final class DataCollector extends AbstractReactive {
                         final var args = message.value();
                         cmcParserCollector.getKline1d((String) args.get(0), toOdt(args.get(1)), toOdt(args.get(2))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.CMC_PARSER_GET_KLINE_1D, klines));
+                                        publish(command.source(), Constants.Method.CMC_PARSER_GET_KLINE_1D, klines));
                     }
 
                     case Constants.Method.CMC_PARSER_GET_KLINE_1W -> {
                         final var args = message.value();
                         cmcParserCollector.getKline1w((String) args.get(0), toOdt(args.get(1)), toOdt(args.get(2))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.CMC_PARSER_GET_KLINE_1W, klines));
+                                        publish(command.source(), Constants.Method.CMC_PARSER_GET_KLINE_1W, klines));
                     }
 
                     case Constants.Method.CMC_PARSER_GET_FGI -> {
                         final var args = message.value();
                         cmcParserCollector.getFgi(toOdt(args.get(0)), toOdt(args.get(1))).
                                 whenResult(fgis ->
-                                        publishResponse(command.source(), Constants.Method.CMC_PARSER_GET_FGI, fgis));
+                                        publish(command.source(), Constants.Method.CMC_PARSER_GET_FGI, fgis));
                     }
 
                     // BybitCryptoCollector methods
@@ -118,7 +118,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_GET_KLINE_1M, klines));
+                                        publish(command.source(), Constants.Method.BYBIT_GET_KLINE_1M, klines));
                     }
 
                     case Constants.Method.BYBIT_GET_KLINE_5M -> {
@@ -127,7 +127,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_GET_KLINE_5M, klines));
+                                        publish(command.source(), Constants.Method.BYBIT_GET_KLINE_5M, klines));
                     }
 
                     case Constants.Method.BYBIT_GET_KLINE_15M -> {
@@ -136,7 +136,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_GET_KLINE_15M, klines));
+                                        publish(command.source(), Constants.Method.BYBIT_GET_KLINE_15M, klines));
                     }
 
                     case Constants.Method.BYBIT_GET_KLINE_60M -> {
@@ -145,7 +145,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_GET_KLINE_60M, klines));
+                                        publish(command.source(), Constants.Method.BYBIT_GET_KLINE_60M, klines));
                     }
 
                     case Constants.Method.BYBIT_GET_KLINE_240M -> {
@@ -154,7 +154,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_GET_KLINE_240M, klines));
+                                        publish(command.source(), Constants.Method.BYBIT_GET_KLINE_240M, klines));
                     }
 
                     case Constants.Method.BYBIT_GET_KLINE_1D -> {
@@ -163,7 +163,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(klines ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_GET_KLINE_1D, klines));
+                                        publish(command.source(), Constants.Method.BYBIT_GET_KLINE_1D, klines));
                     }
 
                     case Constants.Method.BYBIT_GET_TICKER -> {
@@ -172,7 +172,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(tickers ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_GET_TICKER, tickers));
+                                        publish(command.source(), Constants.Method.BYBIT_GET_TICKER, tickers));
                     }
 
                     // BybitTaCryptoCollector methods
@@ -182,7 +182,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitTaCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(orderBooks ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_1, orderBooks));
+                                        publish(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_1, orderBooks));
                     }
 
                     case Constants.Method.BYBIT_TA_GET_ORDER_BOOK_50 -> {
@@ -191,7 +191,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitTaCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(orderBooks ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_50, orderBooks));
+                                        publish(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_50, orderBooks));
                     }
 
                     case Constants.Method.BYBIT_TA_GET_ORDER_BOOK_200 -> {
@@ -200,7 +200,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitTaCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(orderBooks ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_200, orderBooks));
+                                        publish(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_200, orderBooks));
                     }
 
                     case Constants.Method.BYBIT_TA_GET_ORDER_BOOK_1000 -> {
@@ -209,7 +209,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitTaCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(orderBooks ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_1000, orderBooks));
+                                        publish(command.source(), Constants.Method.BYBIT_TA_GET_ORDER_BOOK_1000, orderBooks));
                     }
 
                     case Constants.Method.BYBIT_TA_GET_PUBLIC_TRADE -> {
@@ -218,7 +218,7 @@ public final class DataCollector extends AbstractReactive {
                                 BybitTaCryptoCollector.Type.valueOf((String) args.get(0)),
                                 (String) args.get(1), toOdt(args.get(2)), toOdt(args.get(3))).
                                 whenResult(trades ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_TA_GET_PUBLIC_TRADE, trades));
+                                        publish(command.source(), Constants.Method.BYBIT_TA_GET_PUBLIC_TRADE, trades));
                     }
 
                     case Constants.Method.BYBIT_TA_GET_ALL_LIQUIDATION -> {
@@ -226,7 +226,7 @@ public final class DataCollector extends AbstractReactive {
                         bybitTaCryptoCollector.getAllLiquidation(
                                 (String) args.get(0), toOdt(args.get(1)), toOdt(args.get(2))).
                                 whenResult(liquidations ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_TA_GET_ALL_LIQUIDATION, liquidations));
+                                        publish(command.source(), Constants.Method.BYBIT_TA_GET_ALL_LIQUIDATION, liquidations));
                     }
 
                     // BybitParserCollector methods
@@ -234,14 +234,14 @@ public final class DataCollector extends AbstractReactive {
                         final var args = message.value();
                         bybitParserCollector.getLpl(toOdt(args.getFirst())).
                                 whenResult(lpls ->
-                                        publishResponse(command.source(), Constants.Method.BYBIT_PARSER_GET_LPL, lpls));
+                                        publish(command.source(), Constants.Method.BYBIT_PARSER_GET_LPL, lpls));
                     }
                 }
             }
         }
     }
 
-    private <T> void publishResponse(final String source, final String method, final T data) {
+    private <T> void publish(final String source, final String method, final T data) {
         final var command = Message.Command.of(Message.Type.RESPONSE, Constants.Source.COLLECTOR, method);
         switch (source) {
             case Constants.Source.CHATBOT -> chatbotPublisher.publish(
