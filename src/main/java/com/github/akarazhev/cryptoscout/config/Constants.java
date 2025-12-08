@@ -34,7 +34,6 @@ final class Constants {
             throw new UnsupportedOperationException();
         }
 
-        static final String CONNECTION_NAME = "crypto-scout-collector";
         static final String AMQP_RABBITMQ_HOST = "amqp.rabbitmq.host";
         static final String AMQP_RABBITMQ_USERNAME = "amqp.rabbitmq.username";
         static final String AMQP_RABBITMQ_PASSWORD = "amqp.rabbitmq.password";
