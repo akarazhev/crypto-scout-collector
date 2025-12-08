@@ -260,7 +260,7 @@ public final class DataCollector extends AbstractReactive {
         }
     }
 
-    static class Method {
+    private final static class Method {
         private Method() {
             throw new UnsupportedOperationException();
         }
@@ -291,7 +291,7 @@ public final class DataCollector extends AbstractReactive {
         public static final String BYBIT_PARSER_GET_LPL = "bybitParser.getLpl";
     }
 
-    static class Source {
+    private final static class Source {
         private Source() {
             throw new UnsupportedOperationException();
         }

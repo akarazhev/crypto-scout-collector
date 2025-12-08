@@ -54,9 +54,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import static com.github.akarazhev.cryptoscout.collector.Constants.Config.ANALYST_PUBLISHER_CLIENT_NAME;
-import static com.github.akarazhev.cryptoscout.collector.Constants.Config.CHATBOT_PUBLISHER_CLIENT_NAME;
-import static com.github.akarazhev.cryptoscout.collector.Constants.Config.COLLECTOR_CONSUMER_CLIENT_NAME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.BYBIT_LPL_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_15M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_1D_TABLE;
@@ -156,14 +153,14 @@ final class DataCollectorTest {
         cmcParserCollector = CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
 
         chatbotPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                CHATBOT_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpChatbotQueue());
+                Config.CHATBOT_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpChatbotQueue());
         analystPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                ANALYST_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpAnalystQueue());
+                Config.ANALYST_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpAnalystQueue());
 
         dataCollector = DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
                 bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
         collectorConsumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
+                Config.COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
 
         analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpAnalystQueue());
@@ -184,16 +181,16 @@ final class DataCollectorTest {
         final var odt = toOdt(fgi.get(UPDATE_TIME));
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                Method.CMC_PARSER_GET_FGI), new Object[]{odt, odt}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.CMC_PARSER_GET_FGI, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.CMC_PARSER_GET_FGI, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -205,16 +202,16 @@ final class DataCollectorTest {
         final var symbol = (String) kline.get(SYMBOL);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.CMC_PARSER_GET_KLINE_1D), new Object[]{symbol, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                Method.CMC_PARSER_GET_KLINE_1D), new Object[]{symbol, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.CMC_PARSER_GET_KLINE_1D, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.CMC_PARSER_GET_KLINE_1D, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -226,16 +223,16 @@ final class DataCollectorTest {
         final var symbol = (String) kline.get(SYMBOL);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.CMC_PARSER_GET_KLINE_1W), new Object[]{symbol, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                Method.CMC_PARSER_GET_KLINE_1W), new Object[]{symbol, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.CMC_PARSER_GET_KLINE_1W, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.CMC_PARSER_GET_KLINE_1W, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -246,16 +243,16 @@ final class DataCollectorTest {
         final var odt = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) lpl.get(STAKE_BEGIN_TIME)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_PARSER_GET_LPL), new Object[]{odt}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                Method.BYBIT_PARSER_GET_LPL), new Object[]{odt}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_PARSER_GET_LPL, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_PARSER_GET_LPL, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -267,17 +264,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_1M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_1M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_1M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_1M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -289,17 +286,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_5M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_5M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_5M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_5M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -311,17 +308,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_15M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_15M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_15M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_15M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -333,17 +330,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_60M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_60M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_60M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_60M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -355,17 +352,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_240M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_240M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_240M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_240M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -377,17 +374,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_1D),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_1D),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_1D, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_1D, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -398,17 +395,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_TICKER),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_TICKER),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_TICKER, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_TICKER, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -420,17 +417,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_1M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_1M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_1M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_1M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -442,17 +439,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_5M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_5M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_5M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_5M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -464,17 +461,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_15M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_15M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_15M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_15M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -486,17 +483,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_60M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_60M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_60M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_60M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -508,17 +505,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_240M),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_240M),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_240M, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_240M, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -530,17 +527,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_KLINE_1D),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_KLINE_1D),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_KLINE_1D, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_KLINE_1D, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -551,17 +548,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_GET_TICKER),
-                        new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_GET_TICKER),
+                                new Object[]{BybitCryptoCollector.Type.BYBIT_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_GET_TICKER, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_GET_TICKER, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -572,17 +569,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_1),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_1, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -593,17 +590,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_50),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_50),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_50, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_50, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -614,17 +611,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_200),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_200),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_200, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_200, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -635,17 +632,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1000),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_1000),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1000, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_1000, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -657,17 +654,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_PUBLIC_TRADE),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_PUBLIC_TRADE),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_SPOT.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_PUBLIC_TRADE, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_PUBLIC_TRADE, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -678,17 +675,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_1),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_1, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -699,17 +696,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_50),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_50),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_50, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_50, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -720,17 +717,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_200),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_200),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_200, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_200, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -741,17 +738,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1000),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ORDER_BOOK_1000),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ORDER_BOOK_1000, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ORDER_BOOK_1000, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -763,17 +760,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_PUBLIC_TRADE),
-                        new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_PUBLIC_TRADE),
+                                new Object[]{BybitTaCryptoCollector.Type.BYBIT_TA_LINEAR.name(), BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_PUBLIC_TRADE, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_PUBLIC_TRADE, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -785,17 +782,17 @@ final class DataCollectorTest {
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
 
         TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                AmqpConfig.getAmqpCollectorRoutingKey(),
-                Message.of(Message.Command.of(Message.Type.REQUEST, DataCollector.Source.ANALYST,
-                        DataCollector.Method.BYBIT_TA_GET_ALL_LIQUIDATION),
-                        new Object[]{BTC_USDT, from, from}))
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, Source.ANALYST,
+                                        Method.BYBIT_TA_GET_ALL_LIQUIDATION),
+                                new Object[]{BTC_USDT, from, from}))
                 .whenComplete(analystQueueConsumer::start));
         final var message = TestUtils.await(analystQueueConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(DataCollector.Source.COLLECTOR, message.command().source());
-        assertEquals(DataCollector.Method.BYBIT_TA_GET_ALL_LIQUIDATION, message.command().method());
+        assertEquals(Source.COLLECTOR, message.command().source());
+        assertEquals(Method.BYBIT_TA_GET_ALL_LIQUIDATION, message.command().method());
         assertNotNull(message.value());
     }
 
@@ -861,5 +858,56 @@ final class DataCollectorTest {
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
+    }
+
+    private final static class Method {
+        private Method() {
+            throw new UnsupportedOperationException();
+        }
+
+        // CmcParserCollector methods
+        public static final String CMC_PARSER_GET_KLINE_1D = "cmcParser.getKline1d";
+        public static final String CMC_PARSER_GET_KLINE_1W = "cmcParser.getKline1w";
+        public static final String CMC_PARSER_GET_FGI = "cmcParser.getFgi";
+
+        // BybitCryptoCollector methods
+        public static final String BYBIT_GET_KLINE_1M = "bybit.getKline1m";
+        public static final String BYBIT_GET_KLINE_5M = "bybit.getKline5m";
+        public static final String BYBIT_GET_KLINE_15M = "bybit.getKline15m";
+        public static final String BYBIT_GET_KLINE_60M = "bybit.getKline60m";
+        public static final String BYBIT_GET_KLINE_240M = "bybit.getKline240m";
+        public static final String BYBIT_GET_KLINE_1D = "bybit.getKline1d";
+        public static final String BYBIT_GET_TICKER = "bybit.getTicker";
+
+        // BybitTaCryptoCollector methods
+        public static final String BYBIT_TA_GET_ORDER_BOOK_1 = "bybitTa.getOrderBook1";
+        public static final String BYBIT_TA_GET_ORDER_BOOK_50 = "bybitTa.getOrderBook50";
+        public static final String BYBIT_TA_GET_ORDER_BOOK_200 = "bybitTa.getOrderBook200";
+        public static final String BYBIT_TA_GET_ORDER_BOOK_1000 = "bybitTa.getOrderBook1000";
+        public static final String BYBIT_TA_GET_PUBLIC_TRADE = "bybitTa.getPublicTrade";
+        public static final String BYBIT_TA_GET_ALL_LIQUIDATION = "bybitTa.getAllLiquidation";
+
+        // BybitParserCollector methods
+        public static final String BYBIT_PARSER_GET_LPL = "bybitParser.getLpl";
+    }
+
+    private final static class Source {
+        private Source() {
+            throw new UnsupportedOperationException();
+        }
+
+        public static final String COLLECTOR = "collector";
+        public static final String ANALYST = "analyst";
+        public static final String CHATBOT = "chatbot";
+    }
+
+    private final static class Config {
+        private Config() {
+            throw new UnsupportedOperationException();
+        }
+
+        static final String COLLECTOR_CONSUMER_CLIENT_NAME = "collector-consumer";
+        static final String ANALYST_PUBLISHER_CLIENT_NAME = "analyst-publisher";
+        static final String CHATBOT_PUBLISHER_CLIENT_NAME = "chatbot-publisher";
     }
 }
