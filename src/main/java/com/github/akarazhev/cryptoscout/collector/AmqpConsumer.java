@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 
+import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.PREFETCH_COUNT;
+
 public final class AmqpConsumer extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AmqpConsumer.class);
     private final Executor executor;
@@ -74,7 +76,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
             try {
                 connection = connectionFactory.newConnection(clientName);
                 channel = connection.createChannel();
-                channel.basicQos(1);
+                channel.basicQos(PREFETCH_COUNT);
                 channel.queueDeclarePassive(queue);
 
                 final DeliverCallback deliver = (_, delivery) -> {

@@ -39,8 +39,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executor;
 
-import static com.github.akarazhev.cryptoscout.collector.AmqpPublisher.Constants.CONTENT_TYPE_JSON;
-import static com.github.akarazhev.cryptoscout.collector.AmqpPublisher.Constants.DELIVERY_MODE_PERSISTENT;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.CONTENT_TYPE_JSON;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.DELIVERY_MODE_PERSISTENT;
 
 public final class AmqpPublisher extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AmqpPublisher.class);
@@ -125,14 +125,5 @@ public final class AmqpPublisher extends AbstractReactive implements ReactiveSer
                 throw new RuntimeException(ex);
             }
         });
-    }
-
-    static final class Constants {
-        private Constants() {
-            throw new UnsupportedOperationException();
-        }
-
-        static final String CONTENT_TYPE_JSON = "application/json";
-        static final int DELIVERY_MODE_PERSISTENT = 2;
     }
 }
