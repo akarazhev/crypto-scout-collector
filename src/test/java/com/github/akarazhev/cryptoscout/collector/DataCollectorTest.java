@@ -48,6 +48,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.github.akarazhev.cryptoscout.collector.Constants.Config.ANALYST_PUBLISHER_CLIENT_NAME;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Config.CHATBOT_PUBLISHER_CLIENT_NAME;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Config.COLLECTOR_CONSUMER_CLIENT_NAME;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 
@@ -107,14 +110,14 @@ final class DataCollectorTest {
         cmcParserCollector = CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
 
         chatbotPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                "chatbot-publisher", AmqpConfig.getAmqpChatbotQueue());
+                CHATBOT_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpChatbotQueue());
         analystPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                "analyst-publisher", AmqpConfig.getAmqpAnalystQueue());
+                ANALYST_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpAnalystQueue());
 
         dataCollector = DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
                 bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
         collectorConsumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                "collector-consumer", AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
+                COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
 
         analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpAnalystQueue());

@@ -25,12 +25,8 @@
 package com.github.akarazhev.cryptoscout.config;
 
 import com.github.akarazhev.jcryptolib.config.AppConfig;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.stream.Environment;
-
-import java.io.IOException;
-import java.util.concurrent.TimeoutException;
 
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_ROUTING_KEY;
@@ -48,7 +44,6 @@ import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_PARSER_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CMC_PARSER_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_STREAM_PORT;
-import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.CONNECTION_NAME;
 
 public final class AmqpConfig {
     private AmqpConfig() {
@@ -126,10 +121,6 @@ public final class AmqpConfig {
         factory.setUsername(AmqpConfig.getAmqpRabbitmqUsername());
         factory.setPassword(AmqpConfig.getAmqpRabbitmqPassword());
         return factory;
-    }
-
-    public static Connection getConnection() throws IOException, TimeoutException {
-        return getConnectionFactory().newConnection(CONNECTION_NAME);
     }
 
     public static Environment getEnvironment() {

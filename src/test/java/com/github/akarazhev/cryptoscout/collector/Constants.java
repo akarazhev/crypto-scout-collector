@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package com.github.akarazhev.cryptoscout.module;
+package com.github.akarazhev.cryptoscout.collector;
 
 final class Constants {
     private Constants() {
@@ -33,12 +33,6 @@ final class Constants {
         private Config() {
             throw new UnsupportedOperationException();
         }
-
-        static final String OK_RESPONSE = "ok";
-        static final String HEALTH_API = "/health";
-        static final String ANALYST_PUBLISHER = "analystPublisher";
-        static final String CHATBOT_PUBLISHER = "chatbotPublisher";
-        static final String COLLECTOR_CONSUMER = "collectorConsumer";
 
         static final String COLLECTOR_CONSUMER_CLIENT_NAME = "collector-consumer";
         static final String ANALYST_PUBLISHER_CLIENT_NAME = "analyst-publisher";
