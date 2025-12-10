@@ -12,20 +12,11 @@ services:
       nofile:
         soft: 262144
         hard: 262144
-    ports:
-      - "5432:5432"
     volumes:
-      - ./data/postgresql:/var/lib/postgresql/data
-      - ./script/init.sql:/docker-entrypoint-initdb.d/00-init.sql:ro
+      - ./script/init.sql:/docker-entrypoint-initdb.d/00_init.sql:ro
       - ./script/bybit_spot_tables.sql:/docker-entrypoint-initdb.d/01_bybit_spot_tables.sql:ro
-      - ./script/bybit_ta_spot_tables.sql:/docker-entrypoint-initdb.d/02_bybit_ta_spot_tables.sql:ro
-      - ./script/bybit_linear_tables.sql:/docker-entrypoint-initdb.d/03_bybit_linear_tables.sql:ro
-      - ./script/bybit_ta_linear_tables.sql:/docker-entrypoint-initdb.d/04_bybit_ta_linear_tables.sql:ro
-      - ./script/cmc_parser_tables.sql:/docker-entrypoint-initdb.d/05_cmc_parser_tables.sql:ro
-      - ./script/bybit_parser_tables.sql:/docker-entrypoint-initdb.d/06_bybit_parser_tables.sql:ro
-      - ./script/btc_usd_daily_inserts.sql:/docker-entrypoint-initdb.d/07_btc_usd_daily_inserts.sql:ro
-      - ./script/btc_usd_weekly_inserts.sql:/docker-entrypoint-initdb.d/08_btc_usd_weekly_inserts.sql:ro
-      - ./script/cmc_fgi_inserts.sql:/docker-entrypoint-initdb.d/09_cmc_fgi_inserts.sql:ro
+      - ./script/bybit_linear_tables.sql:/docker-entrypoint-initdb.d/02_bybit_linear_tables.sql:ro
+      - ./script/crypto_scout_tables.sql:/docker-entrypoint-initdb.d/03_crypto_scout_tables.sql:ro
     networks:
       - crypto-scout-bridge
     env_file:
@@ -118,8 +109,6 @@ services:
       TZ: UTC
     networks:
       - crypto-scout-bridge
-    ports:
-      - "8083:8083"
     depends_on:
       crypto-scout-collector-db:
         condition: service_healthy
