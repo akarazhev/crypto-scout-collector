@@ -159,9 +159,8 @@ final class BybitSpotRepositoryTest {
     @Test
     void shouldSaveTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
-        final var expected = getRowsCount(tickers);
-        assertEquals(expected, repository.saveTicker(List.of(tickers), 700L));
-        assertTableCount(SPOT_TICKERS_TABLE, expected);
+        assertEquals(1, repository.saveTicker(List.of(tickers), 700L));
+        assertTableCount(SPOT_TICKERS_TABLE, 1);
     }
 
     @Test
@@ -227,10 +226,9 @@ final class BybitSpotRepositoryTest {
     @Test
     void shouldGetTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
-        final var expected = getRowsCount(tickers);
-        assertEquals(expected, repository.saveTicker(List.of(tickers), 1400L));
+        assertEquals(1, repository.saveTicker(List.of(tickers), 1400L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(expected, repository.getTicker(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getTicker(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
