@@ -292,4 +292,62 @@ for future iterations.
 
 ---
 
+## Applied Changes
+
+All recommendations from the code review have been implemented:
+
+### High Priority Fixes Applied
+
+1. **Fixed PreparedStatement leak** in `CryptoScoutRepository.getFgi()` - wrapped `ps` in try-with-resources.
+
+### Medium Priority Fixes Applied
+
+2. **Removed redundant `String.format()`** in `BybitSpotRepository.saveTicker()`.
+3. **Removed stray semicolon** in `BybitStreamService.saveSpotKline240m()`.
+
+### Low Priority Enhancements Applied
+
+4. **AMQP Connection Recovery** (`AmqpConsumer.java`, `AmqpPublisher.java`):
+    - Added `ShutdownListener` to detect connection loss.
+    - Implemented automatic reconnection with configurable delay (5 seconds) and max attempts (10).
+    - Added `running` flag to prevent reconnection attempts after graceful shutdown.
+    - New constants: `RECONNECT_DELAY_MS`, `MAX_RECONNECT_ATTEMPTS` in `Constants.Amqp`.
+
+5. **Enhanced Health Check Endpoint** (`HealthService.java`, `WebModule.java`):
+    - Created new `HealthService` class with database and AMQP connectivity checks.
+    - Added `/health/detailed` endpoint returning JSON with component status.
+    - Returns HTTP 200 when all components are UP, HTTP 503 when any component is DOWN.
+    - Original `/health` endpoint preserved for simple liveness checks.
+
+6. **Configuration Validation** (`ConfigValidator.java`, `Collector.java`):
+    - Created `ConfigValidator` utility class to validate required properties at startup.
+    - Validates all required AMQP, JDBC, and server configuration properties.
+    - Fails fast with descriptive error messages if validation fails.
+    - Called from `Collector.onStart()` lifecycle method.
+
+7. **Logging Unhandled Methods** (`DataService.java`):
+    - Added DEBUG-level logging for unhandled request methods.
+    - Added DEBUG-level logging for unhandled message types.
+
+### New Files Created
+
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/HealthService.java` - Health check service
+- `@/src/main/java/com/github/akarazhev/cryptoscout/config/ConfigValidator.java` - Configuration validator
+
+### Modified Files
+
+- `@/src/main/java/com/github/akarazhev/cryptoscout/Collector.java` - Added config validation on startup
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java` - Added reconnection logic
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpPublisher.java` - Added reconnection logic
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/BybitStreamService.java` - Removed stray semicolon
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/Constants.java` - Added reconnection constants
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/DataService.java` - Added unhandled method logging
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/db/BybitSpotRepository.java` - Removed redundant String.format
+- `@/src/main/java/com/github/akarazhev/cryptoscout/collector/db/CryptoScoutRepository.java` - Fixed PreparedStatement leak
+- `@/src/main/java/com/github/akarazhev/cryptoscout/module/Constants.java` - Added health endpoint constants
+- `@/src/main/java/com/github/akarazhev/cryptoscout/module/WebModule.java` - Added detailed health endpoint
+
+---
+
 *Code review completed on 2025-12-15*
+*Recommendations applied on 2025-12-15*
