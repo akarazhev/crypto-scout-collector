@@ -82,7 +82,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @BeforeEach
-    void before() {
+    void resetState() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 SPOT_KLINE_1M_TABLE,
                 SPOT_KLINE_5M_TABLE,
@@ -109,7 +109,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline1m() throws Exception {
+    void saveKline1m() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
         final var expected = getRowsCount(k1);
         assertEquals(expected, repository.saveKline1m(List.of(k1), 100L));
@@ -117,7 +117,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline5m() throws Exception {
+    void saveKline5m() throws Exception {
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
         final var expected = getRowsCount(k5);
         assertEquals(expected, repository.saveKline5m(List.of(k5), 200L));
@@ -125,7 +125,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline15m() throws Exception {
+    void saveKline15m() throws Exception {
         final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
         final var expected = getRowsCount(k15);
         assertEquals(expected, repository.saveKline15m(List.of(k15), 300L));
@@ -133,7 +133,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline60m() throws Exception {
+    void saveKline60m() throws Exception {
         final var k60 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
         final var expected = getRowsCount(k60);
         assertEquals(expected, repository.saveKline60m(List.of(k60), 400L));
@@ -141,7 +141,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline240m() throws Exception {
+    void saveKline240m() throws Exception {
         final var k240 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
         final var expected = getRowsCount(k240);
         assertEquals(expected, repository.saveKline240m(List.of(k240), 500L));
@@ -149,7 +149,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline1d() throws Exception {
+    void saveKline1d() throws Exception {
         final var kd = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
         final var expected = getRowsCount(kd);
         assertEquals(expected, repository.saveKline1d(List.of(kd), 600L));
@@ -157,14 +157,14 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveTicker() throws Exception {
+    void saveTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
         assertEquals(1, repository.saveTicker(List.of(tickers), 700L));
         assertTableCount(SPOT_TICKERS_TABLE, 1);
     }
 
     @Test
-    void shouldGetKline1m() throws Exception {
+    void getKline1m() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
         final var expected = getRowsCount(k1);
         final var start = ((Map<?, ?>)((List<?>) k1.get(DATA)).getFirst()).get(START);
@@ -174,7 +174,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetKline5m() throws Exception {
+    void getKline5m() throws Exception {
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
         final var expected = getRowsCount(k5);
         final var start = ((Map<?, ?>)((List<?>) k5.get(DATA)).getFirst()).get(START);
@@ -184,7 +184,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetKline15m() throws Exception {
+    void getKline15m() throws Exception {
         final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
         final var expected = getRowsCount(k15);
         final var start = ((Map<?, ?>)((List<?>) k15.get(DATA)).getFirst()).get(START);
@@ -194,7 +194,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetKline60m() throws Exception {
+    void getKline60m() throws Exception {
         final var k60 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
         final var expected = getRowsCount(k60);
         final var start = ((Map<?, ?>)((List<?>) k60.get(DATA)).getFirst()).get(START);
@@ -204,7 +204,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetKline240m() throws Exception {
+    void getKline240m() throws Exception {
         final var k240 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
         final var expected = getRowsCount(k240);
         final var start = ((Map<?, ?>)((List<?>) k240.get(DATA)).getFirst()).get(START);
@@ -214,7 +214,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetKline1d() throws Exception {
+    void getKline1d() throws Exception {
         final var kd = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
         final var expected = getRowsCount(kd);
         final var start = ((Map<?, ?>)((List<?>) kd.get(DATA)).getFirst()).get(START);
@@ -224,7 +224,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetTicker() throws Exception {
+    void getTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
         assertEquals(1, repository.saveTicker(List.of(tickers), 1400L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
@@ -232,7 +232,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSavePublicTrade() throws Exception {
+    void savePublicTrade() throws Exception {
         final var pt = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
         final var expected = getRowsCount(pt);
         assertEquals(expected, repository.savePublicTrade(List.of(pt), 1500L));
@@ -240,7 +240,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveOrderBook1() throws Exception {
+    void saveOrderBook1() throws Exception {
         final var ob1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(ob1);
         assertEquals(expected, repository.saveOrderBook1(List.of(ob1), 1600L));
@@ -248,7 +248,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveOrderBook50() throws Exception {
+    void saveOrderBook50() throws Exception {
         final var ob50 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(ob50);
         assertEquals(expected, repository.saveOrderBook50(List.of(ob50), 1700L));
@@ -256,7 +256,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveOrderBook200() throws Exception {
+    void saveOrderBook200() throws Exception {
         final var ob200 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(ob200);
         assertEquals(expected, repository.saveOrderBook200(List.of(ob200), 1800L));
@@ -264,7 +264,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldSaveOrderBook1000() throws Exception {
+    void saveOrderBook1000() throws Exception {
         final var ob1000 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
         final var expected = getOrderBookLevelsCount(ob1000);
         assertEquals(expected, repository.saveOrderBook1000(List.of(ob1000), 1900L));
@@ -272,7 +272,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetPublicTrade() throws Exception {
+    void getPublicTrade() throws Exception {
         final var pt = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
         final var expected = getRowsCount(pt);
         assertEquals(expected, repository.savePublicTrade(List.of(pt), 2000L));
@@ -282,7 +282,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetOrderBook1() throws Exception {
+    void getOrderBook1() throws Exception {
         final var ob1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
         final var expected = getOrderBookLevelsCount(ob1);
         assertEquals(expected, repository.saveOrderBook1(List.of(ob1), 2100L));
@@ -291,7 +291,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetOrderBook50() throws Exception {
+    void getOrderBook50() throws Exception {
         final var ob50 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
         final var expected = getOrderBookLevelsCount(ob50);
         assertEquals(expected, repository.saveOrderBook50(List.of(ob50), 2200L));
@@ -300,7 +300,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetOrderBook200() throws Exception {
+    void getOrderBook200() throws Exception {
         final var ob200 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
         final var expected = getOrderBookLevelsCount(ob200);
         assertEquals(expected, repository.saveOrderBook200(List.of(ob200), 2300L));
@@ -309,7 +309,7 @@ final class BybitSpotRepositoryTest {
     }
 
     @Test
-    void shouldGetOrderBook1000() throws Exception {
+    void getOrderBook1000() throws Exception {
         final var ob1000 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
         final var expected = getOrderBookLevelsCount(ob1000);
         assertEquals(expected, repository.saveOrderBook1000(List.of(ob1000), 2400L));
