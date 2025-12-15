@@ -26,19 +26,14 @@ package com.github.akarazhev.cryptoscout.module;
 
 import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
 import com.github.akarazhev.cryptoscout.collector.AmqpPublisher;
-import com.github.akarazhev.cryptoscout.collector.BybitTaCryptoCollector;
-import com.github.akarazhev.cryptoscout.collector.DataCollector;
-import com.github.akarazhev.cryptoscout.collector.StreamCollector;
-import com.github.akarazhev.cryptoscout.collector.BybitCryptoCollector;
-import com.github.akarazhev.cryptoscout.collector.BybitParserCollector;
-import com.github.akarazhev.cryptoscout.collector.CmcParserCollector;
+import com.github.akarazhev.cryptoscout.collector.CryptoScoutService;
+import com.github.akarazhev.cryptoscout.collector.DataService;
+import com.github.akarazhev.cryptoscout.collector.StreamService;
+import com.github.akarazhev.cryptoscout.collector.BybitStreamService;
 import com.github.akarazhev.cryptoscout.collector.db.BybitLinearRepository;
-import com.github.akarazhev.cryptoscout.collector.db.BybitParserRepository;
-import com.github.akarazhev.cryptoscout.collector.db.BybitTaLinearRepository;
-import com.github.akarazhev.cryptoscout.collector.db.BybitTaSpotRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
-import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
+import com.github.akarazhev.cryptoscout.collector.db.CryptoScoutRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import io.activej.inject.annotation.Eager;
@@ -66,26 +61,9 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private CollectorDataSource collectorDataSource(final NioReactor reactor, final Executor executor) {
-        return CollectorDataSource.create(reactor, executor);
-    }
-
-    @Provides
-    private StreamOffsetsRepository streamOffsetsRepository(final NioReactor reactor,
-                                                            final CollectorDataSource collectorDataSource) {
-        return StreamOffsetsRepository.create(reactor, collectorDataSource);
-    }
-
-    @Provides
-    private BybitParserRepository bybitParserRepository(final NioReactor reactor,
+    private BybitLinearRepository bybitLinearRepository(final NioReactor reactor,
                                                         final CollectorDataSource collectorDataSource) {
-        return BybitParserRepository.create(reactor, collectorDataSource);
-    }
-
-    @Provides
-    private CmcParserRepository cmcParserRepository(final NioReactor reactor,
-                                                    final CollectorDataSource collectorDataSource) {
-        return CmcParserRepository.create(reactor, collectorDataSource);
+        return BybitLinearRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
@@ -95,65 +73,56 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private BybitTaSpotRepository bybitTaSpotRepository(final NioReactor reactor,
-                                                        final CollectorDataSource collectorDataSource) {
-        return BybitTaSpotRepository.create(reactor, collectorDataSource);
+    private CollectorDataSource collectorDataSource(final NioReactor reactor, final Executor executor) {
+        return CollectorDataSource.create(reactor, executor);
     }
 
     @Provides
-    private BybitLinearRepository bybitLinearRepository(final NioReactor reactor,
+    private CryptoScoutRepository cryptoScoutRepository(final NioReactor reactor,
                                                         final CollectorDataSource collectorDataSource) {
-        return BybitLinearRepository.create(reactor, collectorDataSource);
+        return CryptoScoutRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
-    private BybitTaLinearRepository bybitTaLinearRepository(final NioReactor reactor,
+    private StreamOffsetsRepository streamOffsetsRepository(final NioReactor reactor,
                                                             final CollectorDataSource collectorDataSource) {
-        return BybitTaLinearRepository.create(reactor, collectorDataSource);
+        return StreamOffsetsRepository.create(reactor, collectorDataSource);
     }
 
     @Provides
-    private BybitCryptoCollector bybitCryptoCollector(final NioReactor reactor, final Executor executor,
-                                                      final StreamOffsetsRepository streamOffsetsRepository,
-                                                      final BybitSpotRepository bybitSpotRepository,
-                                                      final BybitLinearRepository bybitLinearRepository) {
-        return BybitCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitSpotRepository,
+    private BybitStreamService bybitStreamService(final NioReactor reactor, final Executor executor,
+                                                  final StreamOffsetsRepository streamOffsetsRepository,
+                                                  final BybitSpotRepository bybitSpotRepository,
+                                                  final BybitLinearRepository bybitLinearRepository) {
+        return BybitStreamService.create(reactor, executor, streamOffsetsRepository, bybitSpotRepository,
                 bybitLinearRepository);
     }
 
     @Provides
-    private BybitTaCryptoCollector bybitTaCryptoCollector(final NioReactor reactor, final Executor executor,
-                                                          final StreamOffsetsRepository streamOffsetsRepository,
-                                                          final BybitTaSpotRepository bybitTaSpotRepository,
-                                                          final BybitTaLinearRepository bybitTaLinearRepository) {
-        return BybitTaCryptoCollector.create(reactor, executor, streamOffsetsRepository, bybitTaSpotRepository,
-                bybitTaLinearRepository);
-    }
-
-    @Provides
-    private BybitParserCollector bybitParserCollector(final NioReactor reactor, final Executor executor,
-                                                      final StreamOffsetsRepository streamOffsetsRepository,
-                                                      final BybitParserRepository bybitParserRepository) {
-        return BybitParserCollector.create(reactor, executor, streamOffsetsRepository, bybitParserRepository);
-    }
-
-    @Provides
-    private CmcParserCollector cmcParserCollector(final NioReactor reactor, final Executor executor,
+    private CryptoScoutService cryptoScoutService(final NioReactor reactor, final Executor executor,
                                                   final StreamOffsetsRepository streamOffsetsRepository,
-                                                  final CmcParserRepository cmcParserRepository) {
-        return CmcParserCollector.create(reactor, executor, streamOffsetsRepository, cmcParserRepository);
+                                                  final CryptoScoutRepository cryptoScoutRepository) {
+        return CryptoScoutService.create(reactor, executor, streamOffsetsRepository, cryptoScoutRepository);
+    }
+
+    @Provides
+    private DataService dataService(final NioReactor reactor,
+                                    final Executor executor,
+                                    final BybitStreamService bybitStreamService,
+                                    final CryptoScoutService cryptoScoutService,
+                                    @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher,
+                                    @Named(ANALYST_PUBLISHER) final AmqpPublisher analystPublisher) {
+        return DataService.create(reactor, executor, bybitStreamService, cryptoScoutService, chatbotPublisher,
+                analystPublisher);
     }
 
     @Provides
     @Eager
-    private StreamCollector streamCollector(final NioReactor reactor, final Executor executor,
-                                            final StreamOffsetsRepository streamOffsetsRepository,
-                                            final BybitCryptoCollector bybitCryptoCollector,
-                                            final BybitTaCryptoCollector bybitTaCryptoCollector,
-                                            final BybitParserCollector bybitParserCollector,
-                                            final CmcParserCollector cmcParserCollector) {
-        return StreamCollector.create(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
-                bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
+    private StreamService streamService(final NioReactor reactor, final Executor executor,
+                                        final StreamOffsetsRepository streamOffsetsRepository,
+                                        final BybitStreamService bybitStreamService,
+                                        final CryptoScoutService cryptoScoutService) {
+        return StreamService.create(reactor, executor, streamOffsetsRepository, bybitStreamService, cryptoScoutService);
     }
 
     @Provides
@@ -173,24 +142,11 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private DataCollector dataCollector(final NioReactor reactor,
-                                        final Executor executor,
-                                        final BybitCryptoCollector bybitCryptoCollector,
-                                        final BybitTaCryptoCollector bybitTaCryptoCollector,
-                                        final BybitParserCollector bybitParserCollector,
-                                        final CmcParserCollector cmcParserCollector,
-                                        @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher,
-                                        @Named(ANALYST_PUBLISHER) final AmqpPublisher analystPublisher) {
-        return DataCollector.create(reactor, executor, bybitCryptoCollector, bybitTaCryptoCollector,
-                bybitParserCollector, cmcParserCollector, chatbotPublisher, analystPublisher);
-    }
-
-    @Provides
     @Named(COLLECTOR_CONSUMER)
     @Eager
     private AmqpConsumer collectorConsumer(final NioReactor reactor, final Executor executor,
-                                           final DataCollector dataCollector) {
+                                           final DataService dataService) {
         return AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(), COLLECTOR_CONSUMER_CLIENT_NAME,
-                AmqpConfig.getAmqpCollectorQueue(), dataCollector::handleMessage);
+                AmqpConfig.getAmqpCollectorQueue(), dataService::handleMessage);
     }
 }

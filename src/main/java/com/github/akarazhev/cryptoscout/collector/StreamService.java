@@ -44,79 +44,54 @@ import com.rabbitmq.stream.Consumer;
 import com.rabbitmq.stream.Environment;
 import com.rabbitmq.stream.OffsetSpecification;
 
-public final class StreamCollector extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(StreamCollector.class);
+public final class StreamService extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(StreamService.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
-    private final BybitCryptoCollector bybitCryptoCollector;
-    private final BybitTaCryptoCollector bybitTaCryptoCollector;
-    private final BybitParserCollector bybitParserCollector;
-    private final CmcParserCollector cmcParserCollector;
+    private final BybitStreamService bybitStreamService;
+    private final CryptoScoutService cryptoScoutService;
     private volatile Environment environment;
-    private volatile Consumer cmcParserConsumer;
-    private volatile Consumer bybitParserConsumer;
-    private volatile Consumer bybitCryptoConsumer;
-    private volatile Consumer bybitTaCryptoConsumer;
+    private volatile Consumer cryptoScoutConsumer;
+    private volatile Consumer bybitStreamConsumer;
 
-    private enum StreamType {CMC_PARSER, BYBIT_PARSER, BYBIT_CRYPTO, BYBIT_TA_CRYPTO}
+    private enum StreamType {CRYPTO_SCOUT, BYBIT_STREAM}
 
-    public static StreamCollector create(final NioReactor reactor, final Executor executor,
-                                         final StreamOffsetsRepository streamOffsetsRepository,
-                                         final BybitCryptoCollector bybitCryptoCollector,
-                                         final BybitTaCryptoCollector bybitTaCryptoCollector,
-                                         final BybitParserCollector bybitParserCollector,
-                                         final CmcParserCollector cmcParserCollector) {
-        return new StreamCollector(reactor, executor, streamOffsetsRepository, bybitCryptoCollector,
-                bybitTaCryptoCollector, bybitParserCollector, cmcParserCollector);
+    public static StreamService create(final NioReactor reactor, final Executor executor,
+                                       final StreamOffsetsRepository streamOffsetsRepository,
+                                       final BybitStreamService bybitStreamService,
+                                       final CryptoScoutService cryptoScoutService) {
+        return new StreamService(reactor, executor, streamOffsetsRepository, bybitStreamService, cryptoScoutService);
     }
 
-    private StreamCollector(final NioReactor reactor, final Executor executor,
-                            final StreamOffsetsRepository streamOffsetsRepository,
-                            final BybitCryptoCollector bybitCryptoCollector,
-                            final BybitTaCryptoCollector bybitTaCryptoCollector,
-                            final BybitParserCollector bybitParserCollector,
-                            final CmcParserCollector cmcParserCollector) {
+    private StreamService(final NioReactor reactor, final Executor executor,
+                          final StreamOffsetsRepository streamOffsetsRepository,
+                          final BybitStreamService bybitStreamService,
+                          final CryptoScoutService cryptoScoutService) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
-        this.bybitCryptoCollector = bybitCryptoCollector;
-        this.bybitTaCryptoCollector = bybitTaCryptoCollector;
-        this.bybitParserCollector = bybitParserCollector;
-        this.cmcParserCollector = cmcParserCollector;
+        this.bybitStreamService = bybitStreamService;
+        this.cryptoScoutService = cryptoScoutService;
     }
 
     @Override
     public Promise<Void> start() {
         return Promise.ofBlocking(executor, () -> {
             try {
-                final var cmcStream = AmqpConfig.getAmqpCmcParserStream();
+                final var cryptoScoutStream = AmqpConfig.getAmqpCryptoScoutStream();
                 environment = AmqpConfig.getEnvironment();
-                cmcParserConsumer = environment.consumerBuilder()
-                        .stream(cmcStream)
+                cryptoScoutConsumer = environment.consumerBuilder()
+                        .stream(cryptoScoutStream)
                         .noTrackingStrategy()
-                        .subscriptionListener(c -> updateOffset(cmcStream, c))
-                        .messageHandler((c, m) -> consumePayload(StreamType.CMC_PARSER, c, m))
+                        .subscriptionListener(c -> updateOffset(cryptoScoutStream, c))
+                        .messageHandler((c, m) -> consumePayload(StreamType.CRYPTO_SCOUT, c, m))
                         .build();
-                final var bybitParserStream = AmqpConfig.getAmqpBybitParserStream();
-                bybitParserConsumer = environment.consumerBuilder()
-                        .stream(bybitParserStream)
+                final var bybitStream = AmqpConfig.getAmqpBybitStream();
+                bybitStreamConsumer = environment.consumerBuilder()
+                        .stream(bybitStream)
                         .noTrackingStrategy()
-                        .subscriptionListener(c -> updateOffset(bybitParserStream, c))
-                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_PARSER, c, m))
-                        .build();
-                final var bybitCryptoStream = AmqpConfig.getAmqpBybitCryptoStream();
-                bybitCryptoConsumer = environment.consumerBuilder()
-                        .stream(bybitCryptoStream)
-                        .noTrackingStrategy()
-                        .subscriptionListener(c -> updateOffset(bybitCryptoStream, c))
-                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_CRYPTO, c, m))
-                        .build();
-                final var bybitTaCryptoStream = AmqpConfig.getAmqpBybitTaCryptoStream();
-                bybitTaCryptoConsumer = environment.consumerBuilder()
-                        .stream(bybitTaCryptoStream)
-                        .noTrackingStrategy()
-                        .subscriptionListener(c -> updateOffset(bybitTaCryptoStream, c))
-                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_TA_CRYPTO, c, m))
+                        .subscriptionListener(c -> updateOffset(bybitStream, c))
+                        .messageHandler((c, m) -> consumePayload(StreamType.BYBIT_STREAM, c, m))
                         .build();
             } catch (final Exception ex) {
                 LOGGER.error("Failed to start StreamConsumer", ex);
@@ -128,14 +103,10 @@ public final class StreamCollector extends AbstractReactive implements ReactiveS
     @Override
     public Promise<Void> stop() {
         return Promise.ofBlocking(executor, () -> {
-            closeConsumer(cmcParserConsumer);
-            cmcParserConsumer = null;
-            closeConsumer(bybitParserConsumer);
-            bybitParserConsumer = null;
-            closeConsumer(bybitCryptoConsumer);
-            bybitCryptoConsumer = null;
-            closeConsumer(bybitTaCryptoConsumer);
-            bybitTaCryptoConsumer = null;
+            closeConsumer(cryptoScoutConsumer);
+            cryptoScoutConsumer = null;
+            closeConsumer(bybitStreamConsumer);
+            bybitStreamConsumer = null;
             closeEnvironment();
         });
     }
@@ -167,10 +138,8 @@ public final class StreamCollector extends AbstractReactive implements ReactiveS
         reactor.execute(() -> Promise.ofBlocking(executor, () ->
                         JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
                 .then(payload -> switch (type) {
-                    case CMC_PARSER -> cmcParserCollector.save(payload, context.offset());
-                    case BYBIT_PARSER -> bybitParserCollector.save(payload, context.offset());
-                    case BYBIT_CRYPTO -> bybitCryptoCollector.save(payload, context.offset());
-                    case BYBIT_TA_CRYPTO -> bybitTaCryptoCollector.save(payload, context.offset());
+                    case CRYPTO_SCOUT -> cryptoScoutService.save(payload, context.offset());
+                    case BYBIT_STREAM -> bybitStreamService.save(payload, context.offset());
                 })
                 .whenComplete((_, ex) -> {
                     if (ex != null) {
