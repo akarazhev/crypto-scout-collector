@@ -157,13 +157,13 @@ final class DataServiceTest {
         bybitStreamService = BybitStreamService.create(reactor, executor, streamOffsetsRepository, spotRepository,
                 linearRepository);
         cryptoScoutService = CryptoScoutService.create(reactor, executor, streamOffsetsRepository, cryptoScoutRepository);
-        dataService = DataService.create(reactor, executor, bybitStreamService, cryptoScoutService, chatbotPublisher,
-                analystPublisher);
 
         chatbotPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 CHATBOT_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpChatbotQueue());
         analystPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 ANALYST_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpAnalystQueue());
+        dataService = DataService.create(reactor, executor, bybitStreamService, cryptoScoutService, chatbotPublisher,
+                analystPublisher);
         collectorConsumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue(), dataService::handleMessage);
 
