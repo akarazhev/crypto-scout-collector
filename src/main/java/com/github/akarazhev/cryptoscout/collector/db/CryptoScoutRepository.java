@@ -40,13 +40,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_INSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_SELECT;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_UPDATE_TIME;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE_CLASSIFICATION;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1D_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_1W_INSERT;
@@ -58,15 +51,22 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KL
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_MARKET_CAP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_OPEN;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_CLOSE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_HIGH;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_LOW;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIME_OPEN;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_KLINE_VOLUME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_SELECT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_UPDATE_TIME;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.FGI_VALUE_CLASSIFICATION;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
-import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.FROM;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.TO;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.fetchRangeBySymbol;
+import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CIRCULATING_SUPPLY;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.HIGH;
@@ -90,20 +90,20 @@ import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static com.github.akarazhev.jcryptolib.util.ValueUtils.toBigDecimal;
 
-public final class CmcParserRepository extends AbstractReactive implements ReactiveService {
+public final class CryptoScoutRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
     private final int batchSize;
     private final String stream;
 
-    public static CmcParserRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
-        return new CmcParserRepository(reactor, collectorDataSource);
+    public static CryptoScoutRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+        return new CryptoScoutRepository(reactor, collectorDataSource);
     }
 
-    private CmcParserRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
+    private CryptoScoutRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
-        this.batchSize = JdbcConfig.getCmcBatchSize();
-        this.stream = AmqpConfig.getAmqpCmcParserStream();
+        this.batchSize = JdbcConfig.getBybitBatchSize();
+        this.stream = AmqpConfig.getAmqpCryptoScoutStream();
     }
 
     @Override

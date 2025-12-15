@@ -41,16 +41,25 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getOrderBookLevelsCount;
+import static com.github.akarazhev.cryptoscout.collector.PayloadParser.getRowsCount;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_15M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1D_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_1M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_240M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_5M_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_KLINE_60M_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1000_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_1_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_200_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_ORDER_BOOK_50_TABLE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_TICKERS_TABLE;
 import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.T;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.TS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Symbol.BTC_USDT;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -81,7 +90,12 @@ final class BybitSpotRepositoryTest {
                 SPOT_KLINE_60M_TABLE,
                 SPOT_KLINE_240M_TABLE,
                 SPOT_KLINE_1D_TABLE,
-                SPOT_TICKERS_TABLE
+                SPOT_TICKERS_TABLE,
+                SPOT_ORDER_BOOK_1_TABLE,
+                SPOT_ORDER_BOOK_50_TABLE,
+                SPOT_ORDER_BOOK_200_TABLE,
+                SPOT_ORDER_BOOK_1000_TABLE,
+                SPOT_PUBLIC_TRADE_TABLE
         );
     }
 
@@ -97,111 +111,211 @@ final class BybitSpotRepositoryTest {
     @Test
     void shouldSaveKline1m() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
-        assertEquals(1, repository.saveKline1m(List.of(k1), 100L));
-        assertTableCount(SPOT_KLINE_1M_TABLE, 1);
+        final var expected = getRowsCount(k1);
+        assertEquals(expected, repository.saveKline1m(List.of(k1), 100L));
+        assertTableCount(SPOT_KLINE_1M_TABLE, expected);
     }
 
     @Test
     void shouldSaveKline5m() throws Exception {
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
-        assertEquals(1, repository.saveKline5m(List.of(k5), 200L));
-        assertTableCount(SPOT_KLINE_5M_TABLE, 1);
+        final var expected = getRowsCount(k5);
+        assertEquals(expected, repository.saveKline5m(List.of(k5), 200L));
+        assertTableCount(SPOT_KLINE_5M_TABLE, expected);
     }
 
     @Test
     void shouldSaveKline15m() throws Exception {
         final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
-        assertEquals(1, repository.saveKline15m(List.of(k15), 300L));
-        assertTableCount(SPOT_KLINE_15M_TABLE, 1);
+        final var expected = getRowsCount(k15);
+        assertEquals(expected, repository.saveKline15m(List.of(k15), 300L));
+        assertTableCount(SPOT_KLINE_15M_TABLE, expected);
     }
 
     @Test
     void shouldSaveKline60m() throws Exception {
         final var k60 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
-        assertEquals(1, repository.saveKline60m(List.of(k60), 400L));
-        assertTableCount(SPOT_KLINE_60M_TABLE, 1);
+        final var expected = getRowsCount(k60);
+        assertEquals(expected, repository.saveKline60m(List.of(k60), 400L));
+        assertTableCount(SPOT_KLINE_60M_TABLE, expected);
     }
 
     @Test
     void shouldSaveKline240m() throws Exception {
         final var k240 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
-        assertEquals(1, repository.saveKline240m(List.of(k240), 500L));
-        assertTableCount(SPOT_KLINE_240M_TABLE, 1);
+        final var expected = getRowsCount(k240);
+        assertEquals(expected, repository.saveKline240m(List.of(k240), 500L));
+        assertTableCount(SPOT_KLINE_240M_TABLE, expected);
     }
 
     @Test
     void shouldSaveKline1d() throws Exception {
         final var kd = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
-        assertEquals(1, repository.saveKline1d(List.of(kd), 600L));
-        assertTableCount(SPOT_KLINE_1D_TABLE, 1);
+        final var expected = getRowsCount(kd);
+        assertEquals(expected, repository.saveKline1d(List.of(kd), 600L));
+        assertTableCount(SPOT_KLINE_1D_TABLE, expected);
     }
 
     @Test
     void shouldSaveTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
-        assertEquals(1, repository.saveTicker(List.of(tickers), 700L));
-        assertTableCount(SPOT_TICKERS_TABLE, 1);
+        final var expected = getRowsCount(tickers);
+        assertEquals(expected, repository.saveTicker(List.of(tickers), 700L));
+        assertTableCount(SPOT_TICKERS_TABLE, expected);
     }
 
     @Test
     void shouldGetKline1m() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
+        final var expected = getRowsCount(k1);
         final var start = ((Map<?, ?>)((List<?>) k1.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline1m(List.of(k1), 800L));
+        assertEquals(expected, repository.saveKline1m(List.of(k1), 800L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline1m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(expected, repository.getKline1m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline5m() throws Exception {
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
+        final var expected = getRowsCount(k5);
         final var start = ((Map<?, ?>)((List<?>) k5.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline5m(List.of(k5), 900L));
+        assertEquals(expected, repository.saveKline5m(List.of(k5), 900L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline5m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(expected, repository.getKline5m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline15m() throws Exception {
         final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
+        final var expected = getRowsCount(k15);
         final var start = ((Map<?, ?>)((List<?>) k15.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline15m(List.of(k15), 1000L));
+        assertEquals(expected, repository.saveKline15m(List.of(k15), 1000L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline15m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(expected, repository.getKline15m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline60m() throws Exception {
         final var k60 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
+        final var expected = getRowsCount(k60);
         final var start = ((Map<?, ?>)((List<?>) k60.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline60m(List.of(k60), 1100L));
+        assertEquals(expected, repository.saveKline60m(List.of(k60), 1100L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline60m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(expected, repository.getKline60m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline240m() throws Exception {
         final var k240 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
+        final var expected = getRowsCount(k240);
         final var start = ((Map<?, ?>)((List<?>) k240.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline240m(List.of(k240), 1200L));
+        assertEquals(expected, repository.saveKline240m(List.of(k240), 1200L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline240m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(expected, repository.getKline240m(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetKline1d() throws Exception {
         final var kd = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
+        final var expected = getRowsCount(kd);
         final var start = ((Map<?, ?>)((List<?>) kd.get(DATA)).getFirst()).get(START);
-        assertEquals(1, repository.saveKline1d(List.of(kd), 1300L));
+        assertEquals(expected, repository.saveKline1d(List.of(kd), 1300L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-        assertEquals(1, repository.getKline1d(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(expected, repository.getKline1d(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
     void shouldGetTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
-        assertEquals(1, repository.saveTicker(List.of(tickers), 1400L));
+        final var expected = getRowsCount(tickers);
+        assertEquals(expected, repository.saveTicker(List.of(tickers), 1400L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(1, repository.getTicker(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(expected, repository.getTicker(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+    }
+
+    @Test
+    void shouldSavePublicTrade() throws Exception {
+        final var pt = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
+        final var expected = getRowsCount(pt);
+        assertEquals(expected, repository.savePublicTrade(List.of(pt), 1500L));
+        assertTableCount(SPOT_PUBLIC_TRADE_TABLE, expected);
+    }
+
+    @Test
+    void shouldSaveOrderBook1() throws Exception {
+        final var ob1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
+        final var expected = getOrderBookLevelsCount(ob1);
+        assertEquals(expected, repository.saveOrderBook1(List.of(ob1), 1600L));
+        assertTableCount(SPOT_ORDER_BOOK_1_TABLE, expected);
+    }
+
+    @Test
+    void shouldSaveOrderBook50() throws Exception {
+        final var ob50 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
+        final var expected = getOrderBookLevelsCount(ob50);
+        assertEquals(expected, repository.saveOrderBook50(List.of(ob50), 1700L));
+        assertTableCount(SPOT_ORDER_BOOK_50_TABLE, expected);
+    }
+
+    @Test
+    void shouldSaveOrderBook200() throws Exception {
+        final var ob200 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
+        final var expected = getOrderBookLevelsCount(ob200);
+        assertEquals(expected, repository.saveOrderBook200(List.of(ob200), 1800L));
+        assertTableCount(SPOT_ORDER_BOOK_200_TABLE, expected);
+    }
+
+    @Test
+    void shouldSaveOrderBook1000() throws Exception {
+        final var ob1000 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
+        final var expected = getOrderBookLevelsCount(ob1000);
+        assertEquals(expected, repository.saveOrderBook1000(List.of(ob1000), 1900L));
+        assertTableCount(SPOT_ORDER_BOOK_1000_TABLE, expected);
+    }
+
+    @Test
+    void shouldGetPublicTrade() throws Exception {
+        final var pt = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
+        final var expected = getRowsCount(pt);
+        assertEquals(expected, repository.savePublicTrade(List.of(pt), 2000L));
+        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+        assertEquals(expected, repository.getPublicTrade(BTC_USDT, from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook1() throws Exception {
+        final var ob1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
+        final var expected = getOrderBookLevelsCount(ob1);
+        assertEquals(expected, repository.saveOrderBook1(List.of(ob1), 2100L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook1(BTC_USDT, from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook50() throws Exception {
+        final var ob50 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
+        final var expected = getOrderBookLevelsCount(ob50);
+        assertEquals(expected, repository.saveOrderBook50(List.of(ob50), 2200L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob50.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook50(BTC_USDT, from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook200() throws Exception {
+        final var ob200 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
+        final var expected = getOrderBookLevelsCount(ob200);
+        assertEquals(expected, repository.saveOrderBook200(List.of(ob200), 2300L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob200.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook200(BTC_USDT, from, from).size());
+    }
+
+    @Test
+    void shouldGetOrderBook1000() throws Exception {
+        final var ob1000 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
+        final var expected = getOrderBookLevelsCount(ob1000);
+        assertEquals(expected, repository.saveOrderBook1000(List.of(ob1000), 2400L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob1000.get(CTS)), ZoneOffset.UTC);
+        assertEquals(expected, repository.getOrderBook1000(BTC_USDT, from, from).size());
     }
 }

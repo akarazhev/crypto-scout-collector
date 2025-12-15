@@ -34,10 +34,10 @@ final class Constants {
             throw new UnsupportedOperationException();
         }
 
-        // CmcParserCollector methods
-        static final String CMC_PARSER_GET_KLINE_1D = "cmcParser.getKline1d";
-        static final String CMC_PARSER_GET_KLINE_1W = "cmcParser.getKline1w";
-        static final String CMC_PARSER_GET_FGI = "cmcParser.getFgi";
+        // CryptoScoutCollector methods
+        static final String CRYPTO_SCOUT_GET_KLINE_1D = "cmcParser.getKline1d";
+        static final String CRYPTO_SCOUT_GET_KLINE_1W = "cmcParser.getKline1w";
+        static final String CRYPTO_SCOUT_GET_FGI = "cmcParser.getFgi";
 
         // BybitCryptoCollector methods
         static final String BYBIT_GET_KLINE_1M = "bybit.getKline1m";
@@ -47,17 +47,12 @@ final class Constants {
         static final String BYBIT_GET_KLINE_240M = "bybit.getKline240m";
         static final String BYBIT_GET_KLINE_1D = "bybit.getKline1d";
         static final String BYBIT_GET_TICKER = "bybit.getTicker";
-
-        // BybitTaCryptoCollector methods
-        static final String BYBIT_TA_GET_ORDER_BOOK_1 = "bybitTa.getOrderBook1";
-        static final String BYBIT_TA_GET_ORDER_BOOK_50 = "bybitTa.getOrderBook50";
-        static final String BYBIT_TA_GET_ORDER_BOOK_200 = "bybitTa.getOrderBook200";
-        static final String BYBIT_TA_GET_ORDER_BOOK_1000 = "bybitTa.getOrderBook1000";
-        static final String BYBIT_TA_GET_PUBLIC_TRADE = "bybitTa.getPublicTrade";
-        static final String BYBIT_TA_GET_ALL_LIQUIDATION = "bybitTa.getAllLiquidation";
-
-        // BybitParserCollector methods
-        static final String BYBIT_PARSER_GET_LPL = "bybitParser.getLpl";
+        static final String BYBIT_GET_ORDER_BOOK_1 = "bybit.getOrderBook1";
+        static final String BYBIT_GET_ORDER_BOOK_50 = "bybit.getOrderBook50";
+        static final String BYBIT_GET_ORDER_BOOK_200 = "bybit.getOrderBook200";
+        static final String BYBIT_GET_ORDER_BOOK_1000 = "bybit.getOrderBook1000";
+        static final String BYBIT_GET_PUBLIC_TRADE = "bybit.getPublicTrade";
+        static final String BYBIT_GET_ALL_LIQUIDATION = "bybit.getAllLiquidation";
     }
 
     final static class Source {

@@ -106,9 +106,6 @@ public final class Constants {
             throw new UnsupportedOperationException();
         }
 
-        // Bybit parser tables
-        public static final String BYBIT_LPL_TABLE = "crypto_scout.bybit_lpl";
-
         // Bybit spot tables
         public static final String SPOT_KLINE_1M_TABLE = "crypto_scout.bybit_spot_kline_1m";
         public static final String SPOT_KLINE_5M_TABLE = "crypto_scout.bybit_spot_kline_5m";
@@ -119,11 +116,11 @@ public final class Constants {
         public static final String SPOT_TICKERS_TABLE = "crypto_scout.bybit_spot_tickers";
 
         // Bybit ta spot tables
-        public static final String TA_SPOT_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_spot_public_trade";
-        public static final String TA_SPOT_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_spot_order_book_1";
-        public static final String TA_SPOT_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_spot_order_book_50";
-        public static final String TA_SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_spot_order_book_200";
-        public static final String TA_SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_spot_order_book_1000";
+        public static final String SPOT_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_spot_public_trade";
+        public static final String SPOT_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_spot_order_book_1";
+        public static final String SPOT_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_spot_order_book_50";
+        public static final String SPOT_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_spot_order_book_200";
+        public static final String SPOT_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_spot_order_book_1000";
 
         // Bybit linear tables
         public static final String LINEAR_KLINE_1M_TABLE = "crypto_scout.bybit_linear_kline_1m";
@@ -135,31 +132,12 @@ public final class Constants {
         public static final String LINEAR_TICKERS_TABLE = "crypto_scout.bybit_linear_tickers";
 
         // Bybit linear tables
-        public static final String TA_LINEAR_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_ta_linear_public_trade";
-        public static final String TA_LINEAR_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_ta_linear_order_book_1";
-        public static final String TA_LINEAR_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_ta_linear_order_book_50";
-        public static final String TA_LINEAR_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_ta_linear_order_book_200";
-        public static final String TA_LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_ta_linear_order_book_1000";
-        public static final String TA_LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_ta_linear_all_liquidation";
-
-        // Bybit LPL
-        static final String LPL_INSERT = "INSERT INTO " + BYBIT_LPL_TABLE +
-                "(return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
-                "stake_end_time, trade_begin_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
-                "ON CONFLICT (return_coin, stake_begin_time) DO NOTHING";
-        static final String LPL_SELECT =
-                "SELECT return_coin, return_coin_icon, description, website, whitepaper, rules, stake_begin_time, " +
-                "stake_end_time, trade_begin_time FROM " + BYBIT_LPL_TABLE +
-                        " WHERE stake_end_time >= ? AND trade_begin_time <= ?";
-        static final int LPL_RETURN_COIN = 1;
-        static final int LPL_RETURN_COIN_ICON = 2;
-        static final int LPL_DESC = 3;
-        static final int LPL_WEBSITE = 4;
-        static final int LPL_WHITE_PAPER = 5;
-        static final int LPL_RULES = 6;
-        static final int LPL_STAKE_BEGIN_TIME = 7;
-        static final int LPL_STAKE_END_TIME = 8;
-        static final int LPL_TRADE_BEGIN_TIME = 9;
+        public static final String LINEAR_PUBLIC_TRADE_TABLE = "crypto_scout.bybit_linear_public_trade";
+        public static final String LINEAR_ORDER_BOOK_1_TABLE = "crypto_scout.bybit_linear_order_book_1";
+        public static final String LINEAR_ORDER_BOOK_50_TABLE = "crypto_scout.bybit_linear_order_book_50";
+        public static final String LINEAR_ORDER_BOOK_200_TABLE = "crypto_scout.bybit_linear_order_book_200";
+        public static final String LINEAR_ORDER_BOOK_1000_TABLE = "crypto_scout.bybit_linear_order_book_1000";
+        public static final String LINEAR_ALL_LIQUIDATION_TABLE = "crypto_scout.bybit_linear_all_liquidation";
 
         // Spot klines (confirmed): identical schema across intervals
         static final String SPOT_KLINE_1M_INSERT = "INSERT INTO " + SPOT_KLINE_1M_TABLE +
@@ -171,45 +149,30 @@ public final class Constants {
         static final String SPOT_KLINE_5M_INSERT = "INSERT INTO " + SPOT_KLINE_5M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_5M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + SPOT_KLINE_5M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_5M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + SPOT_KLINE_5M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_15M_INSERT = "INSERT INTO " + SPOT_KLINE_15M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_15M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + SPOT_KLINE_15M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_15M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + SPOT_KLINE_15M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_60M_INSERT = "INSERT INTO " + SPOT_KLINE_60M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_60M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + SPOT_KLINE_60M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_60M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + SPOT_KLINE_60M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_240M_INSERT = "INSERT INTO " + SPOT_KLINE_240M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_240M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + SPOT_KLINE_240M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_240M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + SPOT_KLINE_240M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_1D_INSERT = "INSERT INTO " + SPOT_KLINE_1D_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String SPOT_KLINE_1D_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + SPOT_KLINE_1D_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String SPOT_KLINE_1D_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + SPOT_KLINE_1D_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
@@ -233,45 +196,30 @@ public final class Constants {
         static final String LINEAR_KLINE_5M_INSERT = "INSERT INTO " + LINEAR_KLINE_5M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String LINEAR_KLINE_5M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + LINEAR_KLINE_5M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_5M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + LINEAR_KLINE_5M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_15M_INSERT = "INSERT INTO " + LINEAR_KLINE_15M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String LINEAR_KLINE_15M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + LINEAR_KLINE_15M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_15M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + LINEAR_KLINE_15M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_60M_INSERT = "INSERT INTO " + LINEAR_KLINE_60M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String LINEAR_KLINE_60M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + LINEAR_KLINE_60M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_60M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + LINEAR_KLINE_60M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_240M_INSERT = "INSERT INTO " + LINEAR_KLINE_240M_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String LINEAR_KLINE_240M_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + LINEAR_KLINE_240M_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_240M_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + LINEAR_KLINE_240M_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_1D_INSERT = "INSERT INTO " + LINEAR_KLINE_1D_TABLE +
                 "(symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover) " +
                 "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (symbol, start_time) DO NOTHING";
-        static final String LINEAR_KLINE_1D_SELECT =
-                "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
-                        "FROM " + LINEAR_KLINE_1D_TABLE + " WHERE start_time >= ? AND end_time <= ?";
         static final String LINEAR_KLINE_1D_SELECT_BY_SYMBOL =
                 "SELECT symbol, start_time, end_time, open_price, close_price, high_price, low_price, volume, turnover " +
                         "FROM " + LINEAR_KLINE_1D_TABLE + " WHERE symbol = ? AND start_time >= ? AND end_time <= ?";
@@ -356,11 +304,11 @@ public final class Constants {
         static final int LINEAR_TICKERS_CUR_PRE_LISTING_PHASE = 32;
 
         // Spot public trades
-        static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + TA_SPOT_PUBLIC_TRADE_TABLE +
+        static final String SPOT_PUBLIC_TRADE_INSERT = "INSERT INTO " + SPOT_PUBLIC_TRADE_TABLE +
                 "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final String SPOT_PUBLIC_TRADE_SELECT_BY_SYMBOL =
                 "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
-                        TA_SPOT_PUBLIC_TRADE_TABLE + " WHERE symbol = ? AND trade_time >= ? AND trade_time <= ?";
+                        SPOT_PUBLIC_TRADE_TABLE + " WHERE symbol = ? AND trade_time >= ? AND trade_time <= ?";
         static final int SPOT_PUBLIC_TRADE_SYMBOL = 1;
         static final int SPOT_PUBLIC_TRADE_TRADE_TIME = 2;
         static final int SPOT_PUBLIC_TRADE_PRICE = 3;
@@ -370,11 +318,11 @@ public final class Constants {
         static final int SPOT_PUBLIC_TRADE_IS_RPI = 7;
 
         // Linear public trades
-        static final String LINEAR_PUBLIC_TRADE_INSERT = "INSERT INTO " + TA_LINEAR_PUBLIC_TRADE_TABLE +
+        static final String LINEAR_PUBLIC_TRADE_INSERT = "INSERT INTO " + LINEAR_PUBLIC_TRADE_TABLE +
                 "(symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi) VALUES (?, ?, ?, ?, ?, ?, ?)";
         static final String LINEAR_PUBLIC_TRADE_SELECT_BY_SYMBOL =
                 "SELECT symbol, trade_time, price, size, taker_side, is_block_trade, is_rpi FROM " +
-                        TA_LINEAR_PUBLIC_TRADE_TABLE + " WHERE symbol = ? AND trade_time >= ? AND trade_time <= ?";
+                        LINEAR_PUBLIC_TRADE_TABLE + " WHERE symbol = ? AND trade_time >= ? AND trade_time <= ?";
         static final int LINEAR_PUBLIC_TRADE_SYMBOL = 1;
         static final int LINEAR_PUBLIC_TRADE_TRADE_TIME = 2;
         static final int LINEAR_PUBLIC_TRADE_PRICE = 3;
@@ -388,26 +336,26 @@ public final class Constants {
         static final String BID = "bid";
 
         // Spot order books (one row per level)
-        static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_1_TABLE +
+        static final String SPOT_ORDER_BOOK_1_INSERT = "INSERT INTO " + SPOT_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_1_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_1_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
-        static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_50_TABLE +
+                        SPOT_ORDER_BOOK_1_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+        static final String SPOT_ORDER_BOOK_50_INSERT = "INSERT INTO " + SPOT_ORDER_BOOK_50_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_50_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_50_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
-        static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_200_TABLE +
+                        SPOT_ORDER_BOOK_50_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+        static final String SPOT_ORDER_BOOK_200_INSERT = "INSERT INTO " + SPOT_ORDER_BOOK_200_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_200_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_200_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
-        static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + TA_SPOT_ORDER_BOOK_1000_TABLE +
+                        SPOT_ORDER_BOOK_200_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+        static final String SPOT_ORDER_BOOK_1000_INSERT = "INSERT INTO " + SPOT_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String SPOT_ORDER_BOOK_1000_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_SPOT_ORDER_BOOK_1000_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+                        SPOT_ORDER_BOOK_1000_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final int SPOT_ORDER_BOOK_SYMBOL = 1;
         static final int SPOT_ORDER_BOOK_ENGINE_TIME = 2;
         static final int SPOT_ORDER_BOOK_SIDE = 3;
@@ -415,26 +363,26 @@ public final class Constants {
         static final int SPOT_ORDER_BOOK_SIZE = 5;
 
         // Linear order books (one row per level)
-        static final String LINEAR_ORDER_BOOK_1_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_1_TABLE +
+        static final String LINEAR_ORDER_BOOK_1_INSERT = "INSERT INTO " + LINEAR_ORDER_BOOK_1_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String LINEAR_ORDER_BOOK_1_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_1_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
-        static final String LINEAR_ORDER_BOOK_50_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_50_TABLE +
+                        LINEAR_ORDER_BOOK_1_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+        static final String LINEAR_ORDER_BOOK_50_INSERT = "INSERT INTO " + LINEAR_ORDER_BOOK_50_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String LINEAR_ORDER_BOOK_50_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_50_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
-        static final String LINEAR_ORDER_BOOK_200_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_200_TABLE +
+                        LINEAR_ORDER_BOOK_50_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+        static final String LINEAR_ORDER_BOOK_200_INSERT = "INSERT INTO " + LINEAR_ORDER_BOOK_200_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String LINEAR_ORDER_BOOK_200_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_200_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
-        static final String LINEAR_ORDER_BOOK_1000_INSERT = "INSERT INTO " + TA_LINEAR_ORDER_BOOK_1000_TABLE +
+                        LINEAR_ORDER_BOOK_200_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+        static final String LINEAR_ORDER_BOOK_1000_INSERT = "INSERT INTO " + LINEAR_ORDER_BOOK_1000_TABLE +
                 "(symbol, engine_time, side, price, size) VALUES (?, ?, ?, ?, ?)";
         static final String LINEAR_ORDER_BOOK_1000_SELECT_BY_SYMBOL =
                 "SELECT symbol, engine_time, side, price, size FROM " +
-                        TA_LINEAR_ORDER_BOOK_1000_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
+                        LINEAR_ORDER_BOOK_1000_TABLE + " WHERE symbol = ? AND engine_time >= ? AND engine_time <= ?";
         static final int LINEAR_ORDER_BOOK_SYMBOL = 1;
         static final int LINEAR_ORDER_BOOK_ENGINE_TIME = 2;
         static final int LINEAR_ORDER_BOOK_SIDE = 3;
@@ -442,11 +390,11 @@ public final class Constants {
         static final int LINEAR_ORDER_BOOK_SIZE = 5;
 
         // Linear all liquidation
-        static final String LINEAR_ALL_LIQUIDATION_INSERT = "INSERT INTO " + TA_LINEAR_ALL_LIQUIDATION_TABLE +
+        static final String LINEAR_ALL_LIQUIDATION_INSERT = "INSERT INTO " + LINEAR_ALL_LIQUIDATION_TABLE +
                 "(symbol, event_time, position_side, executed_size, bankruptcy_price) VALUES (?, ?, ?, ?, ?)";
         static final String LINEAR_ALL_LIQUIDATION_SELECT_BY_SYMBOL =
                 "SELECT symbol, event_time, position_side, executed_size, bankruptcy_price FROM " +
-                        TA_LINEAR_ALL_LIQUIDATION_TABLE + " WHERE symbol = ? AND event_time >= ? AND event_time <= ?";
+                        LINEAR_ALL_LIQUIDATION_TABLE + " WHERE symbol = ? AND event_time >= ? AND event_time <= ?";
         static final int LINEAR_ALL_LIQUIDATION_SYMBOL = 1;
         static final int LINEAR_ALL_LIQUIDATION_EVENT_TIME = 2;
         static final int LINEAR_ALL_LIQUIDATION_POSITION_SIDE = 3;

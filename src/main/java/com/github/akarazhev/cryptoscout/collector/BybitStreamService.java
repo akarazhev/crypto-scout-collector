@@ -53,16 +53,22 @@ import java.util.concurrent.Executor;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isKlineConfirmed;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isSnapshot;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TOPIC_FIELD;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ALL_LIQUIDATION;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_1;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_15;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_240;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_5;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_60;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.KLINE_D;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_1;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_1000;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_200;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.ORDER_BOOK_50;
+import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.PUBLIC_TRADE;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.TopicType.TICKERS;
 
-public final class BybitCryptoCollector extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(BybitCryptoCollector.class);
+public final class BybitStreamService extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(BybitStreamService.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
     private final BybitSpotRepository bybitSpotRepository;
@@ -74,18 +80,18 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
 
     public enum Type {BYBIT_SPOT, BYBIT_LINEAR}
 
-    public static BybitCryptoCollector create(final NioReactor reactor, final Executor executor,
-                                              final StreamOffsetsRepository streamOffsetsRepository,
-                                              final BybitSpotRepository bybitSpotRepository,
-                                              final BybitLinearRepository bybitLinearRepository) {
-        return new BybitCryptoCollector(reactor, executor, streamOffsetsRepository, bybitSpotRepository,
+    public static BybitStreamService create(final NioReactor reactor, final Executor executor,
+                                            final StreamOffsetsRepository streamOffsetsRepository,
+                                            final BybitSpotRepository bybitSpotRepository,
+                                            final BybitLinearRepository bybitLinearRepository) {
+        return new BybitStreamService(reactor, executor, streamOffsetsRepository, bybitSpotRepository,
                 bybitLinearRepository);
     }
 
-    private BybitCryptoCollector(final NioReactor reactor, final Executor executor,
-                                 final StreamOffsetsRepository streamOffsetsRepository,
-                                 final BybitSpotRepository bybitSpotRepository,
-                                 final BybitLinearRepository bybitLinearRepository) {
+    private BybitStreamService(final NioReactor reactor, final Executor executor,
+                               final StreamOffsetsRepository streamOffsetsRepository,
+                               final BybitSpotRepository bybitSpotRepository,
+                               final BybitLinearRepository bybitLinearRepository) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
@@ -93,7 +99,7 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
         this.bybitLinearRepository = bybitLinearRepository;
         this.batchSize = JdbcConfig.getBybitBatchSize();
         this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
-        this.stream = AmqpConfig.getAmqpBybitCryptoStream();
+        this.stream = AmqpConfig.getAmqpBybitStream();
     }
 
     @Override
@@ -214,6 +220,11 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             final var spotKlines240 = new ArrayList<Map<String, Object>>();
             final var spotKlines1d = new ArrayList<Map<String, Object>>();
             final var spotTickers = new ArrayList<Map<String, Object>>();
+            final var spotPublicTrades = new ArrayList<Map<String, Object>>();
+            final var spotOrders1 = new ArrayList<Map<String, Object>>();
+            final var spotOrders50 = new ArrayList<Map<String, Object>>();
+            final var spotOrders200 = new ArrayList<Map<String, Object>>();
+            final var spotOrders1000 = new ArrayList<Map<String, Object>>();
             // Linear data
             final var linearKlines1 = new ArrayList<Map<String, Object>>();
             final var linearKlines5 = new ArrayList<Map<String, Object>>();
@@ -222,6 +233,12 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             final var linearKlines240 = new ArrayList<Map<String, Object>>();
             final var linearKlines1d = new ArrayList<Map<String, Object>>();
             final var linearTickers = new ArrayList<Map<String, Object>>();
+            final var linearPublicTrades = new ArrayList<Map<String, Object>>();
+            final var linearOrders1 = new ArrayList<Map<String, Object>>();
+            final var linearOrders50 = new ArrayList<Map<String, Object>>();
+            final var linearOrders200 = new ArrayList<Map<String, Object>>();
+            final var linearOrders1000 = new ArrayList<Map<String, Object>>();
+            final var linearAllLiquidation = new ArrayList<Map<String, Object>>();
             for (final var item : items) {
                 final var payload = item.payload();
                 final var source = payload.getSource();
@@ -256,6 +273,26 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                         if (isSnapshot(data)) {
                             spotTickers.add(data);
                         }
+                    } else if (topic.contains(PUBLIC_TRADE)) {
+                        if (isSnapshot(data)) {
+                            spotPublicTrades.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_1)) {
+                        if (isSnapshot(data)) {
+                            spotOrders1.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_50)) {
+                        if (isSnapshot(data)) {
+                            spotOrders50.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_200)) {
+                        if (isSnapshot(data)) {
+                            spotOrders200.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_1000)) {
+                        if (isSnapshot(data)) {
+                            spotOrders1000.add(data);
+                        }
                     }
                 } else if (Source.PML.equals(source)) {
                     if (topic.contains(KLINE_1)) {
@@ -286,6 +323,30 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                         if (isSnapshot(data)) {
                             linearTickers.add(data);
                         }
+                    } else if (topic.contains(PUBLIC_TRADE)) {
+                        if (isSnapshot(data)) {
+                            linearPublicTrades.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_1)) {
+                        if (isSnapshot(data)) {
+                            linearOrders1.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_50)) {
+                        if (isSnapshot(data)) {
+                            linearOrders50.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_200)) {
+                        if (isSnapshot(data)) {
+                            linearOrders200.add(data);
+                        }
+                    } else if (topic.contains(ORDER_BOOK_1000)) {
+                        if (isSnapshot(data)) {
+                            linearOrders1000.add(data);
+                        }
+                    } else if (topic.contains(ALL_LIQUIDATION)) {
+                        if (isSnapshot(data)) {
+                            linearAllLiquidation.add(data);
+                        }
                     }
                 }
 
@@ -296,8 +357,12 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             // No data to insert but we still may want to advance offset in rare cases
             if (spotKlines1.isEmpty() && spotKlines5.isEmpty() && spotKlines15.isEmpty() && spotKlines60.isEmpty() &&
                     spotKlines240.isEmpty() && spotKlines1d.isEmpty() && spotTickers.isEmpty() &&
+                    spotPublicTrades.isEmpty() && spotOrders1.isEmpty() && spotOrders50.isEmpty() &&
+                    spotOrders200.isEmpty() && spotOrders1000.isEmpty() &&
                     linearKlines1.isEmpty() && linearKlines5.isEmpty() && linearKlines15.isEmpty() && linearKlines60.isEmpty() &&
-                    linearKlines240.isEmpty() && linearKlines1d.isEmpty() && linearTickers.isEmpty()) {
+                    linearKlines240.isEmpty() && linearKlines1d.isEmpty() && linearTickers.isEmpty() &&
+                    linearPublicTrades.isEmpty() && linearOrders1.isEmpty() && linearOrders50.isEmpty() &&
+                    linearOrders200.isEmpty() && linearOrders1000.isEmpty() && linearAllLiquidation.isEmpty()) {
                 streamOffsetsRepository.upsertOffset(stream, maxOffset);
                 LOGGER.warn("Upserted Bybit stream offset {} (no data batch)", maxOffset);
             } else {
@@ -316,6 +381,16 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 saveSpotKline1d(spotKlines1d, maxOffset);
                 spotTickers.trimToSize();
                 saveSpotTicker(spotTickers, maxOffset);
+                spotPublicTrades.trimToSize();
+                saveSpotPublicTrade(spotPublicTrades, maxOffset);
+                spotOrders1.trimToSize();
+                saveSpotOrderBook1(spotOrders1, maxOffset);
+                spotOrders50.trimToSize();
+                saveSpotOrderBook50(spotOrders50, maxOffset);
+                spotOrders200.trimToSize();
+                saveSpotOrderBook200(spotOrders200, maxOffset);
+                spotOrders1000.trimToSize();
+                saveSpotOrderBook1000(spotOrders1000, maxOffset);
                 // Save linear data
                 linearKlines1.trimToSize();
                 saveLinearKline1m(linearKlines1, maxOffset);
@@ -331,6 +406,18 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
                 saveLinearKline1d(linearKlines1d, maxOffset);
                 linearTickers.trimToSize();
                 saveLinearTicker(linearTickers, maxOffset);
+                linearPublicTrades.trimToSize();
+                saveLinearPublicTrade(linearPublicTrades, maxOffset);
+                linearOrders1.trimToSize();
+                saveLinearOrderBook1(linearOrders1, maxOffset);
+                linearOrders50.trimToSize();
+                saveLinearOrderBook50(linearOrders50, maxOffset);
+                linearOrders200.trimToSize();
+                saveLinearOrderBook200(linearOrders200, maxOffset);
+                linearOrders1000.trimToSize();
+                saveLinearOrderBook1000(linearOrders1000, maxOffset);
+                linearAllLiquidation.trimToSize();
+                saveLinearAllLiquidation(linearAllLiquidation, maxOffset);
             }
         });
     }
@@ -458,6 +545,171 @@ public final class BybitCryptoCollector extends AbstractReactive implements Reac
             if (maxOffset >= 0) {
                 final var count = bybitLinearRepository.saveTicker(tickers, maxOffset);
                 LOGGER.info("Save {} linear tickers (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook1(final Type type, final String symbol,
+                                                            final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT ->
+                    Promise.ofBlocking(executor, () -> bybitSpotRepository.getOrderBook1(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getOrderBook1(symbol, from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook50(final Type type, final String symbol,
+                                                             final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT ->
+                    Promise.ofBlocking(executor, () -> bybitSpotRepository.getOrderBook50(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getOrderBook50(symbol, from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook200(final Type type, final String symbol,
+                                                              final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT ->
+                    Promise.ofBlocking(executor, () -> bybitSpotRepository.getOrderBook200(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getOrderBook200(symbol, from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getOrderBook1000(final Type type, final String symbol,
+                                                               final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT ->
+                    Promise.ofBlocking(executor, () -> bybitSpotRepository.getOrderBook1000(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getOrderBook1000(symbol, from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getPublicTrade(final Type type, final String symbol,
+                                                             final OffsetDateTime from, final OffsetDateTime to) {
+        return switch (type) {
+            case BYBIT_SPOT ->
+                    Promise.ofBlocking(executor, () -> bybitSpotRepository.getPublicTrade(symbol, from, to));
+            case BYBIT_LINEAR ->
+                    Promise.ofBlocking(executor, () -> bybitLinearRepository.getPublicTrade(symbol, from, to));
+        };
+    }
+
+    public Promise<List<Map<String, Object>>> getAllLiquidation(final String symbol, final OffsetDateTime from,
+                                                                final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> bybitLinearRepository.getAllLiquidation(symbol, from, to));
+    }
+
+    private void saveSpotPublicTrade(final List<Map<String, Object>> publicTrades, final long maxOffset)
+            throws SQLException {
+        if (!publicTrades.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitSpotRepository.savePublicTrade(publicTrades, maxOffset);
+                LOGGER.info("Save {} spot public trades (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveSpotOrderBook1(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitSpotRepository.saveOrderBook1(orderBooks, maxOffset);
+                LOGGER.info("Save {} spot order books 1 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveSpotOrderBook50(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitSpotRepository.saveOrderBook50(orderBooks, maxOffset);
+                LOGGER.info("Save {} spot order books 50 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveSpotOrderBook200(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitSpotRepository.saveOrderBook200(orderBooks, maxOffset);
+                LOGGER.info("Save {} spot order books 200 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveSpotOrderBook1000(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitSpotRepository.saveOrderBook1000(orderBooks, maxOffset);
+                LOGGER.info("Save {} spot order books 1000 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveLinearPublicTrade(final List<Map<String, Object>> publicTrades, final long maxOffset)
+            throws SQLException {
+        if (!publicTrades.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitLinearRepository.savePublicTrade(publicTrades, maxOffset);
+                LOGGER.info("Save {} linear public trades (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveLinearOrderBook1(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitLinearRepository.saveOrderBook1(orderBooks, maxOffset);
+                LOGGER.info("Save {} linear order books 1 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveLinearOrderBook50(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitLinearRepository.saveOrderBook50(orderBooks, maxOffset);
+                LOGGER.info("Save {} linear order books 50 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveLinearOrderBook200(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitLinearRepository.saveOrderBook200(orderBooks, maxOffset);
+                LOGGER.info("Save {} linear order books 200 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveLinearOrderBook1000(final List<Map<String, Object>> orderBooks, final long maxOffset)
+            throws SQLException {
+        if (!orderBooks.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitLinearRepository.saveOrderBook1000(orderBooks, maxOffset);
+                LOGGER.info("Save {} linear order books 1000 (tx) and updated offset {}", count, maxOffset);
+            }
+        }
+    }
+
+    private void saveLinearAllLiquidation(final List<Map<String, Object>> allLiquidations, final long maxOffset)
+            throws SQLException {
+        if (!allLiquidations.isEmpty()) {
+            if (maxOffset >= 0) {
+                final var count = bybitLinearRepository.saveAllLiquidation(allLiquidations, maxOffset);
+                LOGGER.info("Save {} linear all liquidations (tx) and updated offset {}", count, maxOffset);
             }
         }
     }

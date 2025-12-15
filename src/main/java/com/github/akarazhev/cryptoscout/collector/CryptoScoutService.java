@@ -24,14 +24,14 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
-import com.github.akarazhev.cryptoscout.collector.db.CmcParserRepository;
+import com.github.akarazhev.cryptoscout.collector.db.CryptoScoutRepository;
 import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
+import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import com.github.akarazhev.jcryptolib.stream.OffsetPayload;
 import com.github.akarazhev.jcryptolib.stream.Payload;
 import com.github.akarazhev.jcryptolib.stream.Provider;
 import com.github.akarazhev.jcryptolib.stream.Source;
-import com.github.akarazhev.cryptoscout.config.AmqpConfig;
-import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
@@ -48,32 +48,32 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
-public final class CmcParserCollector extends AbstractReactive implements ReactiveService {
-    private final static Logger LOGGER = LoggerFactory.getLogger(CmcParserCollector.class);
+public final class CryptoScoutService extends AbstractReactive implements ReactiveService {
+    private final static Logger LOGGER = LoggerFactory.getLogger(CryptoScoutService.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
-    private final CmcParserRepository cmcParserRepository;
+    private final CryptoScoutRepository cryptoScoutRepository;
     private final String stream;
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
 
-    public static CmcParserCollector create(final NioReactor reactor, final Executor executor,
+    public static CryptoScoutService create(final NioReactor reactor, final Executor executor,
                                             final StreamOffsetsRepository streamOffsetsRepository,
-                                            final CmcParserRepository cmcParserRepository) {
-        return new CmcParserCollector(reactor, executor, streamOffsetsRepository, cmcParserRepository);
+                                            final CryptoScoutRepository cryptoScoutRepository) {
+        return new CryptoScoutService(reactor, executor, streamOffsetsRepository, cryptoScoutRepository);
     }
 
-    private CmcParserCollector(final NioReactor reactor, final Executor executor,
+    private CryptoScoutService(final NioReactor reactor, final Executor executor,
                                final StreamOffsetsRepository streamOffsetsRepository,
-                               final CmcParserRepository cmcParserRepository) {
+                               final CryptoScoutRepository cryptoScoutRepository) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
-        this.cmcParserRepository = cmcParserRepository;
-        this.batchSize = JdbcConfig.getCmcBatchSize();
-        this.flushIntervalMs = JdbcConfig.getCmcFlushIntervalMs();
-        this.stream = AmqpConfig.getAmqpCmcParserStream();
+        this.cryptoScoutRepository = cryptoScoutRepository;
+        this.batchSize = JdbcConfig.getBybitBatchSize();
+        this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
+        this.stream = AmqpConfig.getAmqpCryptoScoutStream();
     }
 
     @Override
@@ -88,7 +88,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
     }
 
     public Promise<Void> save(final Payload<Map<String, Object>> payload, final long offset) {
-        if (!Provider.CMC.equals(payload.getProvider())) {
+        if (!Provider.BYBIT.equals(payload.getProvider()) && !Provider.CMC.equals(payload.getProvider())) {
             LOGGER.warn("Invalid payload: {}", payload);
             return Promise.complete();
         }
@@ -102,17 +102,17 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
     }
 
     public Promise<List<Map<String, Object>>> getFgi(final OffsetDateTime from, final OffsetDateTime to) {
-        return Promise.ofBlocking(executor, () -> cmcParserRepository.getFgi(from, to));
+        return Promise.ofBlocking(executor, () -> cryptoScoutRepository.getFgi(from, to));
     }
 
     public Promise<List<Map<String, Object>>> getKline1d(final String symbol, final OffsetDateTime from,
                                                          final OffsetDateTime to) {
-        return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1d(symbol, from, to));
+        return Promise.ofBlocking(executor, () -> cryptoScoutRepository.getKline1d(symbol, from, to));
     }
 
     public Promise<List<Map<String, Object>>> getKline1w(final String symbol, final OffsetDateTime from,
                                                          final OffsetDateTime to) {
-        return Promise.ofBlocking(executor, () -> cmcParserRepository.getKline1w(symbol, from, to));
+        return Promise.ofBlocking(executor, () -> cryptoScoutRepository.getKline1w(symbol, from, to));
     }
 
     private void scheduledFlush() {
@@ -178,7 +178,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
     private void saveFgi(final List<Map<String, Object>> fgis, final long maxOffset) throws SQLException {
         if (!fgis.isEmpty()) {
             if (maxOffset >= 0) {
-                final var count = cmcParserRepository.saveFgi(fgis, maxOffset);
+                final var count = cryptoScoutRepository.saveFgi(fgis, maxOffset);
                 LOGGER.info("Save {} FGI points (tx) and updated offset {}", count, maxOffset);
             }
         }
@@ -187,7 +187,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
     private void saveKline1d(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                final var count = cmcParserRepository.saveKline1d(klines, maxOffset);
+                final var count = cryptoScoutRepository.saveKline1d(klines, maxOffset);
                 LOGGER.info("Save {} CMC 1d klines (tx) and updated offset {}", count, maxOffset);
             }
         }
@@ -196,7 +196,7 @@ public final class CmcParserCollector extends AbstractReactive implements Reacti
     private void saveKline1w(final List<Map<String, Object>> klines, final long maxOffset) throws SQLException {
         if (!klines.isEmpty()) {
             if (maxOffset >= 0) {
-                final var count = cmcParserRepository.saveKline1w(klines, maxOffset);
+                final var count = cryptoScoutRepository.saveKline1w(klines, maxOffset);
                 LOGGER.info("Save {} CMC 1w klines (tx) and updated offset {}", count, maxOffset);
             }
         }

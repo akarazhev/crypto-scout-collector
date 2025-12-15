@@ -50,11 +50,11 @@ import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.UPDATE_TIME
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-final class CmcParserRepositoryTest {
+final class CryptoScoutRepositoryTest {
     private static ExecutorService executor;
     private static Eventloop reactor;
     private static CollectorDataSource dataSource;
-    private static CmcParserRepository repository;
+    private static CryptoScoutRepository repository;
 
     @BeforeAll
     static void setup() {
@@ -64,7 +64,7 @@ final class CmcParserRepositoryTest {
                 .withCurrentThread()
                 .build();
         dataSource = CollectorDataSource.create(reactor, executor);
-        repository = CmcParserRepository.create(reactor, dataSource);
+        repository = CryptoScoutRepository.create(reactor, dataSource);
     }
 
     @BeforeEach
@@ -83,14 +83,14 @@ final class CmcParserRepositoryTest {
 
     @Test
     void shouldSaveFgi() throws Exception {
-        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
         assertEquals(1, repository.saveFgi(List.of(fgi), 100L));
         assertTableCount(CMC_FGI_TABLE, 1);
     }
 
     @Test
     void shouldGetFgi() throws Exception {
-        final var fgi = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.FGI);
+        final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
         assertEquals(1, repository.saveFgi(List.of(fgi), 200L));
         final var odt = toOdt(fgi.get(UPDATE_TIME));
         assertEquals(1, repository.getFgi(odt, odt).size());
@@ -98,15 +98,15 @@ final class CmcParserRepositoryTest {
 
     @Test
     void shouldSaveKline1d() throws Exception {
-        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
-        assertEquals(1, repository.saveKline1d(List.of(kline), 100L));
+        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_D);
+        assertEquals(1, repository.saveKline1d(List.of(kline), 300L));
         assertTableCount(CMC_KLINE_1D_TABLE, 1);
     }
 
     @Test
     void shouldGetKline1d() throws Exception {
-        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_D);
-        assertEquals(1, repository.saveKline1d(List.of(kline), 200L));
+        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_D);
+        assertEquals(1, repository.saveKline1d(List.of(kline), 400L));
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
@@ -115,15 +115,15 @@ final class CmcParserRepositoryTest {
 
     @Test
     void shouldSaveKline1w() throws Exception {
-        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_W);
-        assertEquals(1, repository.saveKline1w(List.of(kline), 300L));
+        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_W);
+        assertEquals(1, repository.saveKline1w(List.of(kline), 500L));
         assertTableCount(CMC_KLINE_1W_TABLE, 1);
     }
 
     @Test
     void shouldGetKline1w() throws Exception {
-        final var kline = MockData.get(MockData.Source.CMC_PARSER, MockData.Type.KLINE_W);
-        assertEquals(1, repository.saveKline1w(List.of(kline), 400L));
+        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_W);
+        assertEquals(1, repository.saveKline1w(List.of(kline), 600L));
 
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
