@@ -30,6 +30,7 @@ import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
+import com.rabbitmq.client.ShutdownListener;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
@@ -38,9 +39,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.CONTENT_TYPE_JSON;
 import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.DELIVERY_MODE_PERSISTENT;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.MAX_RECONNECT_ATTEMPTS;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.RECONNECT_DELAY_MS;
 
 public final class AmqpPublisher extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AmqpPublisher.class);
@@ -48,6 +52,7 @@ public final class AmqpPublisher extends AbstractReactive implements ReactiveSer
     private final ConnectionFactory connectionFactory;
     private final String clientName;
     private final String queue;
+    private final AtomicBoolean running = new AtomicBoolean(false);
     private volatile Connection connection;
     private volatile Channel channel;
 
@@ -69,23 +74,65 @@ public final class AmqpPublisher extends AbstractReactive implements ReactiveSer
 
     @Override
     public Promise<Void> start() {
-        return Promise.ofBlocking(executor, () -> {
-            try {
-                connection = connectionFactory.newConnection(clientName);
-                channel = connection.createChannel();
-                channel.confirmSelect();
-                // Ensure the queue exists (will throw if it doesn't)
-                channel.queueDeclarePassive(queue);
-                LOGGER.info("AmqpPublisher started for queue: {}", queue);
-            } catch (final Exception ex) {
-                LOGGER.error("Failed to start AmqpPublisher for queue: {}", queue, ex);
-                throw new RuntimeException(ex);
+        running.set(true);
+        return Promise.ofBlocking(executor, this::connect);
+    }
+
+    private void connect() {
+        try {
+            connection = connectionFactory.newConnection(clientName);
+            channel = connection.createChannel();
+            channel.confirmSelect();
+            channel.queueDeclarePassive(queue);
+
+            final ShutdownListener shutdownListener = cause -> {
+                if (running.get() && !cause.isInitiatedByApplication()) {
+                    LOGGER.warn("AMQP publisher connection lost for queue: {}. Attempting reconnection...", queue);
+                    reactor.execute(this::scheduleReconnect);
+                }
+            };
+            connection.addShutdownListener(shutdownListener);
+
+            LOGGER.info("AmqpPublisher started for queue: {}", queue);
+        } catch (final Exception ex) {
+            LOGGER.error("Failed to start AmqpPublisher for queue: {}", queue, ex);
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private void scheduleReconnect() {
+        if (!running.get()) {
+            return;
+        }
+
+        reactor.delayBackground(RECONNECT_DELAY_MS, () -> {
+            if (!running.get()) {
+                return;
             }
+
+            Promise.ofBlocking(executor, () -> {
+                for (var attempt = 1; attempt <= MAX_RECONNECT_ATTEMPTS; attempt++) {
+                    try {
+                        LOGGER.info("Publisher reconnection attempt {} for queue: {}", attempt, queue);
+                        connect();
+                        LOGGER.info("Publisher successfully reconnected to queue: {}", queue);
+                        return;
+                    } catch (final Exception ex) {
+                        LOGGER.warn("Publisher reconnection attempt {} failed for queue: {}", attempt, queue, ex);
+                        if (attempt < MAX_RECONNECT_ATTEMPTS) {
+                            Thread.sleep(RECONNECT_DELAY_MS);
+                        }
+                    }
+                }
+
+                LOGGER.error("Publisher failed to reconnect after {} attempts for queue: {}", MAX_RECONNECT_ATTEMPTS, queue);
+            });
         });
     }
 
     @Override
     public Promise<Void> stop() {
+        running.set(false);
         return Promise.ofBlocking(executor, () -> {
             try {
                 if (channel != null) {

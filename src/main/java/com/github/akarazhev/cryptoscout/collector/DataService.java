@@ -207,8 +207,12 @@ public final class DataService extends AbstractReactive {
                                 whenResult(liquidations ->
                                         publish(command.source(), Constants.Method.BYBIT_GET_ALL_LIQUIDATION, liquidations));
                     }
+
+                    default -> LOGGER.debug("Unhandled request method: {}", command.method());
                 }
             }
+
+            default -> LOGGER.debug("Unhandled message type: {}", command.type());
         }
     }
 

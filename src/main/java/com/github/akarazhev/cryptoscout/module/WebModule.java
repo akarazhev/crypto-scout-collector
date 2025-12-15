@@ -24,7 +24,10 @@
 
 package com.github.akarazhev.cryptoscout.module;
 
+import com.github.akarazhev.cryptoscout.collector.HealthService;
+import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.config.ServerConfig;
+import com.github.akarazhev.jcryptolib.util.JsonUtils;
 import io.activej.http.AsyncServlet;
 import io.activej.http.HttpMethod;
 import io.activej.http.HttpResponse;
@@ -36,8 +39,12 @@ import io.activej.inject.module.AbstractModule;
 import io.activej.reactor.Reactor;
 import io.activej.reactor.nio.NioReactor;
 
+import java.util.concurrent.Executor;
+
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.HEALTH_API;
+import static com.github.akarazhev.cryptoscout.module.Constants.Config.HEALTH_DETAILED_API;
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.OK_RESPONSE;
+import static com.github.akarazhev.cryptoscout.module.Constants.Config.CONTENT_TYPE_JSON;
 
 /**
  * Http module. Http server + routing. Fully async (Promise-based).
@@ -52,10 +59,24 @@ public final class WebModule extends AbstractModule {
     }
 
     @Provides
-    private AsyncServlet servlet(final Reactor reactor) {
+    private HealthService healthService(final NioReactor reactor, final Executor executor,
+                                        final CollectorDataSource dataSource) {
+        return HealthService.create(reactor, executor, dataSource);
+    }
+
+    @Provides
+    private AsyncServlet servlet(final Reactor reactor, final HealthService healthService) {
         return RoutingServlet.builder(reactor)
                 .with(HttpMethod.GET, HEALTH_API, (request) ->
                         HttpResponse.ok200().withPlainText(OK_RESPONSE).toPromise())
+                .with(HttpMethod.GET, HEALTH_DETAILED_API, (request) ->
+                        healthService.checkHealth()
+                                .map(health -> {
+                                    final var status = "UP".equals(health.get("status")) ? 200 : 503;
+                                    return HttpResponse.ofCode(status)
+                                            .withHeader("Content-Type", CONTENT_TYPE_JSON)
+                                            .withBody(JsonUtils.object2Bytes(health));
+                                }))
                 .build();
     }
 

@@ -73,5 +73,7 @@ final class Constants {
         static final String CONTENT_TYPE_JSON = "application/json";
         static final int DELIVERY_MODE_PERSISTENT = 2;
         static final int PREFETCH_COUNT = 1;
+        static final long RECONNECT_DELAY_MS = 5000L;
+        static final int MAX_RECONNECT_ATTEMPTS = 10;
     }
 }

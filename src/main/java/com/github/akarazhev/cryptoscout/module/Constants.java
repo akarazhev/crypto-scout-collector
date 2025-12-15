@@ -36,6 +36,8 @@ final class Constants {
 
         static final String OK_RESPONSE = "ok";
         static final String HEALTH_API = "/health";
+        static final String HEALTH_DETAILED_API = "/health/detailed";
+        static final String CONTENT_TYPE_JSON = "application/json";
         static final String ANALYST_PUBLISHER = "analystPublisher";
         static final String CHATBOT_PUBLISHER = "chatbotPublisher";
         static final String COLLECTOR_CONSUMER = "collectorConsumer";
