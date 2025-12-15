@@ -160,8 +160,8 @@ public final class CryptoScoutRepository extends AbstractReactive implements Rea
 
     public List<Map<String, Object>> getFgi(final OffsetDateTime from, final OffsetDateTime to) throws SQLException {
         final var results = new ArrayList<Map<String, Object>>();
-        try (final var c = dataSource.getConnection()) {
-            final var ps = c.prepareStatement(FGI_SELECT);
+        try (final var c = dataSource.getConnection();
+             final var ps = c.prepareStatement(FGI_SELECT)) {
             ps.setObject(FROM, from);
             ps.setObject(TO, to);
             try (final var rs = ps.executeQuery()) {
