@@ -463,7 +463,6 @@ public final class BybitStreamService extends AbstractReactive implements Reacti
             if (maxOffset >= 0) {
                 final var count = bybitSpotRepository.saveKline240m(klines, maxOffset);
                 LOGGER.info("Save {} spot 240m klines (tx) and updated offset {}", count, maxOffset);
-                ;
             }
         }
     }

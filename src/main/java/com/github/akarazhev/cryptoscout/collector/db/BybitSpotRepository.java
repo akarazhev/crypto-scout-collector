@@ -189,7 +189,7 @@ public final class BybitSpotRepository extends AbstractReactive implements React
         try (final var c = dataSource.getConnection()) {
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
-            try (final var ps = c.prepareStatement(String.format(SPOT_TICKERS_INSERT));
+            try (final var ps = c.prepareStatement(SPOT_TICKERS_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var ticker : tickers) {
                     final var row = getRow(DATA, ticker);
