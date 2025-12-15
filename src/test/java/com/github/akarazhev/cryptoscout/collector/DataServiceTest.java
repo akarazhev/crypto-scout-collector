@@ -177,586 +177,8 @@ final class DataServiceTest {
                 collectorConsumer.start(), bybitStreamService.start(), cryptoScoutService.start());
     }
 
-    @Test
-    void testShouldCmcParserDataBeProcessed() throws Exception {
-        final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
-        assertEquals(1, cryptoScoutRepository.saveFgi(List.of(fgi), 100L));
-        assertTableCount(CMC_FGI_TABLE, 1);
-        final var odt = toOdt(fgi.get(UPDATE_TIME));
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_FGI),
-                                new Object[]{odt, odt}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(CRYPTO_SCOUT_GET_FGI, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldCmcParserKline1dDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_D);
-        assertEquals(1, cryptoScoutRepository.saveKline1d(List.of(kline), 101L));
-        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
-        final var symbol = (String) kline.get(SYMBOL);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1D),
-                                new Object[]{symbol, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(CRYPTO_SCOUT_GET_KLINE_1D, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldCmcParserKline1wDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_W);
-        assertEquals(1, cryptoScoutRepository.saveKline1w(List.of(kline), 102L));
-        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
-        final var symbol = (String) kline.get(SYMBOL);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1W),
-                                new Object[]{symbol, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(CRYPTO_SCOUT_GET_KLINE_1W, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotKline1mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
-        assertEquals(1, spotRepository.saveKline1m(List.of(kline), 104L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_1M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotKline5mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
-        assertEquals(1, spotRepository.saveKline5m(List.of(kline), 105L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_5M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotKline15mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
-        assertEquals(1, spotRepository.saveKline15m(List.of(kline), 106L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_15M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotKline60mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
-        assertEquals(1, spotRepository.saveKline60m(List.of(kline), 107L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_60M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotKline240mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
-        assertEquals(1, spotRepository.saveKline240m(List.of(kline), 108L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_240M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotKline1dDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
-        assertEquals(1, spotRepository.saveKline1d(List.of(kline), 109L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_1D, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotTickerDataBeProcessed() throws Exception {
-        final var ticker = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
-        assertEquals(1, spotRepository.saveTicker(List.of(ticker), 110L));
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_TICKER, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearKline1mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
-        assertEquals(1, linearRepository.saveKline1m(List.of(kline), 111L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_1M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearKline5mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
-        assertEquals(1, linearRepository.saveKline5m(List.of(kline), 112L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_5M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearKline15mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
-        assertEquals(1, linearRepository.saveKline15m(List.of(kline), 113L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_15M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearKline60mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
-        assertEquals(1, linearRepository.saveKline60m(List.of(kline), 114L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_60M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearKline240mDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
-        assertEquals(1, linearRepository.saveKline240m(List.of(kline), 115L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_240M, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearKline1dDataBeProcessed() throws Exception {
-        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
-        assertEquals(1, linearRepository.saveKline1d(List.of(kline), 116L));
-        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_KLINE_1D, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearTickerDataBeProcessed() throws Exception {
-        final var ticker = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
-        assertEquals(1, linearRepository.saveTicker(List.of(ticker), 117L));
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_TICKER, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotOrderBook1DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
-        spotRepository.saveOrderBook1(List.of(ob), 118L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_1, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotOrderBook50DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
-        spotRepository.saveOrderBook50(List.of(ob), 119L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_50, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotOrderBook200DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
-        spotRepository.saveOrderBook200(List.of(ob), 120L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_200, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotOrderBook1000DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
-        spotRepository.saveOrderBook1000(List.of(ob), 121L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_1000, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitSpotPublicTradeDataBeProcessed() throws Exception {
-        final var pt = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
-        spotRepository.savePublicTrade(List.of(pt), 122L);
-        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
-                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_PUBLIC_TRADE, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearOrderBook1DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1);
-        linearRepository.saveOrderBook1(List.of(ob), 123L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_1, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearOrderBook50DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_50);
-        linearRepository.saveOrderBook50(List.of(ob), 124L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_50, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearOrderBook200DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_200);
-        linearRepository.saveOrderBook200(List.of(ob), 125L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_200, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearOrderBook1000DataBeProcessed() throws Exception {
-        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1000);
-        linearRepository.saveOrderBook1000(List.of(ob), 126L);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ORDER_BOOK_1000, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearPublicTradeDataBeProcessed() throws Exception {
-        final var pt = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.PUBLIC_TRADE);
-        linearRepository.savePublicTrade(List.of(pt), 127L);
-        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
-                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_PUBLIC_TRADE, message.command().method());
-        assertNotNull(message.value());
-    }
-
-    @Test
-    void testShouldBybitLinearAllLiquidationDataBeProcessed() throws Exception {
-        final var al = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ALL_LIQUIDATION);
-        linearRepository.saveAllLiquidation(List.of(al), 128L);
-        final var t = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
-        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
-
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
-                        AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ALL_LIQUIDATION),
-                                new Object[]{BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
-
-        assertNotNull(message);
-        assertEquals(Message.Type.RESPONSE, message.command().type());
-        assertEquals(COLLECTOR, message.command().source());
-        assertEquals(BYBIT_GET_ALL_LIQUIDATION, message.command().method());
-        assertNotNull(message.value());
-    }
-
     @BeforeEach
-    void before() {
+    void resetState() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 SPOT_KLINE_1M_TABLE,
                 SPOT_KLINE_5M_TABLE,
@@ -795,6 +217,584 @@ final class DataServiceTest {
 
         analystQueueConsumer.stop();
         chatbotQueueConsumer.stop();
+    }
+
+    @Test
+    void cmcFgiRequestReturnsResponse() throws Exception {
+        final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
+        assertEquals(1, cryptoScoutRepository.saveFgi(List.of(fgi), 100L));
+        assertTableCount(CMC_FGI_TABLE, 1);
+        final var odt = toOdt(fgi.get(UPDATE_TIME));
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_FGI),
+                                new Object[]{odt, odt}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(CRYPTO_SCOUT_GET_FGI, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void cmcKline1dRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_D);
+        assertEquals(1, cryptoScoutRepository.saveKline1d(List.of(kline), 101L));
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
+        final var symbol = (String) kline.get(SYMBOL);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1D),
+                                new Object[]{symbol, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(CRYPTO_SCOUT_GET_KLINE_1D, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void cmcKline1wRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_W);
+        assertEquals(1, cryptoScoutRepository.saveKline1w(List.of(kline), 102L));
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
+        final var symbol = (String) kline.get(SYMBOL);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1W),
+                                new Object[]{symbol, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(CRYPTO_SCOUT_GET_KLINE_1W, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotKline1mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
+        assertEquals(1, spotRepository.saveKline1m(List.of(kline), 104L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_1M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotKline5mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
+        assertEquals(1, spotRepository.saveKline5m(List.of(kline), 105L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_5M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotKline15mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
+        assertEquals(1, spotRepository.saveKline15m(List.of(kline), 106L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_15M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotKline60mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
+        assertEquals(1, spotRepository.saveKline60m(List.of(kline), 107L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_60M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotKline240mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
+        assertEquals(1, spotRepository.saveKline240m(List.of(kline), 108L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_240M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotKline1dRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
+        assertEquals(1, spotRepository.saveKline1d(List.of(kline), 109L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_1D, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotTickerRequestReturnsResponse() throws Exception {
+        final var ticker = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
+        assertEquals(1, spotRepository.saveTicker(List.of(ticker), 110L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_TICKER, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearKline1mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
+        assertEquals(1, linearRepository.saveKline1m(List.of(kline), 111L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_1M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearKline5mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
+        assertEquals(1, linearRepository.saveKline5m(List.of(kline), 112L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_5M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearKline15mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
+        assertEquals(1, linearRepository.saveKline15m(List.of(kline), 113L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_15M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearKline60mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
+        assertEquals(1, linearRepository.saveKline60m(List.of(kline), 114L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_60M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearKline240mRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
+        assertEquals(1, linearRepository.saveKline240m(List.of(kline), 115L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_240M, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearKline1dRequestReturnsResponse() throws Exception {
+        final var kline = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
+        assertEquals(1, linearRepository.saveKline1d(List.of(kline), 116L));
+        final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_KLINE_1D, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearTickerRequestReturnsResponse() throws Exception {
+        final var ticker = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
+        assertEquals(1, linearRepository.saveTicker(List.of(ticker), 117L));
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_TICKER, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotOrderBook1RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
+        spotRepository.saveOrderBook1(List.of(ob), 118L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_1, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotOrderBook50RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
+        spotRepository.saveOrderBook50(List.of(ob), 119L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_50, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotOrderBook200RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
+        spotRepository.saveOrderBook200(List.of(ob), 120L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_200, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotOrderBook1000RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
+        spotRepository.saveOrderBook1000(List.of(ob), 121L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_1000, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitSpotPublicTradeRequestReturnsResponse() throws Exception {
+        final var pt = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
+        spotRepository.savePublicTrade(List.of(pt), 122L);
+        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
+                                new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_PUBLIC_TRADE, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearOrderBook1RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1);
+        linearRepository.saveOrderBook1(List.of(ob), 123L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_1, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearOrderBook50RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_50);
+        linearRepository.saveOrderBook50(List.of(ob), 124L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_50, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearOrderBook200RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_200);
+        linearRepository.saveOrderBook200(List.of(ob), 125L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_200, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearOrderBook1000RequestReturnsResponse() throws Exception {
+        final var ob = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1000);
+        linearRepository.saveOrderBook1000(List.of(ob), 126L);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ORDER_BOOK_1000, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearPublicTradeRequestReturnsResponse() throws Exception {
+        final var pt = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.PUBLIC_TRADE);
+        linearRepository.savePublicTrade(List.of(pt), 127L);
+        final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
+                                new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_PUBLIC_TRADE, message.command().method());
+        assertNotNull(message.value());
+    }
+
+    @Test
+    void bybitLinearAllLiquidationRequestReturnsResponse() throws Exception {
+        final var al = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ALL_LIQUIDATION);
+        linearRepository.saveAllLiquidation(List.of(al), 128L);
+        final var t = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
+        final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
+
+        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+                        AmqpConfig.getAmqpCollectorRoutingKey(),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ALL_LIQUIDATION),
+                                new Object[]{BTC_USDT, from, from}))
+                .whenComplete(analystQueueConsumer::start));
+        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+
+        assertNotNull(message);
+        assertEquals(Message.Type.RESPONSE, message.command().type());
+        assertEquals(COLLECTOR, message.command().source());
+        assertEquals(BYBIT_GET_ALL_LIQUIDATION, message.command().method());
+        assertNotNull(message.value());
     }
 
     @AfterAll

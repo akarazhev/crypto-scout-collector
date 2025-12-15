@@ -116,7 +116,7 @@ final class BybitStreamServiceTest {
     }
 
     @BeforeEach
-    void before() {
+    void resetState() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 LINEAR_KLINE_1M_TABLE,
                 LINEAR_KLINE_5M_TABLE,
@@ -161,7 +161,7 @@ final class BybitStreamServiceTest {
     }
 
     @Test
-    void shouldGetCollectSpotData() throws Exception {
+    void spotDataSavedAndRetrieved() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
         final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
@@ -235,7 +235,7 @@ final class BybitStreamServiceTest {
     }
 
     @Test
-    void shouldCollectSpotDataAndUpdateOffsets() throws Exception {
+    void spotDataSavedViaPayloadAndOffsetsUpdated() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
         final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
@@ -302,7 +302,7 @@ final class BybitStreamServiceTest {
     }
 
     @Test
-    void shouldGetCollectLinearData() throws Exception {
+    void linearDataSavedAndRetrieved() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
         final var k5 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
         final var k15 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
@@ -381,7 +381,7 @@ final class BybitStreamServiceTest {
     }
 
     @Test
-    void shouldCollectLinearDataAndUpdateOffsets() throws Exception {
+    void linearDataSavedViaPayloadAndOffsetsUpdated() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
         final var k5 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
         final var k15 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);

@@ -58,7 +58,7 @@ final class StreamOffsetsRepositoryTest {
     }
 
     @BeforeEach
-    void before() {
+    void resetState() {
         DBUtils.deleteFromTables(dataSource.getDataSource(), STREAM_OFFSETS_TABLE);
     }
 
@@ -72,13 +72,13 @@ final class StreamOffsetsRepositoryTest {
     }
 
     @Test
-    void shouldUpsertOffset() throws Exception {
+    void upsertOffset() throws Exception {
         assertEquals(1, repository.upsertOffset(AmqpConfig.getAmqpBybitStream(), 100L));
         assertTableCount(STREAM_OFFSETS_TABLE, 1);
     }
 
     @Test
-    void shouldGetOffset() throws Exception {
+    void getOffset() throws Exception {
         assertEquals(1, repository.upsertOffset(AmqpConfig.getAmqpBybitStream(), 200L));
         final var o = repository.getOffset(AmqpConfig.getAmqpBybitStream());
         assertEquals(200, o.isPresent() ? o.getAsLong() : 0L);

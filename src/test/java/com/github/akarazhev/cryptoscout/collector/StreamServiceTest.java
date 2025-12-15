@@ -147,7 +147,7 @@ final class StreamServiceTest {
     }
 
     @BeforeEach
-    void before() {
+    void resetState() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 SPOT_KLINE_1M_TABLE,
                 SPOT_KLINE_5M_TABLE,
@@ -187,20 +187,19 @@ final class StreamServiceTest {
     static void cleanup() {
         reactor.post(() -> bybitStreamPublisher.stop()
                 .whenComplete(() -> cryptoScoutStreamPublisher.stop()
-                        .whenComplete(() -> cryptoScoutStreamPublisher.stop()
-                                .whenComplete(() -> streamService.stop()
-                                        .whenComplete(() -> bybitStreamService.stop()
-                                                .whenComplete(() -> cryptoScoutService.stop()
-                                                        .whenComplete(() -> dataSource.stop()
-                                                                .whenComplete(() -> reactor.breakEventloop()
-                                                                ))))))));
+                        .whenComplete(() -> streamService.stop()
+                                .whenComplete(() -> bybitStreamService.stop()
+                                        .whenComplete(() -> cryptoScoutService.stop()
+                                                .whenComplete(() -> dataSource.stop()
+                                                        .whenComplete(() -> reactor.breakEventloop()
+                                                        )))))));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
     }
 
     @Test
-    void testShouldCmcParserDataBeConsumed() throws Exception {
+    void cmcFgiDataConsumedAndPersisted() throws Exception {
         final var fgi = MockData.get(CRYPTO_SCOUT, MockData.Type.FGI);
         cryptoScoutStreamPublisher.publish(Payload.of(Provider.CMC, Source.FGI, fgi));
         Thread.sleep(Duration.ofSeconds(1));
@@ -213,7 +212,7 @@ final class StreamServiceTest {
     }
 
     @Test
-    void testShouldCmcParserKline1wDataBeConsumed() throws Exception {
+    void cmcKline1wDataConsumedAndPersisted() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_W);
         cryptoScoutStreamPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline));
         Thread.sleep(Duration.ofSeconds(1));
@@ -227,7 +226,7 @@ final class StreamServiceTest {
     }
 
     @Test
-    void testShouldCmcParserKline1dDataBeConsumed() throws Exception {
+    void cmcKline1dDataConsumedAndPersisted() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_D);
         cryptoScoutStreamPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1D, kline));
         Thread.sleep(Duration.ofSeconds(1));
@@ -241,7 +240,7 @@ final class StreamServiceTest {
     }
 
     @Test
-    void testShouldBybitSpotCryptoDataBeConsumed() throws Exception {
+    void bybitSpotDataConsumedAndPersisted() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
         bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k1));
         Thread.sleep(Duration.ofSeconds(1));
@@ -319,7 +318,7 @@ final class StreamServiceTest {
     }
 
     @Test
-    void testShouldBybitLinearCryptoDataBeConsumed() throws Exception {
+    void bybitLinearDataConsumedAndPersisted() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
         bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k1));
         Thread.sleep(Duration.ofSeconds(1));

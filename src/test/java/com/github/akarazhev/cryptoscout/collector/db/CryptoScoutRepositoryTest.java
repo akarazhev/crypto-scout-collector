@@ -68,7 +68,7 @@ final class CryptoScoutRepositoryTest {
     }
 
     @BeforeEach
-    void before() {
+    void resetState() {
         DBUtils.deleteFromTables(dataSource.getDataSource(), CMC_FGI_TABLE, CMC_KLINE_1D_TABLE, CMC_KLINE_1W_TABLE);
     }
 
@@ -82,14 +82,14 @@ final class CryptoScoutRepositoryTest {
     }
 
     @Test
-    void shouldSaveFgi() throws Exception {
+    void saveFgi() throws Exception {
         final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
         assertEquals(1, repository.saveFgi(List.of(fgi), 100L));
         assertTableCount(CMC_FGI_TABLE, 1);
     }
 
     @Test
-    void shouldGetFgi() throws Exception {
+    void getFgi() throws Exception {
         final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
         assertEquals(1, repository.saveFgi(List.of(fgi), 200L));
         final var odt = toOdt(fgi.get(UPDATE_TIME));
@@ -97,14 +97,14 @@ final class CryptoScoutRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline1d() throws Exception {
+    void saveKline1d() throws Exception {
         final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_D);
         assertEquals(1, repository.saveKline1d(List.of(kline), 300L));
         assertTableCount(CMC_KLINE_1D_TABLE, 1);
     }
 
     @Test
-    void shouldGetKline1d() throws Exception {
+    void getKline1d() throws Exception {
         final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_D);
         assertEquals(1, repository.saveKline1d(List.of(kline), 400L));
 
@@ -114,14 +114,14 @@ final class CryptoScoutRepositoryTest {
     }
 
     @Test
-    void shouldSaveKline1w() throws Exception {
+    void saveKline1w() throws Exception {
         final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_W);
         assertEquals(1, repository.saveKline1w(List.of(kline), 500L));
         assertTableCount(CMC_KLINE_1W_TABLE, 1);
     }
 
     @Test
-    void shouldGetKline1w() throws Exception {
+    void getKline1w() throws Exception {
         final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_W);
         assertEquals(1, repository.saveKline1w(List.of(kline), 600L));
 

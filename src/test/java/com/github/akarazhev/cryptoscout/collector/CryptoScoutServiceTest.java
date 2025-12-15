@@ -82,7 +82,7 @@ final class CryptoScoutServiceTest {
     }
 
     @BeforeEach
-    void before() {
+    void resetState() {
         DBUtils.deleteFromTables(dataSource.getDataSource(),
                 CMC_FGI_TABLE,
                 CMC_KLINE_1D_TABLE,
@@ -102,7 +102,7 @@ final class CryptoScoutServiceTest {
     }
 
     @Test
-    void shouldCollectKline1wAndUpdateOffsets() throws Exception {
+    void kline1wSavedAndOffsetsUpdated() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_W);
         TestUtils.await(cryptoScoutService.save(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline), 100L));
         TestUtils.await(cryptoScoutService.stop());
@@ -114,7 +114,7 @@ final class CryptoScoutServiceTest {
     }
 
     @Test
-    void shouldCollectKline1dAndUpdateOffsets() throws Exception {
+    void kline1dSavedAndOffsetsUpdated() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_D);
         TestUtils.await(cryptoScoutService.save(Payload.of(Provider.CMC, Source.BTC_USD_1D, kline), 200L));
         TestUtils.await(cryptoScoutService.stop());
@@ -126,7 +126,7 @@ final class CryptoScoutServiceTest {
     }
 
     @Test
-    void shouldCollectFgiAndUpdateOffsets() throws Exception {
+    void fgiSavedAndOffsetsUpdated() throws Exception {
         final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
         TestUtils.await(cryptoScoutService.save(Payload.of(Provider.CMC, Source.FGI, fgi), 300L));
         TestUtils.await(cryptoScoutService.stop());
@@ -141,7 +141,7 @@ final class CryptoScoutServiceTest {
     }
 
     @Test
-    void shouldGetKline1d() throws Exception {
+    void kline1dRetrieved() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_D);
         assertEquals(1, cryptoScoutRepository.saveKline1d(List.of(kline), 400L));
 
@@ -151,7 +151,7 @@ final class CryptoScoutServiceTest {
     }
 
     @Test
-    void shouldGetKline1w() throws Exception {
+    void kline1wRetrieved() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_W);
         assertEquals(1, cryptoScoutRepository.saveKline1w(List.of(kline), 500L));
 
@@ -161,7 +161,7 @@ final class CryptoScoutServiceTest {
     }
 
     @Test
-    void shouldGetFgi() throws Exception {
+    void fgiRetrieved() throws Exception {
         final var fgi = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.FGI);
         assertEquals(1, cryptoScoutRepository.saveFgi(List.of(fgi), 600L));
         final var odt = toOdt(fgi.get(UPDATE_TIME));
