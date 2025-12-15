@@ -26,7 +26,6 @@ package com.github.akarazhev.cryptoscout.collector;
 
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
-import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
@@ -37,6 +36,15 @@ import org.slf4j.LoggerFactory;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.Executor;
+
+import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.HEALTH_CHECK_CLIENT_NAME;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Health.AMQP;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Health.CONNECTION_TIMEOUT_SECONDS;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Health.DATABASE;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Health.ERROR;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Health.STATUS;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Health.STATUS_DOWN;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Health.STATUS_UP;
 
 public final class HealthService extends AbstractReactive {
     private final static Logger LOGGER = LoggerFactory.getLogger(HealthService.class);
@@ -60,16 +68,16 @@ public final class HealthService extends AbstractReactive {
     public Promise<Map<String, Object>> checkHealth() {
         return Promise.ofBlocking(executor, () -> {
             final var health = new LinkedHashMap<String, Object>();
-            health.put("status", "UP");
+            health.put(STATUS, STATUS_UP);
 
             final var dbHealth = checkDatabase();
-            health.put("database", dbHealth);
+            health.put(DATABASE, dbHealth);
 
             final var amqpHealth = checkAmqp();
-            health.put("amqp", amqpHealth);
+            health.put(AMQP, amqpHealth);
 
-            if (!"UP".equals(dbHealth.get("status")) || !"UP".equals(amqpHealth.get("status"))) {
-                health.put("status", "DOWN");
+            if (!STATUS_UP.equals(dbHealth.get(STATUS)) || !STATUS_UP.equals(amqpHealth.get(STATUS))) {
+                health.put(STATUS, STATUS_DOWN);
             }
 
             return health;
@@ -79,16 +87,16 @@ public final class HealthService extends AbstractReactive {
     private Map<String, Object> checkDatabase() {
         final var dbHealth = new LinkedHashMap<String, Object>();
         try (final var conn = dataSource.getDataSource().getConnection()) {
-            if (conn.isValid(5)) {
-                dbHealth.put("status", "UP");
+            if (conn.isValid(CONNECTION_TIMEOUT_SECONDS)) {
+                dbHealth.put(STATUS, STATUS_UP);
             } else {
-                dbHealth.put("status", "DOWN");
-                dbHealth.put("error", "Connection not valid");
+                dbHealth.put(STATUS, STATUS_DOWN);
+                dbHealth.put(ERROR, "Connection not valid");
             }
         } catch (final Exception ex) {
             LOGGER.debug("Database health check failed", ex);
-            dbHealth.put("status", "DOWN");
-            dbHealth.put("error", ex.getMessage());
+            dbHealth.put(STATUS, STATUS_DOWN);
+            dbHealth.put(ERROR, ex.getMessage());
         }
 
         return dbHealth;
@@ -96,27 +104,17 @@ public final class HealthService extends AbstractReactive {
 
     private Map<String, Object> checkAmqp() {
         final var amqpHealth = new LinkedHashMap<String, Object>();
-        Connection connection = null;
-        try {
-            connection = connectionFactory.newConnection("health-check");
+        try (final var connection = connectionFactory.newConnection(HEALTH_CHECK_CLIENT_NAME)) {
             if (connection.isOpen()) {
-                amqpHealth.put("status", "UP");
+                amqpHealth.put(STATUS, STATUS_UP);
             } else {
-                amqpHealth.put("status", "DOWN");
-                amqpHealth.put("error", "Connection not open");
+                amqpHealth.put(STATUS, STATUS_DOWN);
+                amqpHealth.put(ERROR, "Connection not open");
             }
         } catch (final Exception ex) {
             LOGGER.debug("AMQP health check failed", ex);
-            amqpHealth.put("status", "DOWN");
-            amqpHealth.put("error", ex.getMessage());
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (final Exception ex) {
-                    LOGGER.debug("Error closing health check connection", ex);
-                }
-            }
+            amqpHealth.put(STATUS, STATUS_DOWN);
+            amqpHealth.put(ERROR, ex.getMessage());
         }
 
         return amqpHealth;

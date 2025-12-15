@@ -37,7 +37,6 @@ final class Constants {
         static final String OK_RESPONSE = "ok";
         static final String HEALTH_API = "/health";
         static final String HEALTH_DETAILED_API = "/health/detailed";
-        static final String CONTENT_TYPE_JSON = "application/json";
         static final String ANALYST_PUBLISHER = "analystPublisher";
         static final String CHATBOT_PUBLISHER = "chatbotPublisher";
         static final String COLLECTOR_CONSUMER = "collectorConsumer";
@@ -45,5 +44,16 @@ final class Constants {
         static final String COLLECTOR_CONSUMER_CLIENT_NAME = "collector-consumer";
         static final String ANALYST_PUBLISHER_CLIENT_NAME = "analyst-publisher";
         static final String CHATBOT_PUBLISHER_CLIENT_NAME = "chatbot-publisher";
+    }
+
+    final static class Health {
+        private Health() {
+            throw new UnsupportedOperationException();
+        }
+
+        static final String STATUS = "status";
+        static final String STATUS_UP = "UP";
+        static final int HTTP_OK = 200;
+        static final int HTTP_SERVICE_UNAVAILABLE = 503;
     }
 }

@@ -44,7 +44,10 @@ import java.util.concurrent.Executor;
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.HEALTH_API;
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.HEALTH_DETAILED_API;
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.OK_RESPONSE;
-import static com.github.akarazhev.cryptoscout.module.Constants.Config.CONTENT_TYPE_JSON;
+import static com.github.akarazhev.cryptoscout.module.Constants.Health.HTTP_OK;
+import static com.github.akarazhev.cryptoscout.module.Constants.Health.HTTP_SERVICE_UNAVAILABLE;
+import static com.github.akarazhev.cryptoscout.module.Constants.Health.STATUS;
+import static com.github.akarazhev.cryptoscout.module.Constants.Health.STATUS_UP;
 
 /**
  * Http module. Http server + routing. Fully async (Promise-based).
@@ -67,15 +70,15 @@ public final class WebModule extends AbstractModule {
     @Provides
     private AsyncServlet servlet(final Reactor reactor, final HealthService healthService) {
         return RoutingServlet.builder(reactor)
-                .with(HttpMethod.GET, HEALTH_API, (request) ->
+                .with(HttpMethod.GET, HEALTH_API, (_) ->
                         HttpResponse.ok200().withPlainText(OK_RESPONSE).toPromise())
-                .with(HttpMethod.GET, HEALTH_DETAILED_API, (request) ->
+                .with(HttpMethod.GET, HEALTH_DETAILED_API, (_) ->
                         healthService.checkHealth()
                                 .map(health -> {
-                                    final var status = "UP".equals(health.get("status")) ? 200 : 503;
-                                    return HttpResponse.ofCode(status)
-                                            .withHeader("Content-Type", CONTENT_TYPE_JSON)
-                                            .withBody(JsonUtils.object2Bytes(health));
+                                    final var code = STATUS_UP.equals(health.get(STATUS)) ? HTTP_OK : HTTP_SERVICE_UNAVAILABLE;
+                                    return HttpResponse.ofCode(code)
+                                            .withJson(JsonUtils.object2Json(health))
+                                            .build();
                                 }))
                 .build();
     }
