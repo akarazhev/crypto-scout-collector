@@ -75,5 +75,20 @@ final class Constants {
         static final int PREFETCH_COUNT = 1;
         static final long RECONNECT_DELAY_MS = 5000L;
         static final int MAX_RECONNECT_ATTEMPTS = 10;
+        static final String HEALTH_CHECK_CLIENT_NAME = "health-check";
+    }
+
+    final static class Health {
+        private Health() {
+            throw new UnsupportedOperationException();
+        }
+
+        static final String STATUS = "status";
+        static final String STATUS_UP = "UP";
+        static final String STATUS_DOWN = "DOWN";
+        static final String DATABASE = "database";
+        static final String AMQP = "amqp";
+        static final String ERROR = "error";
+        static final int CONNECTION_TIMEOUT_SECONDS = 5;
     }
 }
