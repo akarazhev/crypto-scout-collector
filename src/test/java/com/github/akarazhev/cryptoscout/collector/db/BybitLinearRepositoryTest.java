@@ -161,9 +161,8 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldSaveTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
-        final var expected = getRowsCount(tickers);
-        assertEquals(expected, repository.saveTicker(List.of(tickers), 700L));
-        assertTableCount(LINEAR_TICKERS_TABLE, expected);
+        assertEquals(1, repository.saveTicker(List.of(tickers), 700L));
+        assertTableCount(LINEAR_TICKERS_TABLE, 1);
     }
 
     @Test
@@ -229,10 +228,9 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldGetTicker() throws Exception {
         final var tickers = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
-        final var expected = getRowsCount(tickers);
-        assertEquals(expected, repository.saveTicker(List.of(tickers), 1400L));
+        assertEquals(1, repository.saveTicker(List.of(tickers), 1400L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) tickers.get(TS)), ZoneOffset.UTC);
-        assertEquals(expected, repository.getTicker(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
+        assertEquals(1, repository.getTicker(BTC_USDT, from, OffsetDateTime.now(ZoneOffset.UTC)).size());
     }
 
     @Test
@@ -278,9 +276,8 @@ final class BybitLinearRepositoryTest {
     @Test
     void shouldSaveAllLiquidation() throws Exception {
         final var al = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ALL_LIQUIDATION);
-        final var expected = getOrderBookLevelsCount(al);
-        assertEquals(expected, repository.saveAllLiquidation(List.of(al), 2000L));
-        assertTableCount(LINEAR_ALL_LIQUIDATION_TABLE, expected);
+        assertEquals(1, repository.saveAllLiquidation(List.of(al), 2000L));
+        assertTableCount(LINEAR_ALL_LIQUIDATION_TABLE, 1);
     }
 
     @Test

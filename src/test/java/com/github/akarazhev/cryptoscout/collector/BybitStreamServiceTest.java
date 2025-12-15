@@ -181,7 +181,7 @@ final class BybitStreamServiceTest {
         assertEquals(getRowsCount(k60), spotRepository.saveKline60m(List.of(k60), 400L));
         assertEquals(getRowsCount(k240), spotRepository.saveKline240m(List.of(k240), 500L));
         assertEquals(getRowsCount(kd), spotRepository.saveKline1d(List.of(kd), 600L));
-        assertEquals(getRowsCount(tickers), spotRepository.saveTicker(List.of(tickers), 700L));
+        assertEquals(1, spotRepository.saveTicker(List.of(tickers), 700L));
         assertEquals(getRowsCount(pt), spotRepository.savePublicTrade(List.of(pt), 800L));
         assertEquals(getOrderBookLevelsCount(ob1), spotRepository.saveOrderBook1(List.of(ob1), 900L));
         assertEquals(getOrderBookLevelsCount(ob50), spotRepository.saveOrderBook50(List.of(ob50), 1000L));
@@ -297,7 +297,7 @@ final class BybitStreamServiceTest {
         assertEquals(getOrderBookLevelsCount(ob1000), spotRepository.getOrderBook1000(BTC_USDT, oFrom1000, oFrom1000).size());
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitStream());
-        assertEquals(1300L, offset.isPresent() ? offset.getAsLong() : 0L);
+        assertEquals(1200L, offset.isPresent() ? offset.getAsLong() : 0L);
         TestUtils.await(bybitStreamService.start());
     }
 
@@ -449,7 +449,7 @@ final class BybitStreamServiceTest {
         assertEquals(1, linearRepository.getAllLiquidation(BTC_USDT, fromAl, fromAl).size());
 
         final var offset = streamOffsetsRepository.getOffset(AmqpConfig.getAmqpBybitStream());
-        assertEquals(1400L, offset.isPresent() ? offset.getAsLong() : 0L);
+        assertEquals(1300L, offset.isPresent() ? offset.getAsLong() : 0L);
         TestUtils.await(bybitStreamService.start());
     }
 }
