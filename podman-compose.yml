@@ -107,8 +107,8 @@ services:
     image: crypto-scout-collector:0.0.1
     container_name: crypto-scout-collector
     cpus: "0.5"
-    mem_limit: "256m"
-    mem_reservation: "128m"
+    mem_limit: "512m"
+    mem_reservation: "256m"
     env_file:
       - ./secret/collector.env
     environment:
