@@ -95,7 +95,6 @@ category.
    ```java
    // Line 466: Extra semicolon after log statement
    LOGGER.info("Save {} spot 240m klines (tx) and updated offset {}", count, maxOffset);
-   ;
    ```
    **Recommendation**: Remove the stray semicolon.
 
@@ -315,9 +314,8 @@ All recommendations from the code review have been implemented:
 
 5. **Enhanced Health Check Endpoint** (`HealthService.java`, `WebModule.java`):
     - Created new `HealthService` class with database and AMQP connectivity checks.
-    - Added `/health/detailed` endpoint returning JSON with component status.
+    - `/health` endpoint returning JSON with component status.
     - Returns HTTP 200 when all components are UP, HTTP 503 when any component is DOWN.
-    - Original `/health` endpoint preserved for simple liveness checks.
 
 6. **Configuration Validation** (`ConfigValidator.java`, `Collector.java`):
     - Created `ConfigValidator` utility class to validate required properties at startup.
