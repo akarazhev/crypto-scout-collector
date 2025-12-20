@@ -14,8 +14,10 @@ policies, and a container image definition for the collector.
     - `script/init.sql` — core bootstrap (extensions, schema, search_path), `crypto_scout.stream_offsets`,
       grants/default privileges.
     - `script/bybit_spot_tables.sql` — Bybit Spot DDL and policies, including `crypto_scout.bybit_spot_tickers`.
-    - `script/bybit_parser_tables.sql` — `crypto_scout.bybit_lpl` (Bybit Launch Pool) DDL and policies.
     - `script/bybit_linear_tables.sql` — Bybit Linear (Perps/Futures) DDL and policies.
+    - `script/crypto_scout_tables.sql` — CMC FGI, kline (1d/1w), and BTC risk tables.
+- Data seed scripts: `script/btc_usd_daily_inserts.sql`, `script/btc_usd_weekly_inserts.sql`,
+  `script/cmc_fgi_inserts.sql` — historical data for initial bootstrap.
 - Application: Java 25 (ActiveJ). Reads RabbitMQ Streams, batches inserts via HikariCP to TimescaleDB, exposes
   `GET /health`.
 - Documentation: `README.md` updated to reflect Java 25, compose service names, and Docker base; this report added under
@@ -48,8 +50,9 @@ backups.
 - Initialization & schema
     - `script/init.sql`: installs `timescaledb` and `pg_stat_statements`; creates schema `crypto_scout`, sets
       `search_path`; defines `crypto_scout.stream_offsets`; grants and default privileges.
+      Compose mounts it as `/docker-entrypoint-initdb.d/00-init.sql`.
     - `script/bybit_spot_tables.sql`: Bybit Spot tables and policies; compose mounts it as
-      `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`:
+      `/docker-entrypoint-initdb.d/01_bybit_spot_tables.sql`:
         - `crypto_scout.bybit_spot_tickers` (spot tickers)
         - `crypto_scout.bybit_spot_kline_1m` (confirmed klines 1m)
         - `crypto_scout.bybit_spot_kline_5m` (confirmed klines 5m)
@@ -60,18 +63,26 @@ backups.
         - `crypto_scout.bybit_spot_public_trade` (1 row per trade)
         - `crypto_scout.bybit_spot_order_book_200` (1 row per book level)
           Adds indexes, hypertables, compression (7‑day threshold), reorder, and retention policies.
-    - `script/cmc_parser_tables.sql`: `crypto_scout.cmc_fgi`; compose mounts it as
-      `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`.
-    - `script/bybit_parser_tables.sql`: `crypto_scout.bybit_lpl`; compose mounts it as
-      `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`.
     - `script/bybit_linear_tables.sql`: Bybit Linear tables; compose mounts it as
-      `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql`:
+      `/docker-entrypoint-initdb.d/02_bybit_linear_tables.sql`:
         - `crypto_scout.bybit_linear_tickers`
         - `crypto_scout.bybit_linear_kline_60m` (confirmed klines)
         - `crypto_scout.bybit_linear_public_trade` (1 row per trade)
         - `crypto_scout.bybit_linear_order_book_200` (1 row per book level)
         - `crypto_scout.bybit_linear_all_liquidation` (all-liquidations stream)
           Adds indexes, hypertables, compression (7‑day threshold), reorder, and retention policies.
+    - `script/crypto_scout_tables.sql`: CMC and risk analysis tables; compose mounts it as
+      `/docker-entrypoint-initdb.d/03_crypto_scout_tables.sql`:
+        - `crypto_scout.cmc_fgi` (Fear & Greed Index, PK: `update_time`)
+        - `crypto_scout.cmc_kline_1d` (BTC/USD daily klines, PK: `(symbol, timestamp)`)
+        - `crypto_scout.cmc_kline_1w` (BTC/USD weekly klines, PK: `(symbol, timestamp)`)
+        - `crypto_scout.btc_price_risk` (risk-to-price mapping, PK: `(timestamp, risk)`)
+        - `crypto_scout.btc_risk_price` (current risk assessment, PK: `timestamp`)
+          Adds indexes, hypertables, compression (30‑day threshold), and reorder policies.
+    - Data seed scripts (historical data, executed on fresh init):
+        - `script/btc_usd_daily_inserts.sql` → `/docker-entrypoint-initdb.d/04_btc_usd_daily_inserts.sql`
+        - `script/btc_usd_weekly_inserts.sql` → `/docker-entrypoint-initdb.d/05_btc_usd_weekly_inserts.sql`
+        - `script/cmc_fgi_inserts.sql` → `/docker-entrypoint-initdb.d/06_cmc_fgi_inserts.sql`
 
 - Secrets & configuration (gitignored examples)
     - `secret/timescaledb.env.example` and `secret/timescaledb.env`: DB name/user/password, telemetry off, optional
@@ -136,11 +147,13 @@ Runtime characteristics:
 - DB image: `timescale/timescaledb:latest-pg17`.
 - Volumes: `./data/postgresql:/var/lib/postgresql/data`, and SQL mounted read-only to
   `/docker-entrypoint-initdb.d/` in lexical order:
-    - `./script/init.sql` → `/docker-entrypoint-initdb.d/init.sql`
-    - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`
-    - `./script/cmc_parser_tables.sql` → `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`
-    - `./script/bybit_parser_tables.sql` → `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`
-    - `./script/bybit_linear_tables.sql` → `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql`
+    - `./script/init.sql` → `/docker-entrypoint-initdb.d/00-init.sql`
+    - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/01_bybit_spot_tables.sql`
+    - `./script/bybit_linear_tables.sql` → `/docker-entrypoint-initdb.d/02_bybit_linear_tables.sql`
+    - `./script/crypto_scout_tables.sql` → `/docker-entrypoint-initdb.d/03_crypto_scout_tables.sql`
+    - `./script/btc_usd_daily_inserts.sql` → `/docker-entrypoint-initdb.d/04_btc_usd_daily_inserts.sql`
+    - `./script/btc_usd_weekly_inserts.sql` → `/docker-entrypoint-initdb.d/05_btc_usd_weekly_inserts.sql`
+    - `./script/cmc_fgi_inserts.sql` → `/docker-entrypoint-initdb.d/06_cmc_fgi_inserts.sql`
 - Tuning (from `podman-compose.yml`): preload `timescaledb,pg_stat_statements`, `shared_buffers`, WAL settings, timezone
   UTC, `timescaledb.telemetry_level=off`, `pg_stat_statements.track=all`, IO timing, etc.
 - Healthcheck: `pg_isready -U $POSTGRES_USER -d $POSTGRES_DB`.
@@ -171,10 +184,13 @@ Application container: `crypto-scout-collector`
     - `user: "10001:10001"`, `init: true`, `restart: unless-stopped`, `stop_signal: SIGTERM`, `stop_grace_period: 30s`
 - Networking: joins the external network `crypto-scout-bridge` to reach the DB service by name
   `crypto-scout-collector-db`.
-    - `crypto_scout.cmc_fgi` — primary key `(id, timestamp)`.
+    - `crypto_scout.cmc_fgi` — primary key `(update_time)`.
+    - `crypto_scout.cmc_kline_1d` — primary key `(symbol, timestamp)`; BTC/USD daily klines.
+    - `crypto_scout.cmc_kline_1w` — primary key `(symbol, timestamp)`; BTC/USD weekly klines.
+    - `crypto_scout.btc_price_risk` — primary key `(timestamp, risk)`; risk-to-price mapping.
+    - `crypto_scout.btc_risk_price` — primary key `(timestamp)`; current risk assessment.
     - `crypto_scout.bybit_spot_tickers` — primary key `(id, timestamp)`; indexes on `(timestamp)` and
       `(symbol, timestamp)`.
-    - `crypto_scout.bybit_lpl` — primary key `(id, stake_begin_time)`.
     - `crypto_scout.stream_offsets` — primary key `(stream)`; stores last processed offset per stream.
     - `crypto_scout.bybit_linear_tickers` — primary key `(id, timestamp)`; symbol/timestamp indexes.
     - `crypto_scout.bybit_linear_kline_60m` — primary key `(id, start_time)`; unique `(symbol, start_time)`.
@@ -185,9 +201,9 @@ Application container: `crypto-scout-collector`
 - External offset tracking for CMC, Bybit metrics, and Bybit spot streams:
     - `StreamConsumer` starts consumers from DB offset and disables server-side tracking.
     - `CmcParserCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
-- Compression policies (segmentby/orderby) for all three tables (compress chunks older than 7 days).
+- Compression policies (segmentby/orderby) for tables (compress chunks older than 7 days for Bybit, 30 days for CMC/risk).
 - Reorder policies align with time‑descending indexes.
-- Retention: ~2 years for `cmc_fgi` and `bybit_lpl`, 180 days for `bybit_spot_tickers`.
+- Retention: 180 days for `bybit_spot_tickers`.
 - Grants and default privileges for role `crypto_scout_db`.
 
 Offset handling: DB-backed external offsets are used for all streams except any future ephemeral consumers.
@@ -316,10 +332,10 @@ pick up `script/init.sql` changes.
     - New table `crypto_scout.stream_offsets`.
     - `StreamConsumer` starts CMC consumer from DB offset and disables server-side tracking.
     - `CmcParserCollector` batches inserts and updates offset atomically.
-- Split bootstrap SQL:
-    - Moved `crypto_scout.bybit_spot_tickers` from `script/init.sql` to `script/bybit_spot_tables.sql`.
-    - Moved `crypto_scout.cmc_fgi` to `script/cmc_parser_tables.sql`.
-    - Moved `crypto_scout.bybit_lpl` to `script/bybit_parser_tables.sql`.
+- Consolidated CMC and risk tables:
+    - Created `script/crypto_scout_tables.sql` with `cmc_fgi`, `cmc_kline_1d`, `cmc_kline_1w`, `btc_price_risk`,
+      `btc_risk_price`.
+    - Added data seed scripts for historical data bootstrap.
     - Updated compose volumes and documentation to mount and describe the new scripts.
 
 ## References to source
@@ -327,9 +343,11 @@ pick up `script/init.sql` changes.
 - `podman-compose.yml`
 - `script/init.sql`
 - `script/bybit_spot_tables.sql`
-- `script/cmc_parser_tables.sql`
-- `script/bybit_parser_tables.sql`
 - `script/bybit_linear_tables.sql`
+- `script/crypto_scout_tables.sql`
+- `script/btc_usd_daily_inserts.sql`
+- `script/btc_usd_weekly_inserts.sql`
+- `script/cmc_fgi_inserts.sql`
 - `secret/*.env`, `secret/README.md`
 - `src/main/resources/application.properties`, `logback.xml`
 - `src/main/java/com/github/akarazhev/cryptoscout/*`
