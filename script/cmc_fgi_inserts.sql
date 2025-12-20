@@ -1,6 +1,6 @@
 -- Fear & Greed Index data inserts
--- Generated: 2025-12-03T20:52:37.203604+00:00
--- Total records: 889
+-- Generated: 2025-12-20T09:00:31.106228+00:00
+-- Total records: 906
 
 INSERT INTO crypto_scout.cmc_fgi (value, value_classification, update_time) VALUES
     (59, 'Neutral', '2023-06-29 00:00:00+00'),
@@ -891,7 +891,24 @@ INSERT INTO crypto_scout.cmc_fgi (value, value_classification, update_time) VALU
     (20, 'Fear', '2025-11-30 00:00:00+00'),
     (20, 'Fear', '2025-12-01 00:00:00+00'),
     (16, 'Extreme Fear', '2025-12-02 00:00:00+00'),
-    (22, 'Fear', '2025-12-03 20:38:10+00')
+    (22, 'Fear', '2025-12-03 00:00:00+00'),
+    (27, 'Fear', '2025-12-04 00:00:00+00'),
+    (25, 'Fear', '2025-12-05 00:00:00+00'),
+    (21, 'Fear', '2025-12-06 00:00:00+00'),
+    (22, 'Fear', '2025-12-07 00:00:00+00'),
+    (24, 'Fear', '2025-12-08 00:00:00+00'),
+    (25, 'Fear', '2025-12-09 00:00:00+00'),
+    (30, 'Fear', '2025-12-10 00:00:00+00'),
+    (29, 'Fear', '2025-12-11 00:00:00+00'),
+    (29, 'Fear', '2025-12-12 00:00:00+00'),
+    (26, 'Fear', '2025-12-13 00:00:00+00'),
+    (27, 'Fear', '2025-12-14 00:00:00+00'),
+    (24, 'Fear', '2025-12-15 00:00:00+00'),
+    (22, 'Fear', '2025-12-16 00:00:00+00'),
+    (25, 'Fear', '2025-12-17 00:00:00+00'),
+    (22, 'Fear', '2025-12-18 00:00:00+00'),
+    (21, 'Fear', '2025-12-19 00:00:00+00'),
+    (27, 'Fear', '2025-12-20 08:53:10+00')
 ON CONFLICT (update_time) DO UPDATE SET
     value = EXCLUDED.value,
     value_classification = EXCLUDED.value_classification;
