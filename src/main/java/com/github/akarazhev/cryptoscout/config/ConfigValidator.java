@@ -29,11 +29,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_STREAM;
+import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_TA_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_COLLECTOR_QUEUE;
@@ -55,6 +55,7 @@ public final class ConfigValidator {
             AMQP_RABBITMQ_HOST,
             AMQP_RABBITMQ_USERNAME,
             AMQP_BYBIT_STREAM,
+            AMQP_BYBIT_TA_STREAM,
             AMQP_CRYPTO_SCOUT_STREAM,
             AMQP_CRYPTO_SCOUT_EXCHANGE,
             AMQP_COLLECTOR_ROUTING_KEY,
