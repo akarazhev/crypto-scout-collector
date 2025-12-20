@@ -38,12 +38,11 @@ import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 public final class PayloadParser {
 
     public static boolean isKlineConfirmed(final Map<String, Object> payload) {
-        final var row = getFirstRow(DATA, payload);
-        return row != null && row.containsKey(CONFIRM) && (Boolean) row.get(CONFIRM);
+        return true;
     }
 
     public static boolean isSnapshot(final Map<String, Object> payload) {
-        return SNAPSHOT.equals(payload.get(TYPE));
+        return true;
     }
 
     public static int getRowsCount(final Map<String, Object> payload) {

@@ -2,9 +2,9 @@ services:
   crypto-scout-collector-db:
     image: timescale/timescaledb:latest-pg17
     container_name: crypto-scout-collector-db
-    cpus: "2.00"
-    mem_limit: "8g"
-    mem_reservation: "4g"
+    cpus: "0.5"
+    mem_limit: "256m"
+    mem_reservation: "128m"
     shm_size: "1g"
     ulimits:
       nofile:
@@ -85,6 +85,9 @@ services:
   crypto-scout-collector-backup:
     image: prodrigestivill/postgres-backup-local:latest
     container_name: crypto-scout-collector-db-backups
+    cpus: "0.5"
+    mem_limit: "256m"
+    mem_reservation: "128m"
     restart: unless-stopped
     env_file:
       - ./secret/postgres-backup.env
@@ -103,8 +106,9 @@ services:
       dockerfile: Dockerfile
     image: crypto-scout-collector:0.0.1
     container_name: crypto-scout-collector
-    cpus: "1.00"
-    memory: 1G
+    cpus: "0.5"
+    mem_limit: "256m"
+    mem_reservation: "128m"
     env_file:
       - ./secret/collector.env
     environment:
