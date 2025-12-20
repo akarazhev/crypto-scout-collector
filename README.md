@@ -14,8 +14,10 @@ automated daily backups via a sidecar container.
   `prodrigestivill/postgres-backup-local`
 - App entrypoint: `com.github.akarazhev.cryptoscout.Collector`
 - Health endpoint: `GET /health` → `ok`
-- DB bootstrap and DDL scripts: `script/init.sql`, `script/bybit_spot_tables.sql`, `script/cmc_parser_tables.sql`,
-  `script/bybit_parser_tables.sql`, `script/bybit_linear_tables.sql`
+- DB bootstrap and DDL scripts: `script/init.sql`, `script/bybit_spot_tables.sql`, `script/bybit_linear_tables.sql`,
+  `script/crypto_scout_tables.sql`
+- Data seed scripts: `script/btc_usd_daily_inserts.sql`, `script/btc_usd_weekly_inserts.sql`,
+  `script/cmc_fgi_inserts.sql`
 
 ## Architecture
 
@@ -72,10 +74,6 @@ are executed in lexical order:
     - `crypto_scout.bybit_spot_public_trade` (1 row per trade)
     - `crypto_scout.bybit_spot_order_book_200` (1 row per book level)
     - Indexes, hypertables, compression, reorder, and retention policies
-- `script/cmc_parser_tables.sql` → `crypto_scout.cmc_fgi` (FGI metrics) with indexes, hypertable, compression, reorder,
-  retention.
-- `script/bybit_parser_tables.sql` → `crypto_scout.bybit_lpl` (Bybit Launch Pool) with indexes, hypertable, compression,
-  reorder, retention.
 - `script/bybit_linear_tables.sql` → Bybit Linear (Perps/Futures) tables and policies:
     - `crypto_scout.bybit_linear_tickers`
     - `crypto_scout.bybit_linear_kline_60m` (confirmed klines)
@@ -83,6 +81,16 @@ are executed in lexical order:
     - `crypto_scout.bybit_linear_order_book_200` (1 row per book level)
     - `crypto_scout.bybit_linear_all_liquidation` (all-liquidations stream)
     - Indexes, hypertables, compression, reorder, and retention policies
+- `script/crypto_scout_tables.sql` → CMC and risk analysis tables:
+    - `crypto_scout.cmc_fgi` (Fear & Greed Index)
+    - `crypto_scout.cmc_kline_1d` / `cmc_kline_1w` (BTC/USD daily/weekly klines)
+    - `crypto_scout.btc_price_risk` (risk-to-price mapping)
+    - `crypto_scout.btc_risk_price` (current risk assessment)
+    - Indexes, hypertables, compression, and reorder policies
+- Data seed scripts (historical data):
+    - `script/btc_usd_daily_inserts.sql` → BTC/USD daily kline inserts
+    - `script/btc_usd_weekly_inserts.sql` → BTC/USD weekly kline inserts
+    - `script/cmc_fgi_inserts.sql` → CMC Fear & Greed Index historical data
 
 ## Containers: TimescaleDB + Backups
 
@@ -90,11 +98,13 @@ The repository ships a `podman-compose.yml` with:
 
 - `crypto-scout-collector-db` — `timescale/timescaledb:latest-pg17`
     - Mounts `./data/postgresql` for data and SQL scripts under `/docker-entrypoint-initdb.d/` in order:
-        - `./script/init.sql` → `/docker-entrypoint-initdb.d/init.sql`
-        - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/02-bybit_spot_tables.sql`
-        - `./script/cmc_parser_tables.sql` → `/docker-entrypoint-initdb.d/03-cmc_parser_tables.sql`
-        - `./script/bybit_parser_tables.sql` → `/docker-entrypoint-initdb.d/04-bybit_parser_tables.sql`
-        - `./script/bybit_linear_tables.sql` → `/docker-entrypoint-initdb.d/05-bybit_linear_tables.sql`
+        - `./script/init.sql` → `/docker-entrypoint-initdb.d/00-init.sql`
+        - `./script/bybit_spot_tables.sql` → `/docker-entrypoint-initdb.d/01_bybit_spot_tables.sql`
+        - `./script/bybit_linear_tables.sql` → `/docker-entrypoint-initdb.d/02_bybit_linear_tables.sql`
+        - `./script/crypto_scout_tables.sql` → `/docker-entrypoint-initdb.d/03_crypto_scout_tables.sql`
+        - `./script/btc_usd_daily_inserts.sql` → `/docker-entrypoint-initdb.d/04_btc_usd_daily_inserts.sql`
+        - `./script/btc_usd_weekly_inserts.sql` → `/docker-entrypoint-initdb.d/05_btc_usd_weekly_inserts.sql`
+        - `./script/cmc_fgi_inserts.sql` → `/docker-entrypoint-initdb.d/06_cmc_fgi_inserts.sql`
     - Healthcheck via `pg_isready`.
     - Tuned Postgres/TimescaleDB settings and `pg_stat_statements` enabled.
 - `crypto-scout-collector-backup` — `prodrigestivill/postgres-backup-local:latest`
@@ -128,9 +138,8 @@ Notes:
   re-run.
 - For existing databases, apply the DDL scripts manually using `psql`, for example:
     - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_spot_tables.sql`
-    - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/cmc_parser_tables.sql`
-    - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_parser_tables.sql`
     - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/bybit_linear_tables.sql`
+    - `psql -h <host> -U crypto_scout_db -d crypto_scout -f script/crypto_scout_tables.sql`
 - For stronger auth at bootstrap, include `POSTGRES_INITDB_ARGS=--auth=scram-sha-256` in `secret/timescaledb.env` before
   first start.
 
