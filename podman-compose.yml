@@ -19,6 +19,7 @@ services:
       - ./script/btc_usd_daily_inserts.sql:/docker-entrypoint-initdb.d/04_btc_usd_daily_inserts.sql:ro
       - ./script/btc_usd_weekly_inserts.sql:/docker-entrypoint-initdb.d/05_btc_usd_weekly_inserts.sql:ro
       - ./script/cmc_fgi_inserts.sql:/docker-entrypoint-initdb.d/06_cmc_fgi_inserts.sql:ro
+      - ./script/alternative_fgi_inserts.sql:/docker-entrypoint-initdb.d/07_alternative_fgi_inserts.sql:ro
     networks:
       - crypto-scout-bridge
     env_file:
