@@ -24,28 +24,34 @@ automated daily backups via a sidecar container.
 ```mermaid
 flowchart LR
     subgraph RabbitMQ[ RabbitMQ Streams ]
-        S1[cmc-parser-stream]
-        S2[bybit-parser-stream]
-        S3[bybit-crypto-stream]
+        S1[crypto-scout-stream]
+        S2[bybit-stream]
+    end
+
+    subgraph AMQP[ RabbitMQ AMQP ]
+        Q1[collector-queue]
     end
 
     subgraph App[crypto-scout-collector -> ActiveJ]
-        A1[StreamConsumer]
-        A2[CmcParserCollector]
-        A3[BybitParserCollector]
-        A4[BybitCryptoCollector]
+        SS[StreamService]
+        BS[BybitStreamService]
+        CS[CryptoScoutService]
+        DS[DataService]
+        AC[AmqpConsumer]
+        AP[AmqpPublisher]
         W[WebModule /health]
     end
 
     subgraph DB[TimescaleDB]
         T1[crypto_scout.cmc_fgi]
-        T2[crypto_scout.bybit_spot_tickers]
-        T3[crypto_scout.bybit_lpl]
+        T2[crypto_scout.bybit_spot_*]
+        T3[crypto_scout.bybit_linear_*]
+        T4[crypto_scout.cmc_kline_*]
     end
 
-    S1 -->|Payload.CMC| A1 --> A2 --> T1
-    S2 -->|Payload.BYBIT -> LPL| A1 --> A3 --> T3
-    S3 -->|Payload.BYBIT -> Spot tickers| A1 --> A4 --> T2
+    S1 -->|Payload| SS --> CS --> T1 & T4
+    S2 -->|Payload| SS --> BS --> T2 & T3
+    Q1 -->|AMQP| AC --> DS
 ```
 
 Key modules/classes:
@@ -54,11 +60,17 @@ Key modules/classes:
 - `src/main/java/com/github/akarazhev/cryptoscout/module/CoreModule.java` — single-threaded reactor + virtual-thread
   executor.
 - `src/main/java/com/github/akarazhev/cryptoscout/module/CollectorModule.java` — DI wiring for repositories and
-  collectors; starts `StreamConsumer` eagerly.
+  services; starts `StreamService`, `AmqpConsumer`, and `AmqpPublisher` eagerly.
 - `src/main/java/com/github/akarazhev/cryptoscout/module/WebModule.java` — HTTP server exposing `/health`.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/StreamConsumer.java` — subscribes to RabbitMQ Streams and
-  dispatches payloads.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/*Collector.java` — batch/interval buffered writes to DB.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/StreamService.java` — subscribes to RabbitMQ Streams and
+  dispatches payloads to `BybitStreamService` and `CryptoScoutService`.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/BybitStreamService.java` — processes Bybit stream data.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/CryptoScoutService.java` — processes crypto-scout stream
+  data.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/DataService.java` — handles AMQP messages and coordinates
+  publishers.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java` — consumes from AMQP queues.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpPublisher.java` — publishes to AMQP queues.
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/db/*Repository.java` — JDBC/Hikari-based writes.
 
 ## Database schema and policies
@@ -91,6 +103,7 @@ are executed in lexical order:
     - `script/btc_usd_daily_inserts.sql` → BTC/USD daily kline inserts
     - `script/btc_usd_weekly_inserts.sql` → BTC/USD weekly kline inserts
     - `script/cmc_fgi_inserts.sql` → CMC Fear & Greed Index historical data
+    - `script/alternative_fgi_inserts.sql` → Alternative.me Fear & Greed Index historical data
 
 ## Containers: TimescaleDB + Backups
 
@@ -105,6 +118,7 @@ The repository ships a `podman-compose.yml` with:
         - `./script/btc_usd_daily_inserts.sql` → `/docker-entrypoint-initdb.d/04_btc_usd_daily_inserts.sql`
         - `./script/btc_usd_weekly_inserts.sql` → `/docker-entrypoint-initdb.d/05_btc_usd_weekly_inserts.sql`
         - `./script/cmc_fgi_inserts.sql` → `/docker-entrypoint-initdb.d/06_cmc_fgi_inserts.sql`
+        - `./script/alternative_fgi_inserts.sql` → `/docker-entrypoint-initdb.d/07_alternative_fgi_inserts.sql`
     - Healthcheck via `pg_isready`.
     - Tuned Postgres/TimescaleDB settings and `pg_stat_statements` enabled.
 - `crypto-scout-collector-backup` — `prodrigestivill/postgres-backup-local:latest`
@@ -155,10 +169,10 @@ Default configuration is in `src/main/resources/application.properties`:
     - `amqp.rabbitmq.password` (empty by default)
     - `amqp.rabbitmq.port` (default `5672`)
     - `amqp.stream.port` (default `5552`)
-    - `amqp.bybit.crypto.stream` (default `bybit-crypto-stream`)
-    - `amqp.bybit.parser.stream` (default `bybit-parser-stream`)
-    - `amqp.cmc.parser.stream` (default `cmc-parser-stream`)
-    - `amqp.collector.exchange`, `amqp.collector.queue`
+    - `amqp.bybit.stream` (default `bybit-stream`)
+    - `amqp.bybit.ta.stream` (default `bybit-ta-stream`)
+    - `amqp.crypto.scout.stream` (default `crypto-scout-stream`)
+    - `amqp.crypto.scout.exchange`, `amqp.collector.queue`, `amqp.chatbot.queue`, `amqp.analyst.queue`
 - JDBC / HikariCP
     - `jdbc.datasource.url` (default `jdbc:postgresql://localhost:5432/crypto_scout`)
     - `jdbc.datasource.username` (default `crypto_scout_db`)
@@ -191,20 +205,16 @@ configured hosts/ports.
 
 ## Offset management
 
-- **CMC stream (external offsets):** `StreamConsumer` disables server-side offset tracking and uses a DB-backed offset in
-  `crypto_scout.stream_offsets`.
+- **Crypto-scout stream (external offsets):** `StreamService` disables server-side offset tracking and uses a DB-backed
+  offset in `crypto_scout.stream_offsets`.
     - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if
       absent).
-    - `CmcParserCollector` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
+    - `CryptoScoutService` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
     - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once
       semantics.
-- **Bybit metrics stream (external offsets):** the `bybit-parser-stream` uses the same DB-backed offset approach.
-    - On startup, `StreamConsumer` reads `bybit-parser-stream` offset from DB and subscribes from `offset + 1`.
-    - `BybitParserCollector` batches inserts and updates the max processed offset in one transaction.
-- **Bybit spot stream (external offsets):** `bybit-crypto-stream` also uses the DB-backed offset approach.
-    - On startup, `StreamConsumer` reads `bybit-crypto-stream` offset from DB and subscribes from `offset + 1`.
-    - `BybitCryptoCollector` batches inserts and updates the max processed offset in one transaction.
-    - Manual stream acknowledgments are no longer used.
+- **Bybit stream (external offsets):** the `bybit-stream` uses the same DB-backed offset approach.
+    - On startup, `StreamService` reads `bybit-stream` offset from DB and subscribes from `offset + 1`.
+    - `BybitStreamService` batches inserts and updates the max processed offset in one transaction.
 
 Migration note: `script/init.sql` creates `crypto_scout.stream_offsets` on first bootstrap. If your DB is already
 initialized, apply the DDL manually or re-initialize the data directory to pick up the new table.
@@ -286,7 +296,7 @@ Always validate restore procedures in a non-production environment.
 ## Health and operations
 
 - HTTP health: `GET /health` returns `ok`.
-- Logs: configured via `src/main/resources/logback.xml` (console appender, INFO level).
+- Logs: SLF4J/Logback (console appender, INFO level).
 - Execution model: non-blocking reactor for orchestration; blocking JDBC work delegated to a virtual-thread executor.
 
 ## Troubleshooting

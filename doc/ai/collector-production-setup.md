@@ -17,7 +17,7 @@ policies, and a container image definition for the collector.
     - `script/bybit_linear_tables.sql` — Bybit Linear (Perps/Futures) DDL and policies.
     - `script/crypto_scout_tables.sql` — CMC FGI, kline (1d/1w), and BTC risk tables.
 - Data seed scripts: `script/btc_usd_daily_inserts.sql`, `script/btc_usd_weekly_inserts.sql`,
-  `script/cmc_fgi_inserts.sql` — historical data for initial bootstrap.
+  `script/cmc_fgi_inserts.sql`, `script/alternative_fgi_inserts.sql` — historical data for initial bootstrap.
 - Application: Java 25 (ActiveJ). Reads RabbitMQ Streams, batches inserts via HikariCP to TimescaleDB, exposes
   `GET /health`.
 - Documentation: `README.md` updated to reflect Java 25, compose service names, and Docker base; this report added under
@@ -26,13 +26,13 @@ policies, and a container image definition for the collector.
 Spot data persistence:
 
 - `com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository` now supports:
-  - `saveTicker`
-  - `saveKline15m`, `saveKline60m`, `saveKline240m`, `saveKline1d`
-  - `savePublicTrade`, `saveOrderBook200`
+    - `saveTicker`
+    - `saveKline15m`, `saveKline60m`, `saveKline240m`, `saveKline1d`
+    - `savePublicTrade`, `saveOrderBook200`
 - Klines and public trades are idempotent via `ON CONFLICT DO NOTHING` using unique keys:
-  - Klines: `(symbol, start_time)`
-  - Public trades: `(symbol, trade_time)`
-  - Order book 200 ingests one row per level without upsert (append-only).
+    - Klines: `(symbol, start_time)`
+    - Public trades: `(symbol, trade_time)`
+    - Order book 200 ingests one row per level without upsert (append-only).
 
 ## Proposed short GitHub description
 
@@ -94,15 +94,15 @@ backups.
 
 - Application
     - Entry point: `src/main/java/com/github/akarazhev/cryptoscout/Collector.java` (ActiveJ `Launcher`).
-    - Modules: `module/CoreModule.java` (reactor/executor), `module/CollectorModule.java` (DI and eager `StreamConsumer`),
-      `module/WebModule.java` (`/health`).
-    - Collectors: `collector/StreamConsumer.java`, `collector/CmcParserCollector.java`,
-      `collector/BybitParserCollector.java`, `collector/BybitCryptoCollector.java`.
+    - Modules: `module/CoreModule.java` (reactor/executor), `module/CollectorModule.java` (DI and eager `StreamService`,
+      `AmqpConsumer`, `AmqpPublisher`), `module/WebModule.java` (`/health`).
+    - Services: `collector/StreamService.java`, `collector/BybitStreamService.java`,
+      `collector/CryptoScoutService.java`, `collector/DataService.java`, `collector/AmqpConsumer.java`,
+      `collector/AmqpPublisher.java`, `collector/HealthService.java`, `collector/PayloadParser.java`.
     - Repos & datasource: `collector/db/CollectorDataSource.java`, `collector/db/*Repository.java`.
     - Config readers: `config/AmqpConfig.java`, `config/JdbcConfig.java`, `config/ServerConfig.java`; keys in
       `config/Constants.java`.
-    - App defaults: `src/main/resources/application.properties` (server, AMQP, JDBC/Hikari), logs via
-      `src/main/resources/logback.xml`.
+    - App defaults: `src/main/resources/application.properties` (server, AMQP, JDBC/Hikari); logging via SLF4J/Logback.
     - Build: `pom.xml` with shade plugin; main class `com.github.akarazhev.cryptoscout.Collector`.
 
 ## Architecture and data flow
@@ -110,28 +110,34 @@ backups.
 ```mermaid
 flowchart LR
     subgraph RabbitMQ[ RabbitMQ Streams ]
-        S1[cmc-parser-stream]
-        S2[bybit-parser-stream]
-        S3[bybit-crypto-stream]
+        S1[crypto-scout-stream]
+        S2[bybit-stream]
+    end
+
+    subgraph AMQP[ RabbitMQ AMQP ]
+        Q1[collector-queue]
     end
 
     subgraph App[crypto-scout-collector (ActiveJ)]
-        A1[StreamConsumer]
-        A2[CmcParserCollector]
-        A3[BybitParserCollector]
-        A4[BybitCryptoCollector]
+        SS[StreamService]
+        BS[BybitStreamService]
+        CS[CryptoScoutService]
+        DS[DataService]
+        AC[AmqpConsumer]
+        AP[AmqpPublisher]
         W[WebModule /health]
     end
 
     subgraph DB[(TimescaleDB)]
         T1[crypto_scout.cmc_fgi]
-        T2[crypto_scout.bybit_spot_tickers]
-        T3[crypto_scout.bybit_lpl]
+        T2[crypto_scout.bybit_spot_*]
+        T3[crypto_scout.bybit_linear_*]
+        T4[crypto_scout.cmc_kline_*]
     end
 
-    S1 -->|Payload.CMC| A1 --> A2 --> T1
-    S2 -->|Payload.BYBIT (LPL)| A1 --> A3 --> T3
-    S3 -->|Payload.BYBIT (Spot tickers)| A1 --> A4 --> T2
+    S1 -->|Payload| SS --> CS --> T1 & T4
+    S2 -->|Payload| SS --> BS --> T2 & T3
+    Q1 -->|AMQP| AC --> DS
 ```
 
 Runtime characteristics:
@@ -154,6 +160,7 @@ Runtime characteristics:
     - `./script/btc_usd_daily_inserts.sql` → `/docker-entrypoint-initdb.d/04_btc_usd_daily_inserts.sql`
     - `./script/btc_usd_weekly_inserts.sql` → `/docker-entrypoint-initdb.d/05_btc_usd_weekly_inserts.sql`
     - `./script/cmc_fgi_inserts.sql` → `/docker-entrypoint-initdb.d/06_cmc_fgi_inserts.sql`
+    - `./script/alternative_fgi_inserts.sql` → `/docker-entrypoint-initdb.d/07_alternative_fgi_inserts.sql`
 - Tuning (from `podman-compose.yml`): preload `timescaledb,pg_stat_statements`, `shared_buffers`, WAL settings, timezone
   UTC, `timescaledb.telemetry_level=off`, `pg_stat_statements.track=all`, IO timing, etc.
 - Healthcheck: `pg_isready -U $POSTGRES_USER -d $POSTGRES_DB`.
@@ -180,7 +187,7 @@ Application container: `crypto-scout-collector`
 - Compose hardening:
     - `read_only: true`, `tmpfs: /tmp:rw,size=64m,mode=1777,nodev,nosuid`
     - `security_opt: [no-new-privileges=true]`, `cap_drop: [ALL]`
-    - `cpus: "1.00"`, `memory: 1G`, `pids_limit: 256`, `ulimits.noFile: 4096:4096`
+    - `cpus: "0.5"`, `mem_limit: 512m`, `pids_limit: 256`, `ulimits.noFile: 4096:4096`
     - `user: "10001:10001"`, `init: true`, `restart: unless-stopped`, `stop_signal: SIGTERM`, `stop_grace_period: 30s`
 - Networking: joins the external network `crypto-scout-bridge` to reach the DB service by name
   `crypto-scout-collector-db`.
@@ -198,10 +205,11 @@ Application container: `crypto-scout-collector`
     - `crypto_scout.bybit_linear_order_book_200` — primary key `(id, engine_time)`; indexes on `(symbol, engine_time)`
       and `(symbol, side, price)`.
     - `crypto_scout.bybit_linear_all_liquidation` — primary key `(id, event_time)`; indexes on `(symbol, event_time)`.
-- External offset tracking for CMC, Bybit metrics, and Bybit spot streams:
-    - `StreamConsumer` starts consumers from DB offset and disables server-side tracking.
-    - `CmcParserCollector`/`BybitParserCollector`/`BybitCryptoCollector` batch inserts and update offsets atomically.
-- Compression policies (segmentby/orderby) for tables (compress chunks older than 7 days for Bybit, 30 days for CMC/risk).
+- External offset tracking for crypto-scout and Bybit streams:
+    - `StreamService` starts consumers from DB offset and disables server-side tracking.
+    - `CryptoScoutService`/`BybitStreamService` batch inserts and update offsets atomically.
+- Compression policies (segmentby/orderby) for tables (compress chunks older than 7 days for Bybit, 30 days for
+  CMC/risk).
 - Reorder policies align with time‑descending indexes.
 - Retention: 180 days for `bybit_spot_tickers`.
 - Grants and default privileges for role `crypto_scout_db`.
@@ -220,10 +228,10 @@ From `src/main/resources/application.properties`:
     - `amqp.rabbitmq.password` (empty by default)
     - `amqp.rabbitmq.port` (default `5672`)
     - `amqp.stream.port` (default `5552`)
-    - `amqp.bybit.crypto.stream` (default `bybit-crypto-stream`)
-    - `amqp.bybit.parser.stream` (default `bybit-parser-stream`)
-    - `amqp.cmc.parser.stream` (default `cmc-parser-stream`)
-    - `amqp.collector.exchange`, `amqp.collector.queue`
+    - `amqp.bybit.stream` (default `bybit-stream`)
+    - `amqp.bybit.ta.stream` (default `bybit-ta-stream`)
+    - `amqp.crypto.scout.stream` (default `crypto-scout-stream`)
+    - `amqp.crypto.scout.exchange`, `amqp.collector.queue`, `amqp.chatbot.queue`, `amqp.analyst.queue`
 - JDBC / HikariCP
     - `jdbc.datasource.url` (default `jdbc:postgresql://localhost:5432/crypto_scout`)
     - `jdbc.datasource.username` (default `crypto_scout_db`)
@@ -287,15 +295,12 @@ Ensure RabbitMQ Streams and TimescaleDB are reachable per configured host/ports.
 
 ## Offset handling
 
-- **CMC stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
+- **Crypto-scout stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
     - The consumer starts from `offset + 1` if present, otherwise from `first`.
-    - On flush, `CmcParserCollector` inserts data and updates the max processed offset in a single transaction.
-- **Bybit metrics stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
+    - On flush, `CryptoScoutService` inserts data and updates the max processed offset in a single transaction.
+- **Bybit stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
     - The consumer starts from `offset + 1` if present, otherwise from `first`.
-    - On flush, `BybitParserCollector` inserts data and updates the max processed offset in a single transaction.
-- **Bybit spot stream:** external offset tracking stored in `crypto_scout.stream_offsets`.
-    - The consumer starts from `offset + 1` if present, otherwise from `first`.
-    - On flush, `BybitCryptoCollector` inserts data and updates the max processed offset in a single transaction.
+    - On flush, `BybitStreamService` inserts data and updates the max processed offset in a single transaction.
 
 If your DB was initialized before this change, apply the `stream_offsets` DDL manually or re-initialize the data dir to
 pick up `script/init.sql` changes.
@@ -303,7 +308,7 @@ pick up `script/init.sql` changes.
 ## Operations
 
 - Health: `GET /health` returns `ok`.
-- Logs: `src/main/resources/logback.xml` (console appender, INFO level).
+- Logs: SLF4J/Logback (console appender, INFO level).
 - Shutdown: ActiveJ launcher runs until termination; repositories and datasource close on stop.
 
 ## Hardening checklist
@@ -328,10 +333,10 @@ pick up `script/init.sql` changes.
   Architecture/Database sections.
 - Added this production setup report at `doc/0.0.1/collector-production-setup.md` including the proposed GitHub short
   description.
-- Implemented external DB-backed offset tracking for CMC stream:
+- Implemented external DB-backed offset tracking for streams:
     - New table `crypto_scout.stream_offsets`.
-    - `StreamConsumer` starts CMC consumer from DB offset and disables server-side tracking.
-    - `CmcParserCollector` batches inserts and updates offset atomically.
+    - `StreamService` starts consumers from DB offset and disables server-side tracking.
+    - `CryptoScoutService`/`BybitStreamService` batch inserts and update offsets atomically.
 - Consolidated CMC and risk tables:
     - Created `script/crypto_scout_tables.sql` with `cmc_fgi`, `cmc_kline_1d`, `cmc_kline_1w`, `btc_price_risk`,
       `btc_risk_price`.
@@ -348,7 +353,8 @@ pick up `script/init.sql` changes.
 - `script/btc_usd_daily_inserts.sql`
 - `script/btc_usd_weekly_inserts.sql`
 - `script/cmc_fgi_inserts.sql`
+- `script/alternative_fgi_inserts.sql`
 - `secret/*.env`, `secret/README.md`
-- `src/main/resources/application.properties`, `logback.xml`
+- `src/main/resources/application.properties`
 - `src/main/java/com/github/akarazhev/cryptoscout/*`
 - `Dockerfile`, `pom.xml`
