@@ -162,7 +162,7 @@ Notes:
 Default configuration is in `src/main/resources/application.properties`:
 
 - Server
-    - `server.port` (default `8083`)
+    - `server.port` (default `8081`)
 - RabbitMQ
     - `amqp.rabbitmq.host` (default `localhost`)
     - `amqp.rabbitmq.username` (default `crypto_scout_mq`)
@@ -196,7 +196,7 @@ mvn -q -DskipTests package
 java -jar target/crypto-scout-collector-0.0.1.jar
 
 # Health check
-curl -s http://localhost:8083/health
+curl -s http://localhost:8081/health
 # -> ok
 ```
 
@@ -240,7 +240,7 @@ to pass JVM `-D` flags or update `application.properties` and rebuild. Minimal r
 
 ```env
 # Server
-SERVER_PORT=8083
+SERVER_PORT=8081
 
 # RabbitMQ Streams
 AMQP_RABBITMQ_HOST=<rabbitmq_host>
@@ -265,7 +265,7 @@ podman-compose -f podman-compose.yml build crypto-scout-collector
 podman-compose -f podman-compose.yml up -d
 
 # Health check
-curl -s http://localhost:8083/health  # -> ok
+curl -s http://localhost:8081/health  # -> ok
 ```
 
 Notes:

@@ -40,7 +40,7 @@ Take the following roles:
   `JAVA_TOOL_OPTIONS=-XX:+ExitOnOutOfMemoryError` only.
 - Hardened `Dockerfile`:
     - Pinned base image digest `eclipse-temurin:25-jre-alpine@sha256:...` with OCI labels.
-    - Non-root user/group `10001:10001`, `WORKDIR /opt/crypto-scout`, `EXPOSE 8083`, installed `curl`,
+    - Non-root user/group `10001:10001`, `WORKDIR /opt/crypto-scout`, `EXPOSE 8081`, installed `curl`,
       `STOPSIGNAL SIGTERM`.
 - Updated docs:
     - `secret/README.md` documents `collector.env` usage and `POSTGRES_HOST=crypto-scout-collector-db`.
@@ -70,5 +70,5 @@ podman-compose -f podman-compose.yml up -d
 3) Health:
 
 ```bash
-curl -s http://localhost:8083/health  # -> ok
+curl -s http://localhost:8081/health  # -> ok
 ```
