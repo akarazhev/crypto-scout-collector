@@ -33,6 +33,6 @@ RUN addgroup -S app -g 10001 && adduser -S -G app -u 10001 app
 COPY --chown=10001:app target/crypto-scout-collector-0.0.1.jar crypto-scout-collector.jar
 RUN apk add --no-cache curl
 USER 10001:10001
-EXPOSE 8083
+EXPOSE 8081
 STOPSIGNAL SIGTERM
 ENTRYPOINT ["java", "-jar", "crypto-scout-collector.jar"]
