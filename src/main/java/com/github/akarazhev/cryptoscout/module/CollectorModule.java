@@ -106,12 +106,11 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private DataService dataService(final NioReactor reactor,
-                                    final BybitStreamService bybitStreamService,
+    private DataService dataService(final BybitStreamService bybitStreamService,
                                     final CryptoScoutService cryptoScoutService,
                                     @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher,
                                     @Named(ANALYST_PUBLISHER) final AmqpPublisher analystPublisher) {
-        return DataService.create(reactor, bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
+        return DataService.create(bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
     }
 
     @Provides
@@ -144,7 +143,9 @@ public final class CollectorModule extends AbstractModule {
     @Eager
     private AmqpConsumer collectorConsumer(final NioReactor reactor, final Executor executor,
                                            final DataService dataService) {
-        return AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(), COLLECTOR_CONSUMER_CLIENT_NAME,
-                AmqpConfig.getAmqpCollectorQueue(), dataService::consume);
+        final var consumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+                COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue());
+        consumer.getStreamSupplier().streamTo(dataService.getStreamConsumer());
+        return consumer;
     }
 }

@@ -61,6 +61,12 @@
             <artifactId>activej-jmx</artifactId>
             <version>${activej.version}</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.activej/activej-datastream -->
+        <dependency>
+            <groupId>io.activej</groupId>
+            <artifactId>activej-datastream</artifactId>
+            <version>${activej.version}</version>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/com.rabbitmq/stream-client -->
         <dependency>
             <groupId>com.rabbitmq</groupId>
