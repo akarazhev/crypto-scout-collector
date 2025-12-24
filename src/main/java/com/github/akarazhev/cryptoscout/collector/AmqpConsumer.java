@@ -52,7 +52,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     private final ConnectionFactory connectionFactory;
     private final String clientName;
     private final String queue;
-    private final Consumer<byte[]> messageHandler;
+    private final Consumer<byte[]> consumerHandler;
     private final AtomicBoolean running = new AtomicBoolean(false);
     private volatile Connection connection;
     private volatile Channel channel;
@@ -60,19 +60,19 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
 
     public static AmqpConsumer create(final NioReactor reactor, final Executor executor,
                                       final ConnectionFactory connectionFactory, final String clientName,
-                                      final String queue, final Consumer<byte[]> messageHandler) {
-        return new AmqpConsumer(reactor, executor, connectionFactory, clientName, queue, messageHandler);
+                                      final String queue, final Consumer<byte[]> consumerHandler) {
+        return new AmqpConsumer(reactor, executor, connectionFactory, clientName, queue, consumerHandler);
     }
 
     private AmqpConsumer(final NioReactor reactor, final Executor executor,
                          final ConnectionFactory connectionFactory, final String clientName,
-                         final String queue, final Consumer<byte[]> messageHandler) {
+                         final String queue, final Consumer<byte[]> consumerHandler) {
         super(reactor);
         this.executor = executor;
         this.connectionFactory = connectionFactory;
         this.clientName = clientName;
         this.queue = queue;
-        this.messageHandler = messageHandler;
+        this.consumerHandler = consumerHandler;
     }
 
     @Override
@@ -99,7 +99,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
             final DeliverCallback deliver = (_, delivery) -> {
                 try {
                     final var body = delivery.getBody();
-                    reactor.execute(() -> messageHandler.accept(body));
+                    reactor.execute(() -> consumerHandler.accept(body));
                     channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
                 } catch (final Exception e) {
                     try {
