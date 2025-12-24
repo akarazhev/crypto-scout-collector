@@ -107,13 +107,11 @@ public final class CollectorModule extends AbstractModule {
 
     @Provides
     private DataService dataService(final NioReactor reactor,
-                                    final Executor executor,
                                     final BybitStreamService bybitStreamService,
                                     final CryptoScoutService cryptoScoutService,
                                     @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher,
                                     @Named(ANALYST_PUBLISHER) final AmqpPublisher analystPublisher) {
-        return DataService.create(reactor, executor, bybitStreamService, cryptoScoutService, chatbotPublisher,
-                analystPublisher);
+        return DataService.create(reactor, bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
     }
 
     @Provides
