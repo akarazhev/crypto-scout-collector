@@ -145,6 +145,6 @@ public final class CollectorModule extends AbstractModule {
     private AmqpConsumer collectorConsumer(final NioReactor reactor, final Executor executor,
                                            final DataService dataService) {
         return AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(), COLLECTOR_CONSUMER_CLIENT_NAME,
-                AmqpConfig.getAmqpCollectorQueue(), dataService::handleMessage);
+                AmqpConfig.getAmqpCollectorQueue(), dataService::consume);
     }
 }
