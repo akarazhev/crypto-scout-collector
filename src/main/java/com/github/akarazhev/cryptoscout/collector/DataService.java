@@ -27,8 +27,8 @@ package com.github.akarazhev.cryptoscout.collector;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.jcryptolib.stream.Message;
 import com.github.akarazhev.jcryptolib.util.JsonUtils;
-import io.activej.reactor.AbstractReactive;
-import io.activej.reactor.nio.NioReactor;
+import io.activej.datastream.consumer.AbstractStreamConsumer;
+import io.activej.datastream.consumer.StreamConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,35 +36,36 @@ import java.util.List;
 
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 
-public final class DataService extends AbstractReactive {
+public final class DataService {
     private final static Logger LOGGER = LoggerFactory.getLogger(DataService.class);
     private final BybitStreamService bybitStreamService;
     private final CryptoScoutService cryptoScoutService;
     private final AmqpPublisher chatbotPublisher;
     private final AmqpPublisher analystPublisher;
 
-    public static DataService create(final NioReactor reactor,
-                                     final BybitStreamService bybitStreamService,
+    public static DataService create(final BybitStreamService bybitStreamService,
                                      final CryptoScoutService cryptoScoutService,
                                      final AmqpPublisher chatbotPublisher,
                                      final AmqpPublisher analystPublisher) {
-        return new DataService(reactor, bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
+        return new DataService(bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
     }
 
-    private DataService(final NioReactor reactor,
-                        final BybitStreamService bybitStreamService,
+    private DataService(final BybitStreamService bybitStreamService,
                         final CryptoScoutService cryptoScoutService,
                         final AmqpPublisher chatbotPublisher,
                         final AmqpPublisher analystPublisher) {
-        super(reactor);
         this.bybitStreamService = bybitStreamService;
         this.cryptoScoutService = cryptoScoutService;
         this.chatbotPublisher = chatbotPublisher;
         this.analystPublisher = analystPublisher;
     }
 
+    public StreamConsumer<byte[]> getStreamConsumer() {
+        return new InternalStreamConsumer();
+    }
+
     @SuppressWarnings("unchecked")
-    public void consume(final byte[] body) {
+    private void consume(final byte[] body) {
         try {
             consume((Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class));
         } catch (final Exception e) {
@@ -227,6 +228,24 @@ public final class DataService extends AbstractReactive {
             );
 
             default -> LOGGER.warn("Unknown source for response: {}", source);
+        }
+    }
+
+    private final class InternalStreamConsumer extends AbstractStreamConsumer<byte[]> {
+
+        @Override
+        protected void onStarted() {
+            resume(DataService.this::consume);
+        }
+
+        @Override
+        protected void onEndOfStream() {
+            acknowledge();
+        }
+
+        @Override
+        protected void onError(final Exception e) {
+            LOGGER.error("Stream error in DataService consumer", e);
         }
     }
 }
