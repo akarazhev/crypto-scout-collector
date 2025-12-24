@@ -47,15 +47,15 @@ public final class JdbcConfig {
         throw new UnsupportedOperationException();
     }
 
-    public static String getUrl() {
+    private static String getUrl() {
         return AppConfig.getAsString(JDBC_URL);
     }
 
-    public static String getUsername() {
+    private static String getUsername() {
         return AppConfig.getAsString(JDBC_USERNAME);
     }
 
-    public static String getPassword() {
+    private static String getPassword() {
         return AppConfig.getAsString(JDBC_PASSWORD);
     }
 

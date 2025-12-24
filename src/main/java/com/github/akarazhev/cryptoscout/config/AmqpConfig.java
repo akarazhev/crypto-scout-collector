@@ -49,15 +49,15 @@ public final class AmqpConfig {
         throw new UnsupportedOperationException();
     }
 
-    public static String getAmqpRabbitmqHost() {
+    private static String getAmqpRabbitmqHost() {
         return AppConfig.getAsString(AMQP_RABBITMQ_HOST);
     }
 
-    public static String getAmqpRabbitmqUsername() {
+    private static String getAmqpRabbitmqUsername() {
         return AppConfig.getAsString(AMQP_RABBITMQ_USERNAME);
     }
 
-    public static String getAmqpRabbitmqPassword() {
+    private static String getAmqpRabbitmqPassword() {
         return AppConfig.getAsString(AMQP_RABBITMQ_PASSWORD);
     }
 
@@ -69,7 +69,7 @@ public final class AmqpConfig {
         return AppConfig.getAsString(AMQP_BYBIT_STREAM);
     }
 
-    public static String getAmqpBybitTaStream() {
+    private static String getAmqpBybitTaStream() {
         return AppConfig.getAsString(AMQP_BYBIT_TA_STREAM);
     }
 
@@ -105,7 +105,7 @@ public final class AmqpConfig {
         return AppConfig.getAsString(AMQP_ANALYST_ROUTING_KEY);
     }
 
-    public static int getAmqpRabbitmqPort() {
+    private static int getAmqpRabbitmqPort() {
         return AppConfig.getAsInt(AMQP_RABBITMQ_PORT);
     }
 
