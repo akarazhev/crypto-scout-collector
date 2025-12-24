@@ -27,43 +27,36 @@ package com.github.akarazhev.cryptoscout.collector;
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.jcryptolib.stream.Message;
 import com.github.akarazhev.jcryptolib.util.JsonUtils;
-import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
 import io.activej.reactor.nio.NioReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import static com.github.akarazhev.jcryptolib.util.TimeUtils.toOdt;
 
 public final class DataService extends AbstractReactive {
     private final static Logger LOGGER = LoggerFactory.getLogger(DataService.class);
-    private final Executor executor;
     private final BybitStreamService bybitStreamService;
     private final CryptoScoutService cryptoScoutService;
     private final AmqpPublisher chatbotPublisher;
     private final AmqpPublisher analystPublisher;
 
     public static DataService create(final NioReactor reactor,
-                                     final Executor executor,
                                      final BybitStreamService bybitStreamService,
                                      final CryptoScoutService cryptoScoutService,
                                      final AmqpPublisher chatbotPublisher,
                                      final AmqpPublisher analystPublisher) {
-        return new DataService(reactor, executor, bybitStreamService, cryptoScoutService, chatbotPublisher,
-                analystPublisher);
+        return new DataService(reactor, bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
     }
 
     private DataService(final NioReactor reactor,
-                        final Executor executor,
                         final BybitStreamService bybitStreamService,
                         final CryptoScoutService cryptoScoutService,
                         final AmqpPublisher chatbotPublisher,
                         final AmqpPublisher analystPublisher) {
         super(reactor);
-        this.executor = executor;
         this.bybitStreamService = bybitStreamService;
         this.cryptoScoutService = cryptoScoutService;
         this.chatbotPublisher = chatbotPublisher;
