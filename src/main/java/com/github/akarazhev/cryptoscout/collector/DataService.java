@@ -72,9 +72,11 @@ public final class DataService extends AbstractReactive {
 
     @SuppressWarnings("unchecked")
     public void handleMessage(final byte[] body) {
-        Promise.ofBlocking(executor, () -> (Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class))
-                .whenResult(this::process)
-                .whenException(e -> LOGGER.error("Failed to process message", e));
+        try {
+            process((Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class));
+        } catch (final Exception e) {
+            LOGGER.error("Failed to process message", e);
+        }
     }
 
     private void process(final Message<List<Object>> message) {
