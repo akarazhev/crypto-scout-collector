@@ -53,7 +53,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class CryptoScoutRepositoryTest {
     private static ExecutorService executor;
     private static Eventloop reactor;
-    private static CollectorDataSource dataSource;
+    private static CollectorDataSource collectorDataSource;
     private static CryptoScoutRepository repository;
 
     @BeforeAll
@@ -63,18 +63,18 @@ final class CryptoScoutRepositoryTest {
         reactor = Eventloop.builder()
                 .withCurrentThread()
                 .build();
-        dataSource = CollectorDataSource.create(reactor, executor);
-        repository = CryptoScoutRepository.create(reactor, dataSource);
+        collectorDataSource = CollectorDataSource.create(reactor, executor);
+        repository = CryptoScoutRepository.create(reactor, collectorDataSource);
     }
 
     @BeforeEach
     void resetState() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(), CMC_FGI_TABLE, CMC_KLINE_1D_TABLE, CMC_KLINE_1W_TABLE);
+        DBUtils.deleteFromTables(collectorDataSource.getDataSource(), CMC_FGI_TABLE, CMC_KLINE_1D_TABLE, CMC_KLINE_1W_TABLE);
     }
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> dataSource.stop()
+        reactor.post(() -> collectorDataSource.stop()
                 .whenComplete(() -> reactor.breakEventloop()));
         reactor.run();
         executor.shutdown();

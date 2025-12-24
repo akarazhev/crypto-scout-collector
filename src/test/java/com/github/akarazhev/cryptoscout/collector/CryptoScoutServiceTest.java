@@ -63,7 +63,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class CryptoScoutServiceTest {
     private static ExecutorService executor;
     private static Eventloop reactor;
-    private static CollectorDataSource dataSource;
+    private static CollectorDataSource collectorDataSource;
     private static StreamOffsetsRepository streamOffsetsRepository;
     private static CryptoScoutRepository cryptoScoutRepository;
     private static CryptoScoutService cryptoScoutService;
@@ -74,16 +74,16 @@ final class CryptoScoutServiceTest {
         executor = Executors.newVirtualThreadPerTaskExecutor();
         reactor = Eventloop.builder().withCurrentThread().build();
 
-        dataSource = CollectorDataSource.create(reactor, executor);
-        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, dataSource);
-        cryptoScoutRepository = CryptoScoutRepository.create(reactor, dataSource);
+        collectorDataSource = CollectorDataSource.create(reactor, executor);
+        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, collectorDataSource);
+        cryptoScoutRepository = CryptoScoutRepository.create(reactor, collectorDataSource);
         cryptoScoutService = CryptoScoutService.create(reactor, executor, streamOffsetsRepository, cryptoScoutRepository);
         TestUtils.await(cryptoScoutService.start());
     }
 
     @BeforeEach
     void resetState() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(),
+        DBUtils.deleteFromTables(collectorDataSource.getDataSource(),
                 CMC_FGI_TABLE,
                 CMC_KLINE_1D_TABLE,
                 CMC_KLINE_1W_TABLE,
@@ -94,7 +94,7 @@ final class CryptoScoutServiceTest {
     @AfterAll
     static void cleanup() {
         reactor.post(() -> cryptoScoutService.stop()
-                .whenComplete(() -> dataSource.stop()
+                .whenComplete(() -> collectorDataSource.stop()
                         .whenComplete(() -> reactor.breakEventloop())));
         reactor.run();
         executor.shutdown();

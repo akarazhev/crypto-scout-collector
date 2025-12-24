@@ -61,8 +61,8 @@ public final class WebModule extends AbstractModule {
 
     @Provides
     private HealthService healthService(final NioReactor reactor, final Executor executor,
-                                        final CollectorDataSource dataSource) {
-        return HealthService.create(reactor, executor, dataSource);
+                                        final CollectorDataSource collectorDataSource) {
+        return HealthService.create(reactor, executor, collectorDataSource);
     }
 
     @Provides
