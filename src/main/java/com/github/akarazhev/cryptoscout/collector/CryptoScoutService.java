@@ -71,8 +71,8 @@ public final class CryptoScoutService extends AbstractReactive implements Reacti
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
         this.cryptoScoutRepository = cryptoScoutRepository;
-        this.batchSize = JdbcConfig.getBybitBatchSize();
-        this.flushIntervalMs = JdbcConfig.getBybitFlushIntervalMs();
+        this.batchSize = JdbcConfig.getCryptoScoutBatchSize();
+        this.flushIntervalMs = JdbcConfig.getCryptoScoutFlushIntervalMs();
         this.stream = AmqpConfig.getAmqpCryptoScoutStream();
     }
 
