@@ -64,15 +64,15 @@ public final class DataService extends AbstractReactive {
     }
 
     @SuppressWarnings("unchecked")
-    public void handleMessage(final byte[] body) {
+    public void consume(final byte[] body) {
         try {
-            process((Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class));
+            consume((Message<List<Object>>) JsonUtils.bytes2Object(body, Message.class));
         } catch (final Exception e) {
             LOGGER.error("Failed to process message", e);
         }
     }
 
-    private void process(final Message<List<Object>> message) {
+    private void consume(final Message<List<Object>> message) {
         final var command = message.command();
         switch (command.type()) {
             case Message.Type.REQUEST -> {

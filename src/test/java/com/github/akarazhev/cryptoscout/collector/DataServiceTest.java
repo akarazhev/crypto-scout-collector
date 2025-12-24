@@ -165,7 +165,7 @@ final class DataServiceTest {
         dataService = DataService.create(reactor, bybitStreamService, cryptoScoutService, chatbotPublisher,
                 analystPublisher);
         collectorConsumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue(), dataService::handleMessage);
+                COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue(), dataService::consume);
 
         analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpAnalystQueue());
