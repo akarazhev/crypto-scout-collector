@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class StreamOffsetsRepositoryTest {
     private static ExecutorService executor;
     private static Eventloop reactor;
-    private static CollectorDataSource dataSource;
+    private static CollectorDataSource collectorDataSource;
     private static StreamOffsetsRepository repository;
 
     @BeforeAll
@@ -53,18 +53,18 @@ final class StreamOffsetsRepositoryTest {
         reactor = Eventloop.builder()
                 .withCurrentThread()
                 .build();
-        dataSource = CollectorDataSource.create(reactor, executor);
-        repository = StreamOffsetsRepository.create(reactor, dataSource);
+        collectorDataSource = CollectorDataSource.create(reactor, executor);
+        repository = StreamOffsetsRepository.create(reactor, collectorDataSource);
     }
 
     @BeforeEach
     void resetState() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(), STREAM_OFFSETS_TABLE);
+        DBUtils.deleteFromTables(collectorDataSource.getDataSource(), STREAM_OFFSETS_TABLE);
     }
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> dataSource.stop()
+        reactor.post(() -> collectorDataSource.stop()
                 .whenComplete(() -> reactor.breakEventloop()));
         reactor.run();
         executor.shutdown();

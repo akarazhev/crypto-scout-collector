@@ -68,7 +68,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class BybitLinearRepositoryTest {
     private static ExecutorService executor;
     private static Eventloop reactor;
-    private static CollectorDataSource dataSource;
+    private static CollectorDataSource collectorDataSource;
     private static BybitLinearRepository repository;
 
     @BeforeAll
@@ -78,13 +78,13 @@ final class BybitLinearRepositoryTest {
         reactor = Eventloop.builder()
                 .withCurrentThread()
                 .build();
-        dataSource = CollectorDataSource.create(reactor, executor);
-        repository = BybitLinearRepository.create(reactor, dataSource);
+        collectorDataSource = CollectorDataSource.create(reactor, executor);
+        repository = BybitLinearRepository.create(reactor, collectorDataSource);
     }
 
     @BeforeEach
     void resetState() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(),
+        DBUtils.deleteFromTables(collectorDataSource.getDataSource(),
                 LINEAR_KLINE_1M_TABLE,
                 LINEAR_KLINE_5M_TABLE,
                 LINEAR_KLINE_15M_TABLE,
@@ -103,7 +103,7 @@ final class BybitLinearRepositoryTest {
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> dataSource.stop()
+        reactor.post(() -> collectorDataSource.stop()
                 .whenComplete(() -> reactor.breakEventloop()));
         reactor.run();
         executor.shutdown();

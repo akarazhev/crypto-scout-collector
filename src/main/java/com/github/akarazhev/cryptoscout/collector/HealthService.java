@@ -49,19 +49,19 @@ import static com.github.akarazhev.cryptoscout.collector.Constants.Health.STATUS
 public final class HealthService extends AbstractReactive {
     private final static Logger LOGGER = LoggerFactory.getLogger(HealthService.class);
     private final Executor executor;
-    private final CollectorDataSource dataSource;
+    private final CollectorDataSource collectorDataSource;
     private final ConnectionFactory connectionFactory;
 
     public static HealthService create(final NioReactor reactor, final Executor executor,
-                                       final CollectorDataSource dataSource) {
-        return new HealthService(reactor, executor, dataSource);
+                                       final CollectorDataSource collectorDataSource) {
+        return new HealthService(reactor, executor, collectorDataSource);
     }
 
     private HealthService(final NioReactor reactor, final Executor executor,
-                          final CollectorDataSource dataSource) {
+                          final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.executor = executor;
-        this.dataSource = dataSource;
+        this.collectorDataSource = collectorDataSource;
         this.connectionFactory = AmqpConfig.getConnectionFactory();
     }
 
@@ -86,7 +86,7 @@ public final class HealthService extends AbstractReactive {
 
     private Map<String, Object> checkDatabase() {
         final var dbHealth = new LinkedHashMap<String, Object>();
-        try (final var conn = dataSource.getDataSource().getConnection()) {
+        try (final var conn = collectorDataSource.getDataSource().getConnection()) {
             if (conn.isValid(CONNECTION_TIMEOUT_SECONDS)) {
                 dbHealth.put(STATUS, STATUS_UP);
             } else {

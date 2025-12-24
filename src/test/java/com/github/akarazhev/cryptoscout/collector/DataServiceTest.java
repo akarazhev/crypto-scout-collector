@@ -126,7 +126,7 @@ final class DataServiceTest {
 
     private static BybitLinearRepository linearRepository;
     private static BybitSpotRepository spotRepository;
-    private static CollectorDataSource dataSource;
+    private static CollectorDataSource collectorDataSource;
     private static CryptoScoutRepository cryptoScoutRepository;
     private static StreamOffsetsRepository streamOffsetsRepository;
 
@@ -148,11 +148,11 @@ final class DataServiceTest {
         executor = Executors.newVirtualThreadPerTaskExecutor();
         reactor = Eventloop.builder().withCurrentThread().build();
 
-        dataSource = CollectorDataSource.create(reactor, executor);
-        linearRepository = BybitLinearRepository.create(reactor, dataSource);
-        spotRepository = BybitSpotRepository.create(reactor, dataSource);
-        cryptoScoutRepository = CryptoScoutRepository.create(reactor, dataSource);
-        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, dataSource);
+        collectorDataSource = CollectorDataSource.create(reactor, executor);
+        linearRepository = BybitLinearRepository.create(reactor, collectorDataSource);
+        spotRepository = BybitSpotRepository.create(reactor, collectorDataSource);
+        cryptoScoutRepository = CryptoScoutRepository.create(reactor, collectorDataSource);
+        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, collectorDataSource);
 
         bybitStreamService = BybitStreamService.create(reactor, executor, streamOffsetsRepository, spotRepository,
                 linearRepository);
@@ -179,7 +179,7 @@ final class DataServiceTest {
 
     @BeforeEach
     void resetState() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(),
+        DBUtils.deleteFromTables(collectorDataSource.getDataSource(),
                 SPOT_KLINE_1M_TABLE,
                 SPOT_KLINE_5M_TABLE,
                 SPOT_KLINE_15M_TABLE,
@@ -807,7 +807,7 @@ final class DataServiceTest {
                                                 .whenComplete(() -> collectorConsumer.stop()
                                                         .whenComplete(() -> bybitStreamService.stop()
                                                                 .whenComplete(() -> cryptoScoutService.stop()
-                                                                        .whenComplete(() -> dataSource.stop()
+                                                                        .whenComplete(() -> collectorDataSource.stop()
                                                                                 .whenComplete(() -> reactor.breakEventloop()
                                                                                 ))))))))));
         reactor.run();

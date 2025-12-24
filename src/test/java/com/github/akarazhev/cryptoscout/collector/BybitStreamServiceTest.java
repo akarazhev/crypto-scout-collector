@@ -81,7 +81,6 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.SPOT_PUBLIC_TRADE_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CMC_FGI_TABLE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_TABLE;
-import static com.github.akarazhev.cryptoscout.test.Assertions.assertTableCount;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.CTS;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.DATA;
 import static com.github.akarazhev.jcryptolib.bybit.Constants.Response.START;
@@ -93,7 +92,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 final class BybitStreamServiceTest {
     private static ExecutorService executor;
     private static Eventloop reactor;
-    private static CollectorDataSource dataSource;
+    private static CollectorDataSource collectorDataSource;
     private static BybitLinearRepository linearRepository;
     private static BybitSpotRepository spotRepository;
     private static StreamOffsetsRepository streamOffsetsRepository;
@@ -106,10 +105,10 @@ final class BybitStreamServiceTest {
         reactor = Eventloop.builder()
                 .withCurrentThread()
                 .build();
-        dataSource = CollectorDataSource.create(reactor, executor);
-        linearRepository = BybitLinearRepository.create(reactor, dataSource);
-        spotRepository = BybitSpotRepository.create(reactor, dataSource);
-        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, dataSource);
+        collectorDataSource = CollectorDataSource.create(reactor, executor);
+        linearRepository = BybitLinearRepository.create(reactor, collectorDataSource);
+        spotRepository = BybitSpotRepository.create(reactor, collectorDataSource);
+        streamOffsetsRepository = StreamOffsetsRepository.create(reactor, collectorDataSource);
         bybitStreamService = BybitStreamService.create(reactor, executor, streamOffsetsRepository, spotRepository,
                 linearRepository);
         TestUtils.await(bybitStreamService.start());
@@ -117,7 +116,7 @@ final class BybitStreamServiceTest {
 
     @BeforeEach
     void resetState() {
-        DBUtils.deleteFromTables(dataSource.getDataSource(),
+        DBUtils.deleteFromTables(collectorDataSource.getDataSource(),
                 LINEAR_KLINE_1M_TABLE,
                 LINEAR_KLINE_5M_TABLE,
                 LINEAR_KLINE_15M_TABLE,
@@ -153,7 +152,7 @@ final class BybitStreamServiceTest {
     @AfterAll
     static void cleanup() {
         reactor.post(() -> bybitStreamService.stop()
-                .whenComplete(() -> dataSource.stop()
+                .whenComplete(() -> collectorDataSource.stop()
                         .whenComplete(() -> reactor.breakEventloop())));
         reactor.run();
         executor.shutdown();
