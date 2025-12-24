@@ -35,6 +35,7 @@ import io.activej.reactor.nio.NioReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 import com.github.akarazhev.cryptoscout.config.AmqpConfig;
@@ -135,18 +136,18 @@ public final class StreamService extends AbstractReactive implements ReactiveSer
 
     @SuppressWarnings("unchecked")
     private void consumePayload(final StreamType type, final MessageHandler.Context context, final Message message) {
-        reactor.execute(() -> Promise.ofBlocking(executor, () ->
-                        JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class))
-                .then(payload -> switch (type) {
-                    case CRYPTO_SCOUT -> cryptoScoutService.save(payload, context.offset());
-                    case BYBIT_STREAM -> bybitStreamService.save(payload, context.offset());
-                })
-                .whenComplete((_, ex) -> {
-                    if (ex != null) {
-                        LOGGER.error("Failed to process stream message from {}: {}", type.name(), ex);
-                    }
-                })
-        );
+        final Payload<Map<String, Object>> payload;
+        try {
+            payload = JsonUtils.bytes2Object(message.getBodyAsBinary(), Payload.class);
+        } catch (final Exception e) {
+            LOGGER.error("Failed to deserialize stream message from {}: {}", type.name(), e.getMessage(), e);
+            return;
+        }
+
+        reactor.execute(() -> (switch (type) {
+            case CRYPTO_SCOUT -> cryptoScoutService.save(payload, context.offset());
+            case BYBIT_STREAM -> bybitStreamService.save(payload, context.offset());
+        }).whenException(ex -> LOGGER.error("Failed to process stream message from {}", type.name(), ex)));
     }
 
     private void closeConsumer(final Consumer consumer) {
