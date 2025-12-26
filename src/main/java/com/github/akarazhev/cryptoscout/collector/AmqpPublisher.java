@@ -48,11 +48,11 @@ import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.RECONNEC
 
 public final class AmqpPublisher extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AmqpPublisher.class);
+    private final AtomicBoolean running = new AtomicBoolean(false);
     private final Executor executor;
     private final ConnectionFactory connectionFactory;
     private final String clientName;
     private final String queue;
-    private final AtomicBoolean running = new AtomicBoolean(false);
     private volatile Connection connection;
     private volatile Channel channel;
 

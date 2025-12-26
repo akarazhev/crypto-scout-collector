@@ -50,12 +50,12 @@ import static com.github.akarazhev.cryptoscout.collector.Constants.Amqp.MAX_RECO
 
 public final class AmqpConsumer extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AmqpConsumer.class);
+    private final AtomicBoolean running = new AtomicBoolean(false);
+    private final InternalStreamSupplier streamSupplier = new InternalStreamSupplier();
     private final Executor executor;
     private final ConnectionFactory connectionFactory;
     private final String clientName;
     private final String queue;
-    private final AtomicBoolean running = new AtomicBoolean(false);
-    private final InternalStreamSupplier streamSupplier;
     private volatile Connection connection;
     private volatile Channel channel;
     private volatile String consumerTag;
@@ -74,7 +74,6 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
         this.connectionFactory = connectionFactory;
         this.clientName = clientName;
         this.queue = queue;
-        this.streamSupplier = new InternalStreamSupplier();
     }
 
     public StreamSupplier<byte[]> getStreamSupplier() {
@@ -192,7 +191,7 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
     }
 
     private static final class InternalStreamSupplier extends AbstractStreamSupplier<byte[]> {
-        private final SettablePromise<Void> completionPromise = new SettablePromise<>();
+        private final SettablePromise<Void> completion = new SettablePromise<>();
 
         private void push(final byte[] data) {
             if (!isEndOfStream()) {
@@ -205,17 +204,17 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                 sendEndOfStream();
             }
 
-            return completionPromise;
+            return completion;
         }
 
         @Override
         protected void onAcknowledge() {
-            completionPromise.set(null);
+            completion.set(null);
         }
 
         @Override
         protected void onError(final Exception e) {
-            completionPromise.setException(e);
+            completion.setException(e);
         }
     }
 }
