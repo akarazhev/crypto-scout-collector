@@ -91,8 +91,8 @@ public final class AmqpPublisher extends AbstractReactive implements ReactiveSer
                     reactor.execute(this::scheduleReconnect);
                 }
             };
-            connection.addShutdownListener(shutdownListener);
 
+            connection.addShutdownListener(shutdownListener);
             LOGGER.info("AmqpPublisher started for queue: {}", queue);
         } catch (final Exception ex) {
             LOGGER.error("Failed to start AmqpPublisher for queue: {}", queue, ex);

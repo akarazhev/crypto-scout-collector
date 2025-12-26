@@ -99,8 +99,8 @@ public final class AmqpConsumer extends AbstractReactive implements ReactiveServ
                     reactor.execute(this::scheduleReconnect);
                 }
             };
-            connection.addShutdownListener(shutdownListener);
 
+            connection.addShutdownListener(shutdownListener);
             final DeliverCallback deliver = (_, delivery) -> {
                 try {
                     final var body = delivery.getBody();
