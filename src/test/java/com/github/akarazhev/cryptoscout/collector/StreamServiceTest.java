@@ -114,8 +114,8 @@ final class StreamServiceTest {
     private static CryptoScoutService cryptoScoutService;
     private static StreamService streamService;
 
-    private static StreamTestPublisher bybitStreamPublisher;
-    private static StreamTestPublisher cryptoScoutStreamPublisher;
+    private static StreamTestPublisher bybitStreamTestPublisher;
+    private static StreamTestPublisher cryptoScoutStreamTestPublisher;
 
     @BeforeAll
     static void setup() {
@@ -138,12 +138,12 @@ final class StreamServiceTest {
                 cryptoScoutService);
 
         final var environment = AmqpConfig.getEnvironment();
-        bybitStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
+        bybitStreamTestPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpBybitStream());
-        cryptoScoutStreamPublisher = StreamTestPublisher.create(reactor, executor, environment,
+        cryptoScoutStreamTestPublisher = StreamTestPublisher.create(reactor, executor, environment,
                 AmqpConfig.getAmqpCryptoScoutStream());
         TestUtils.await(bybitStreamService.start(), cryptoScoutService.start(), streamService.start(),
-                bybitStreamPublisher.start(), cryptoScoutStreamPublisher.start());
+                bybitStreamTestPublisher.start(), cryptoScoutStreamTestPublisher.start());
     }
 
     @BeforeEach
@@ -185,8 +185,8 @@ final class StreamServiceTest {
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> bybitStreamPublisher.stop()
-                .whenComplete(() -> cryptoScoutStreamPublisher.stop()
+        reactor.post(() -> bybitStreamTestPublisher.stop()
+                .whenComplete(() -> cryptoScoutStreamTestPublisher.stop()
                         .whenComplete(() -> streamService.stop()
                                 .whenComplete(() -> bybitStreamService.stop()
                                         .whenComplete(() -> cryptoScoutService.stop()
@@ -201,7 +201,7 @@ final class StreamServiceTest {
     @Test
     void cmcFgiDataConsumedAndPersisted() throws Exception {
         final var fgi = MockData.get(CRYPTO_SCOUT, MockData.Type.FGI);
-        cryptoScoutStreamPublisher.publish(Payload.of(Provider.CMC, Source.FGI, fgi));
+        cryptoScoutStreamTestPublisher.publish(Payload.of(Provider.CMC, Source.FGI, fgi));
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cryptoScoutService.stop());
 
@@ -214,7 +214,7 @@ final class StreamServiceTest {
     @Test
     void cmcKline1wDataConsumedAndPersisted() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_W);
-        cryptoScoutStreamPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline));
+        cryptoScoutStreamTestPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1W, kline));
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cryptoScoutService.stop());
 
@@ -228,7 +228,7 @@ final class StreamServiceTest {
     @Test
     void cmcKline1dDataConsumedAndPersisted() throws Exception {
         final var kline = MockData.get(CRYPTO_SCOUT, MockData.Type.KLINE_D);
-        cryptoScoutStreamPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1D, kline));
+        cryptoScoutStreamTestPublisher.publish(Payload.of(Provider.CMC, Source.BTC_USD_1D, kline));
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cryptoScoutService.stop());
 
@@ -242,40 +242,40 @@ final class StreamServiceTest {
     @Test
     void bybitSpotDataConsumedAndPersisted() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_1);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k1));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k1));
         Thread.sleep(Duration.ofSeconds(1));
         final var k5 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_5);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k5));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k5));
         Thread.sleep(Duration.ofSeconds(1));
         final var k15 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_15);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k15));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k15));
         Thread.sleep(Duration.ofSeconds(1));
         final var k60 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_60);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k60));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k60));
         Thread.sleep(Duration.ofSeconds(1));
         final var k240 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_240);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k240));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, k240));
         Thread.sleep(Duration.ofSeconds(1));
         final var kd = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.KLINE_D);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, kd));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, kd));
         Thread.sleep(Duration.ofSeconds(1));
         final var tickers = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.TICKERS);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, tickers));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, tickers));
         Thread.sleep(Duration.ofSeconds(1));
         final var pt = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.PUBLIC_TRADE);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, pt));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, pt));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob1 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob1));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob1));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob50 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_50);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob50));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob50));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob200 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_200);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob200));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob200));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob1000 = MockData.get(MockData.Source.BYBIT_SPOT, MockData.Type.ORDER_BOOK_1000);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob1000));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PMST, ob1000));
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(bybitStreamService.stop());
 
@@ -320,43 +320,43 @@ final class StreamServiceTest {
     @Test
     void bybitLinearDataConsumedAndPersisted() throws Exception {
         final var k1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_1);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k1));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k1));
         Thread.sleep(Duration.ofSeconds(1));
         final var k5 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_5);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k5));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k5));
         Thread.sleep(Duration.ofSeconds(1));
         final var k15 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_15);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k15));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k15));
         Thread.sleep(Duration.ofSeconds(1));
         final var k60 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_60);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k60));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k60));
         Thread.sleep(Duration.ofSeconds(1));
         final var k240 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_240);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k240));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, k240));
         Thread.sleep(Duration.ofSeconds(1));
         final var kd = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.KLINE_D);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, kd));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, kd));
         Thread.sleep(Duration.ofSeconds(1));
         final var tickers = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.TICKERS);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, tickers));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, tickers));
         Thread.sleep(Duration.ofSeconds(1));
         final var pt = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.PUBLIC_TRADE);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, pt));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, pt));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob1 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob1));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob1));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob50 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_50);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob50));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob50));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob200 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_200);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob200));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob200));
         Thread.sleep(Duration.ofSeconds(1));
         final var ob1000 = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ORDER_BOOK_1000);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob1000));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, ob1000));
         Thread.sleep(Duration.ofSeconds(1));
         final var al = MockData.get(MockData.Source.BYBIT_LINEAR, MockData.Type.ALL_LIQUIDATION);
-        bybitStreamPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, al));
+        bybitStreamTestPublisher.publish(Payload.of(Provider.BYBIT, Source.PML, al));
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(bybitStreamService.stop());
 

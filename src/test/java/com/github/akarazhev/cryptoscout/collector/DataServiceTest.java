@@ -138,9 +138,9 @@ final class DataServiceTest {
     private static AmqpPublisher analystPublisher;
     private static AmqpConsumer collectorConsumer;
 
-    private static AmqpTestPublisher collectorQueuePublisher;
-    private static AmqpTestConsumer analystQueueConsumer;
-    private static AmqpTestConsumer chatbotQueueConsumer;
+    private static AmqpTestPublisher collectorTestPublisher;
+    private static AmqpTestConsumer analystTestConsumer;
+    private static AmqpTestConsumer chatbotTestConsumer;
 
     @BeforeAll
     static void setup() {
@@ -168,13 +168,13 @@ final class DataServiceTest {
                 COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue());
         collectorConsumer.getStreamSupplier().streamTo(dataService.getStreamConsumer());
 
-        analystQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+        analystTestConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpAnalystQueue());
-        chatbotQueueConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+        chatbotTestConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpChatbotQueue());
-        collectorQueuePublisher = AmqpTestPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
+        collectorTestPublisher = AmqpTestPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpCollectorQueue());
-        TestUtils.await(collectorQueuePublisher.start(), chatbotPublisher.start(), analystPublisher.start(),
+        TestUtils.await(collectorTestPublisher.start(), chatbotPublisher.start(), analystPublisher.start(),
                 collectorConsumer.start(), bybitStreamService.start(), cryptoScoutService.start());
     }
 
@@ -216,8 +216,7 @@ final class DataServiceTest {
                 STREAM_OFFSETS_TABLE
         );
 
-        analystQueueConsumer.stop();
-        chatbotQueueConsumer.stop();
+        TestUtils.await(analystTestConsumer.stop(), chatbotTestConsumer.stop());
     }
 
     @Test
@@ -227,12 +226,12 @@ final class DataServiceTest {
         assertTableCount(CMC_FGI_TABLE, 1);
         final var odt = toOdt(fgi.get(UPDATE_TIME));
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_FGI),
                                 new Object[]{odt, odt}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -248,12 +247,12 @@ final class DataServiceTest {
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1D),
                                 new Object[]{symbol, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -269,12 +268,12 @@ final class DataServiceTest {
         final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1W),
                                 new Object[]{symbol, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -290,12 +289,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -311,12 +310,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -332,12 +331,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -353,12 +352,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -374,12 +373,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -395,12 +394,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -415,12 +414,12 @@ final class DataServiceTest {
         assertEquals(1, spotRepository.saveTicker(List.of(ticker), 110L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -436,12 +435,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -457,12 +456,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -478,12 +477,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -499,12 +498,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -520,12 +519,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -541,12 +540,12 @@ final class DataServiceTest {
         final var start = ((Map<?, ?>) ((List<?>) kline.get(DATA)).getFirst()).get(START);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) start), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -561,12 +560,12 @@ final class DataServiceTest {
         assertEquals(1, linearRepository.saveTicker(List.of(ticker), 117L));
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ticker.get(TS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -581,12 +580,12 @@ final class DataServiceTest {
         spotRepository.saveOrderBook1(List.of(ob), 118L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -601,12 +600,12 @@ final class DataServiceTest {
         spotRepository.saveOrderBook50(List.of(ob), 119L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -621,12 +620,12 @@ final class DataServiceTest {
         spotRepository.saveOrderBook200(List.of(ob), 120L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -641,12 +640,12 @@ final class DataServiceTest {
         spotRepository.saveOrderBook1000(List.of(ob), 121L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -662,12 +661,12 @@ final class DataServiceTest {
         final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -682,12 +681,12 @@ final class DataServiceTest {
         linearRepository.saveOrderBook1(List.of(ob), 123L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -702,12 +701,12 @@ final class DataServiceTest {
         linearRepository.saveOrderBook50(List.of(ob), 124L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -722,12 +721,12 @@ final class DataServiceTest {
         linearRepository.saveOrderBook200(List.of(ob), 125L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -742,12 +741,12 @@ final class DataServiceTest {
         linearRepository.saveOrderBook1000(List.of(ob), 126L);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) ob.get(CTS)), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -763,12 +762,12 @@ final class DataServiceTest {
         final var t = ((Map<?, ?>) ((List<?>) pt.get(DATA)).getFirst()).get(T);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -784,12 +783,12 @@ final class DataServiceTest {
         final var t = ((Map<?, ?>) ((List<?>) al.get(DATA)).getFirst()).get(T);
         final var from = OffsetDateTime.ofInstant(Instant.ofEpochMilli((Long) t), ZoneOffset.UTC);
 
-        TestUtils.await(collectorQueuePublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
+        TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
                         Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ALL_LIQUIDATION),
                                 new Object[]{BTC_USDT, from, from}))
-                .whenComplete(analystQueueConsumer::start));
-        final var message = TestUtils.await(analystQueueConsumer.getMessage());
+                .whenComplete(analystTestConsumer::start));
+        final var message = TestUtils.await(analystTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -800,9 +799,9 @@ final class DataServiceTest {
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> analystQueueConsumer.stop()
-                .whenComplete(() -> chatbotQueueConsumer.stop()
-                        .whenComplete(() -> collectorQueuePublisher.stop()
+        reactor.post(() -> analystTestConsumer.stop()
+                .whenComplete(() -> chatbotTestConsumer.stop()
+                        .whenComplete(() -> collectorTestPublisher.stop()
                                 .whenComplete(() -> chatbotPublisher.stop()
                                         .whenComplete(() -> analystPublisher.stop()
                                                 .whenComplete(() -> collectorConsumer.stop()
