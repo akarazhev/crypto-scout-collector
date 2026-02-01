@@ -35,12 +35,12 @@
         <maven.compiler.target>25</maven.compiler.target>
         <maven.compiler.plugin.version>3.14.1</maven.compiler.plugin.version>
         <maven.shade.plugin.version>3.6.1</maven.shade.plugin.version>
-        <jcryptolib.version>0.0.3</jcryptolib.version>
+        <jcryptolib.version>0.0.4</jcryptolib.version>
         <crypto-scout-test.version>0.0.1</crypto-scout-test.version>
         <activej.version>6.0-rc2</activej.version>
-        <amqp-client.version>5.26.0</amqp-client.version>
+        <amqp-client.version>5.28.0</amqp-client.version>
         <stream-client.version>1.4.0</stream-client.version>
-        <postgresql.version>42.7.8</postgresql.version>
+        <postgresql.version>42.7.9</postgresql.version>
         <hikari.version>7.0.2</hikari.version>
     </properties>
     <dependencies>
