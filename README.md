@@ -9,15 +9,15 @@ backups.
 structured, time-series data into TimescaleDB. The repository includes a production-ready TimescaleDB setup with
 automated daily backups via a sidecar container.
 
-- Technologies: Java 25, ActiveJ, RabbitMQ Streams, PostgreSQL/TimescaleDB, HikariCP, SLF4J/Logback
-- DB and backups containers: `podman-compose.yml` using `timescale/timescaledb:latest-pg17` and
+- **Technologies:** Java 25, ActiveJ, RabbitMQ Streams, PostgreSQL/TimescaleDB, HikariCP, SLF4J/Logback
+- **DB and backups containers:** `podman-compose.yml` using `timescale/timescaledb:latest-pg17` and
   `prodrigestivill/postgres-backup-local`
-- App entrypoint: `com.github.akarazhev.cryptoscout.Collector`
-- Health endpoint: `GET /health` → `ok`
-- DB bootstrap and DDL scripts: `script/init.sql`, `script/bybit_spot_tables.sql`, `script/bybit_linear_tables.sql`,
+- **App entrypoint:** `com.github.akarazhev.cryptoscout.Collector`
+- **Health endpoint:** `GET /health` → JSON with database and AMQP status
+- **DB bootstrap and DDL scripts:** `script/init.sql`, `script/bybit_spot_tables.sql`, `script/bybit_linear_tables.sql`,
   `script/crypto_scout_tables.sql`
-- Data seed scripts: `script/btc_usd_daily_inserts.sql`, `script/btc_usd_weekly_inserts.sql`,
-  `script/cmc_fgi_inserts.sql`
+- **Data seed scripts:** `script/btc_usd_daily_inserts.sql`, `script/btc_usd_weekly_inserts.sql`,
+  `script/cmc_fgi_inserts.sql`, `script/alternative_fgi_inserts.sql`
 
 ## Architecture
 
@@ -47,16 +47,20 @@ flowchart LR
         T2[crypto_scout.bybit_spot_*]
         T3[crypto_scout.bybit_linear_*]
         T4[crypto_scout.cmc_kline_*]
+        T5[crypto_scout.stream_offsets]
     end
 
     S1 -->|Payload| SS --> CS --> T1 & T4
     S2 -->|Payload| SS --> BS --> T2 & T3
     Q1 -->|AMQP| AC --> DS
+    T5 -.->|Offset| SS
 ```
 
 Key modules/classes:
 
 - `src/main/java/com/github/akarazhev/cryptoscout/Collector.java` — ActiveJ `Launcher` combining modules.
+- `src/main/java/com/github/akarazhev/cryptoscout/config/ConfigValidator.java` — Validates required configuration
+  properties on startup.
 - `src/main/java/com/github/akarazhev/cryptoscout/module/CoreModule.java` — single-threaded reactor + virtual-thread
   executor.
 - `src/main/java/com/github/akarazhev/cryptoscout/module/CollectorModule.java` — DI wiring for repositories and
@@ -64,14 +68,18 @@ Key modules/classes:
 - `src/main/java/com/github/akarazhev/cryptoscout/module/WebModule.java` — HTTP server exposing `/health`.
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/StreamService.java` — subscribes to RabbitMQ Streams and
   dispatches payloads to `BybitStreamService` and `CryptoScoutService`.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/BybitStreamService.java` — processes Bybit stream data.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/BybitStreamService.java` — processes Bybit stream data
+  (spot & linear) with batching and scheduled flushes.
 - `src/main/java/com/github/akarazhev/cryptoscout/collector/CryptoScoutService.java` — processes crypto-scout stream
-  data.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/DataService.java` — handles AMQP messages and coordinates
-  publishers.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java` — consumes from AMQP queues.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpPublisher.java` — publishes to AMQP queues.
-- `src/main/java/com/github/akarazhev/cryptoscout/collector/db/*Repository.java` — JDBC/Hikari-based writes.
+  data (CMC FGI and BTC/USD klines) with batching.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/DataService.java` — handles AMQP request/response messages
+  and coordinates publishers.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpConsumer.java` — consumes from AMQP queues with
+  automatic reconnection.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/AmqpPublisher.java` — publishes to AMQP queues with
+  publisher confirms and automatic reconnection.
+- `src/main/java/com/github/akarazhev/cryptoscout/collector/db/*Repository.java` — JDBC/Hikari-based writes with
+  batching and transactional offset updates.
 
 ## Database schema and policies
 
@@ -84,13 +92,13 @@ are executed in lexical order:
     - `crypto_scout.bybit_spot_tickers` (spot tickers)
     - `crypto_scout.bybit_spot_kline_{1m,5m,15m,60m,240m,1d}` (confirmed klines)
     - `crypto_scout.bybit_spot_public_trade` (1 row per trade)
-    - `crypto_scout.bybit_spot_order_book_200` (1 row per book level)
+    - `crypto_scout.bybit_spot_order_book_{1,50,200,1000}` (1 row per book level)
     - Indexes, hypertables, compression, reorder, and retention policies
 - `script/bybit_linear_tables.sql` → Bybit Linear (Perps/Futures) tables and policies:
     - `crypto_scout.bybit_linear_tickers`
-    - `crypto_scout.bybit_linear_kline_60m` (confirmed klines)
+    - `crypto_scout.bybit_linear_kline_{1m,5m,15m,60m,240m,1d}` (confirmed klines)
     - `crypto_scout.bybit_linear_public_trade` (1 row per trade)
-    - `crypto_scout.bybit_linear_order_book_200` (1 row per book level)
+    - `crypto_scout.bybit_linear_order_book_{1,50,200,1000}` (1 row per book level)
     - `crypto_scout.bybit_linear_all_liquidation` (all-liquidations stream)
     - Indexes, hypertables, compression, reorder, and retention policies
 - `script/crypto_scout_tables.sql` → CMC and risk analysis tables:
@@ -131,6 +139,7 @@ Secrets and env files (gitignored) live in `secret/`:
   and `secret/README.md`.
 - `secret/postgres-backup.env` — backup schedule/retention and DB connection for the backup sidecar. See
   `secret/postgres-backup.env.example` and `secret/README.md`.
+- `secret/collector.env` — Application runtime configuration (passwords, hosts, ports).
 
 Quick start for DB and backups:
 
@@ -161,23 +170,36 @@ Notes:
 
 Default configuration is in `src/main/resources/application.properties`:
 
-- Server
+- **Server**
     - `server.port` (default `8081`)
-- RabbitMQ
+- **RabbitMQ**
     - `amqp.rabbitmq.host` (default `localhost`)
     - `amqp.rabbitmq.username` (default `crypto_scout_mq`)
-    - `amqp.rabbitmq.password` (empty by default)
+    - `amqp.rabbitmq.password` (**REQUIRED** — empty by default, must be set via env)
     - `amqp.rabbitmq.port` (default `5672`)
     - `amqp.stream.port` (default `5552`)
     - `amqp.bybit.stream` (default `bybit-stream`)
     - `amqp.bybit.ta.stream` (default `bybit-ta-stream`)
     - `amqp.crypto.scout.stream` (default `crypto-scout-stream`)
     - `amqp.crypto.scout.exchange`, `amqp.collector.queue`, `amqp.chatbot.queue`, `amqp.analyst.queue`
-- JDBC / HikariCP
+- **JDBC / HikariCP**
     - `jdbc.datasource.url` (default `jdbc:postgresql://localhost:5432/crypto_scout`)
     - `jdbc.datasource.username` (default `crypto_scout_db`)
-    - `jdbc.datasource.password`
-    - Batched insert settings and HikariCP pool configuration
+    - `jdbc.datasource.password` (**REQUIRED** — empty by default, must be set via env)
+    - `jdbc.crypto.scout.batch-size` (default `100`, range: 1-10000)
+    - `jdbc.crypto.scout.flush-interval-ms` (default `1000`)
+    - `jdbc.bybit.batch-size` (default `1000`, range: 1-10000)
+    - `jdbc.bybit.flush-interval-ms` (default `1000`)
+    - HikariCP pool configuration (`maximum-pool-size`, `minimum-idle`, etc.)
+
+**Important:** Passwords must be set via environment variables:
+```bash
+export AMQP_RABBITMQ_PASSWORD=your_mq_password
+export JDBC_DATASOURCE_PASSWORD=your_db_password
+```
+
+The application validates all required configuration on startup and fails fast with clear error messages if any
+required properties are missing or invalid.
 
 When running the app in a container on the same compose network as the DB, set `jdbc.datasource.url` host to
 `crypto-scout-collector-db` (the compose service name), e.g.
@@ -192,12 +214,14 @@ and DB credentials match your environment.
 # Build fat JAR
 mvn -q -DskipTests package
 
-# Run the app
+# Run the app with environment variables
+export AMQP_RABBITMQ_PASSWORD=your_mq_password
+export JDBC_DATASOURCE_PASSWORD=your_db_password
 java -jar target/crypto-scout-collector-0.0.1.jar
 
-# Health check
+# Health check (returns JSON)
 curl -s http://localhost:8081/health
-# -> ok
+# -> {"status":"UP","database":{"status":"UP"},"amqp":{"status":"UP"}}
 ```
 
 Ensure RabbitMQ (with Streams enabled, reachable on `amqp.stream.port`) and TimescaleDB are reachable using the
@@ -210,11 +234,13 @@ configured hosts/ports.
     - On startup, the consumer reads the last stored offset and subscribes from `offset + 1` (or from `first` if
       absent).
     - `CryptoScoutService` batches inserts and, on flush, atomically inserts data and upserts the max processed offset.
-    - Rationale: offsets are stored in the same transactional boundary as data writes for strong at-least-once
+    - Rationale: offsets are stored in the same transactional boundary as data writes for strong exactly-once
       semantics.
+    - Concurrent flush protection ensures only one flush operation runs at a time.
 - **Bybit stream (external offsets):** the `bybit-stream` uses the same DB-backed offset approach.
     - On startup, `StreamService` reads `bybit-stream` offset from DB and subscribes from `offset + 1`.
     - `BybitStreamService` batches inserts and updates the max processed offset in one transaction.
+    - Supports both spot (PMST) and linear (PML) data sources.
 
 Migration note: `script/init.sql` creates `crypto_scout.stream_offsets` on first bootstrap. If your DB is already
 initialized, apply the DDL manually or re-initialize the data directory to pick up the new table.
@@ -265,7 +291,7 @@ podman-compose -f podman-compose.yml build crypto-scout-collector
 podman-compose -f podman-compose.yml up -d
 
 # Health check
-curl -s http://localhost:8081/health  # -> ok
+curl -s http://localhost:8081/health
 ```
 
 Notes:
@@ -295,16 +321,42 @@ Always validate restore procedures in a non-production environment.
 
 ## Health and operations
 
-- HTTP health: `GET /health` returns `ok`.
-- Logs: SLF4J/Logback (console appender, INFO level).
-- Execution model: non-blocking reactor for orchestration; blocking JDBC work delegated to a virtual-thread executor.
+- **HTTP health:** `GET /health` returns JSON with overall status and component health:
+  ```json
+  {
+    "status": "UP",
+    "database": {"status": "UP"},
+    "amqp": {"status": "UP"}
+  }
+  ```
+  Returns HTTP 200 when healthy, HTTP 503 when degraded.
+- **Logs:** SLF4J/Logback (console appender, INFO level).
+- **Execution model:** non-blocking reactor for orchestration; blocking JDBC work delegated to a virtual-thread executor.
+- **Batch processing:** Configurable batch sizes with periodic flush intervals to optimize database writes.
+- **Automatic reconnection:** AMQP consumers and publishers automatically reconnect on connection loss (up to 10 attempts
+  with 5-second delays).
 
 ## Troubleshooting
 
-- No data in DB: verify RabbitMQ Streams connection (host/ports), stream names, and that messages contain expected
-  providers/sources.
-- DB connection errors: confirm `jdbc.datasource.*` values and that TimescaleDB is healthy (`pg_isready`).
-- Init script not applied: ensure `./data/postgresql` was empty on first run or re-initialize to rerun bootstrap SQL.
+| Issue | Possible Cause | Solution |
+|-------|---------------|----------|
+| Application fails to start with "Configuration validation failed" | Missing required environment variables | Set `AMQP_RABBITMQ_PASSWORD` and `JDBC_DATASOURCE_PASSWORD` |
+| "batch-size must be between 1 and 10000" error | Invalid batch size configuration | Check `jdbc.*.batch-size` values in configuration |
+| No data in DB | RabbitMQ Streams connection issue | Verify host/ports, stream names, and message providers/sources |
+| DB connection errors | Invalid credentials or unhealthy DB | Confirm `jdbc.datasource.*` values and TimescaleDB health (`pg_isready`) |
+| Init script not applied | Data directory not empty | Ensure `./data/postgresql` was empty on first run or re-initialize |
+| Concurrent modification warnings | N/A (fixed in recent updates) | Ensure you're running the latest version with flush protection |
+
+## Recent Updates
+
+### Code Quality Improvements (2026-02)
+- Fixed critical bug: `CryptoScoutRepository` now correctly uses `getCryptoScoutBatchSize()` instead of `getBybitBatchSize()`
+- Added concurrent flush protection to prevent overlapping database transactions
+- Added password validation on startup with clear error messages
+- Added batch size bounds checking (1-10000) to prevent misconfiguration
+- Added null checks for order book bids/asks processing
+- Fixed offset upsert to validate offset >= 0 before database write
+- Updated copyright year to 2026
 
 ## License
 
