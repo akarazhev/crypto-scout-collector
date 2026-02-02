@@ -375,8 +375,10 @@ public final class BybitStreamService extends AbstractReactive implements Reacti
                     linearKlines240.isEmpty() && linearKlines1d.isEmpty() && linearTickers.isEmpty() &&
                     linearPublicTrades.isEmpty() && linearOrders1.isEmpty() && linearOrders50.isEmpty() &&
                     linearOrders200.isEmpty() && linearOrders1000.isEmpty() && linearAllLiquidation.isEmpty()) {
-                streamOffsetsRepository.upsertOffset(stream, maxOffset);
-                LOGGER.warn("Upserted Bybit stream offset {} (no data batch)", maxOffset);
+                if (maxOffset >= 0) {
+                    streamOffsetsRepository.upsertOffset(stream, maxOffset);
+                    LOGGER.warn("Upserted Bybit stream offset {} (no data batch)", maxOffset);
+                }
             } else {
                 // Save spot data
                 spotKlines1.trimToSize();

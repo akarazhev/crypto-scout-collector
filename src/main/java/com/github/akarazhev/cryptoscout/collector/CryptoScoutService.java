@@ -174,8 +174,10 @@ public final class CryptoScoutService extends AbstractReactive implements Reacti
             }
             // No data to insert but we still may want to advance offset in rare cases
             if (fgis.isEmpty() && klines1d.isEmpty() && klines1w.isEmpty()) {
-                streamOffsetsRepository.upsertOffset(stream, maxOffset);
-                LOGGER.warn("Upserted CMC stream offset {} (no data batch)", maxOffset);
+                if (maxOffset >= 0) {
+                    streamOffsetsRepository.upsertOffset(stream, maxOffset);
+                    LOGGER.warn("Upserted CMC stream offset {} (no data batch)", maxOffset);
+                }
             } else {
                 fgis.trimToSize();
                 saveFgi(fgis, maxOffset);
