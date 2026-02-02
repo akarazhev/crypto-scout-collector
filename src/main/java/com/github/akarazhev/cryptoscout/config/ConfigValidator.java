@@ -54,6 +54,7 @@ public final class ConfigValidator {
     private static final String[] REQUIRED_STRING_PROPERTIES = {
             AMQP_RABBITMQ_HOST,
             AMQP_RABBITMQ_USERNAME,
+            AMQP_RABBITMQ_PASSWORD,
             AMQP_BYBIT_STREAM,
             AMQP_BYBIT_TA_STREAM,
             AMQP_CRYPTO_SCOUT_STREAM,
@@ -65,7 +66,8 @@ public final class ConfigValidator {
             AMQP_ANALYST_QUEUE,
             AMQP_ANALYST_ROUTING_KEY,
             JDBC_URL,
-            JDBC_USERNAME
+            JDBC_USERNAME,
+            JDBC_PASSWORD
     };
 
     private static final String[] REQUIRED_INT_PROPERTIES = {
