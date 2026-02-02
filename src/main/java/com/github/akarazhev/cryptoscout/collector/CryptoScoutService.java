@@ -47,6 +47,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class CryptoScoutService extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(CryptoScoutService.class);
@@ -57,6 +58,8 @@ public final class CryptoScoutService extends AbstractReactive implements Reacti
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
+    private final AtomicBoolean flushInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public static CryptoScoutService create(final NioReactor reactor, final Executor executor,
                                             final StreamOffsetsRepository streamOffsetsRepository,
@@ -78,12 +81,14 @@ public final class CryptoScoutService extends AbstractReactive implements Reacti
 
     @Override
     public Promise<Void> start() {
+        running.set(true);
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
         return Promise.complete();
     }
 
     @Override
     public Promise<Void> stop() {
+        running.set(false);
         return flush();
     }
 
@@ -116,8 +121,15 @@ public final class CryptoScoutService extends AbstractReactive implements Reacti
     }
 
     private void scheduledFlush() {
-        flush().whenComplete((_, _) ->
-                reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
+        if (!running.get() || flushInProgress.getAndSet(true)) {
+            return;
+        }
+        flush().whenComplete((_, _) -> {
+            flushInProgress.set(false);
+            if (running.get()) {
+                reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
+            }
+        });
     }
 
     private Promise<Void> flush() {

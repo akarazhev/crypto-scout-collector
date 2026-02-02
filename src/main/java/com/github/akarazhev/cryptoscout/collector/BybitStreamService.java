@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isKlineConfirmed;
 import static com.github.akarazhev.cryptoscout.collector.PayloadParser.isSnapshot;
@@ -77,6 +78,8 @@ public final class BybitStreamService extends AbstractReactive implements Reacti
     private final int batchSize;
     private final long flushIntervalMs;
     private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
+    private final AtomicBoolean flushInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean running = new AtomicBoolean(false);
 
     public enum Type {BYBIT_SPOT, BYBIT_LINEAR}
 
@@ -104,12 +107,14 @@ public final class BybitStreamService extends AbstractReactive implements Reacti
 
     @Override
     public Promise<Void> start() {
+        running.set(true);
         reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
         return Promise.complete();
     }
 
     @Override
     public Promise<Void> stop() {
+        running.set(false);
         return flush();
     }
 
@@ -187,8 +192,15 @@ public final class BybitStreamService extends AbstractReactive implements Reacti
     }
 
     private void scheduledFlush() {
-        flush().whenComplete((_, _) ->
-                reactor.delayBackground(flushIntervalMs, this::scheduledFlush));
+        if (!running.get() || flushInProgress.getAndSet(true)) {
+            return;
+        }
+        flush().whenComplete((_, _) -> {
+            flushInProgress.set(false);
+            if (running.get()) {
+                reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
+            }
+        });
     }
 
     private Promise<Void> flush() {
