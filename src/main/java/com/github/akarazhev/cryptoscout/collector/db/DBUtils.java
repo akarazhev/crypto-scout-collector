@@ -53,7 +53,7 @@ final class DBUtils {
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();
-                    for (var i = 0; i < columns.length; i++) {
+                    for (final var i = 0; i < columns.length; i++) {
                         row.put(columns[i], rs.getObject(i + 1));
                     }
 
