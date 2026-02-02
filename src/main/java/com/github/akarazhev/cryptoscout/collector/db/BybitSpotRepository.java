@@ -469,29 +469,33 @@ public final class BybitSpotRepository extends AbstractReactive implements React
                         continue; // skip malformed rows
                     }
 
-                    for (final var bid : bids) {
-                        ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
-                        ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_SIDE, BID);
-                        ps.setDouble(SPOT_ORDER_BOOK_PRICE, toDouble(bid.getFirst()));
-                        ps.setDouble(SPOT_ORDER_BOOK_SIZE, toDouble(bid.get(1)));
+                    if (bids != null) {
+                        for (final var bid : bids) {
+                            ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
+                            ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
+                            ps.setString(SPOT_ORDER_BOOK_SIDE, BID);
+                            ps.setDouble(SPOT_ORDER_BOOK_PRICE, toDouble(bid.getFirst()));
+                            ps.setDouble(SPOT_ORDER_BOOK_SIZE, toDouble(bid.get(1)));
 
-                        ps.addBatch();
-                        if (++count % batchSize == 0) {
-                            ps.executeBatch();
+                            ps.addBatch();
+                            if (++count % batchSize == 0) {
+                                ps.executeBatch();
+                            }
                         }
                     }
 
-                    for (final var ask : asks) {
-                        ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
-                        ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(SPOT_ORDER_BOOK_SIDE, ASK);
-                        ps.setDouble(SPOT_ORDER_BOOK_PRICE, toDouble(ask.getFirst()));
-                        ps.setDouble(SPOT_ORDER_BOOK_SIZE, toDouble(ask.get(1)));
+                    if (asks != null) {
+                        for (final var ask : asks) {
+                            ps.setString(SPOT_ORDER_BOOK_SYMBOL, symbol);
+                            ps.setObject(SPOT_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
+                            ps.setString(SPOT_ORDER_BOOK_SIDE, ASK);
+                            ps.setDouble(SPOT_ORDER_BOOK_PRICE, toDouble(ask.getFirst()));
+                            ps.setDouble(SPOT_ORDER_BOOK_SIZE, toDouble(ask.get(1)));
 
-                        ps.addBatch();
-                        if (++count % batchSize == 0) {
-                            ps.executeBatch();
+                            ps.addBatch();
+                            if (++count % batchSize == 0) {
+                                ps.executeBatch();
+                            }
                         }
                     }
                 }

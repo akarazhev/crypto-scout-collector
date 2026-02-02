@@ -689,29 +689,33 @@ public final class BybitLinearRepository extends AbstractReactive implements Rea
                         continue; // skip malformed rows
                     }
 
-                    for (final var bid : bids) {
-                        ps.setString(LINEAR_ORDER_BOOK_SYMBOL, symbol);
-                        ps.setObject(LINEAR_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(LINEAR_ORDER_BOOK_SIDE, BID);
-                        ps.setDouble(LINEAR_ORDER_BOOK_PRICE, toDouble(bid.getFirst()));
-                        ps.setDouble(LINEAR_ORDER_BOOK_SIZE, toDouble(bid.get(1)));
+                    if (bids != null) {
+                        for (final var bid : bids) {
+                            ps.setString(LINEAR_ORDER_BOOK_SYMBOL, symbol);
+                            ps.setObject(LINEAR_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
+                            ps.setString(LINEAR_ORDER_BOOK_SIDE, BID);
+                            ps.setDouble(LINEAR_ORDER_BOOK_PRICE, toDouble(bid.getFirst()));
+                            ps.setDouble(LINEAR_ORDER_BOOK_SIZE, toDouble(bid.get(1)));
 
-                        ps.addBatch();
-                        if (++count % batchSize == 0) {
-                            ps.executeBatch();
+                            ps.addBatch();
+                            if (++count % batchSize == 0) {
+                                ps.executeBatch();
+                            }
                         }
                     }
 
-                    for (final var ask : asks) {
-                        ps.setString(LINEAR_ORDER_BOOK_SYMBOL, symbol);
-                        ps.setObject(LINEAR_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
-                        ps.setString(LINEAR_ORDER_BOOK_SIDE, ASK);
-                        ps.setDouble(LINEAR_ORDER_BOOK_PRICE, toDouble(ask.getFirst()));
-                        ps.setDouble(LINEAR_ORDER_BOOK_SIZE, toDouble(ask.get(1)));
+                    if (asks != null) {
+                        for (final var ask : asks) {
+                            ps.setString(LINEAR_ORDER_BOOK_SYMBOL, symbol);
+                            ps.setObject(LINEAR_ORDER_BOOK_ENGINE_TIME, toOdt(engineTime));
+                            ps.setString(LINEAR_ORDER_BOOK_SIDE, ASK);
+                            ps.setDouble(LINEAR_ORDER_BOOK_PRICE, toDouble(ask.getFirst()));
+                            ps.setDouble(LINEAR_ORDER_BOOK_SIZE, toDouble(ask.get(1)));
 
-                        ps.addBatch();
-                        if (++count % batchSize == 0) {
-                            ps.executeBatch();
+                            ps.addBatch();
+                            if (++count % batchSize == 0) {
+                                ps.executeBatch();
+                            }
                         }
                     }
                 }
