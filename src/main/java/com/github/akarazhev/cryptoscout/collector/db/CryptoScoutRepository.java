@@ -102,7 +102,7 @@ public final class CryptoScoutRepository extends AbstractReactive implements Rea
     private CryptoScoutRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
-        this.batchSize = JdbcConfig.getBybitBatchSize();
+        this.batchSize = JdbcConfig.getCryptoScoutBatchSize();
         this.stream = AmqpConfig.getAmqpCryptoScoutStream();
     }
 
