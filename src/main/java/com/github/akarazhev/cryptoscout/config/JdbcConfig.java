@@ -84,7 +84,12 @@ public final class JdbcConfig {
     }
 
     public static int getCryptoScoutBatchSize() {
-        return AppConfig.getAsInt(JDBC_CRYPTO_SCOUT_BATCH_SIZE);
+        final var size = AppConfig.getAsInt(JDBC_CRYPTO_SCOUT_BATCH_SIZE);
+        if (size < 1 || size > 10000) {
+            throw new IllegalArgumentException(
+                "jdbc.crypto.scout.batch-size must be between 1 and 10000, got: " + size);
+        }
+        return size;
     }
 
     public static long getCryptoScoutFlushIntervalMs() {
@@ -92,7 +97,12 @@ public final class JdbcConfig {
     }
 
     public static int getBybitBatchSize() {
-        return AppConfig.getAsInt(JDBC_BYBIT_BATCH_SIZE);
+        final var size = AppConfig.getAsInt(JDBC_BYBIT_BATCH_SIZE);
+        if (size < 1 || size > 10000) {
+            throw new IllegalArgumentException(
+                "jdbc.bybit.batch-size must be between 1 and 10000, got: " + size);
+        }
+        return size;
     }
 
     public static long getBybitFlushIntervalMs() {
