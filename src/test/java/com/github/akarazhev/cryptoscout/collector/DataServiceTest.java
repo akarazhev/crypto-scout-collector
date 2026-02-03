@@ -69,9 +69,8 @@ import static com.github.akarazhev.cryptoscout.collector.Constants.Method.BYBIT_
 import static com.github.akarazhev.cryptoscout.collector.Constants.Method.CRYPTO_SCOUT_GET_FGI;
 import static com.github.akarazhev.cryptoscout.collector.Constants.Method.CRYPTO_SCOUT_GET_KLINE_1D;
 import static com.github.akarazhev.cryptoscout.collector.Constants.Method.CRYPTO_SCOUT_GET_KLINE_1W;
-import static com.github.akarazhev.cryptoscout.collector.Constants.Source.ANALYST;
+import static com.github.akarazhev.cryptoscout.collector.Constants.Source.CHATBOT;
 import static com.github.akarazhev.cryptoscout.collector.Constants.Source.COLLECTOR;
-import static com.github.akarazhev.cryptoscout.collector.DataServiceTest.Config.ANALYST_PUBLISHER_CLIENT_NAME;
 import static com.github.akarazhev.cryptoscout.collector.DataServiceTest.Config.CHATBOT_PUBLISHER_CLIENT_NAME;
 import static com.github.akarazhev.cryptoscout.collector.DataServiceTest.Config.COLLECTOR_CONSUMER_CLIENT_NAME;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Bybit.LINEAR_KLINE_15M_TABLE;
@@ -135,11 +134,9 @@ final class DataServiceTest {
     private static DataService dataService;
 
     private static AmqpPublisher chatbotPublisher;
-    private static AmqpPublisher analystPublisher;
     private static AmqpConsumer collectorConsumer;
 
     private static AmqpTestPublisher collectorTestPublisher;
-    private static AmqpTestConsumer analystTestConsumer;
     private static AmqpTestConsumer chatbotTestConsumer;
 
     @BeforeAll
@@ -160,21 +157,16 @@ final class DataServiceTest {
 
         chatbotPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 CHATBOT_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpChatbotQueue());
-        analystPublisher = AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                ANALYST_PUBLISHER_CLIENT_NAME, AmqpConfig.getAmqpAnalystQueue());
-        dataService = DataService.create(bybitStreamService, cryptoScoutService, chatbotPublisher,
-                analystPublisher);
+        dataService = DataService.create(bybitStreamService, cryptoScoutService, chatbotPublisher);
         collectorConsumer = AmqpConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 COLLECTOR_CONSUMER_CLIENT_NAME, AmqpConfig.getAmqpCollectorQueue());
         collectorConsumer.getStreamSupplier().streamTo(dataService.getStreamConsumer());
 
-        analystTestConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
-                AmqpConfig.getAmqpAnalystQueue());
         chatbotTestConsumer = AmqpTestConsumer.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpChatbotQueue());
         collectorTestPublisher = AmqpTestPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(),
                 AmqpConfig.getAmqpCollectorQueue());
-        TestUtils.await(collectorTestPublisher.start(), chatbotPublisher.start(), analystPublisher.start(),
+        TestUtils.await(collectorTestPublisher.start(), chatbotPublisher.start(),
                 collectorConsumer.start(), bybitStreamService.start(), cryptoScoutService.start());
     }
 
@@ -216,7 +208,7 @@ final class DataServiceTest {
                 STREAM_OFFSETS_TABLE
         );
 
-        TestUtils.await(analystTestConsumer.stop(), chatbotTestConsumer.stop());
+        TestUtils.await(chatbotTestConsumer.stop());
     }
 
     @Test
@@ -228,10 +220,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_FGI),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, CRYPTO_SCOUT_GET_FGI),
                                 new Object[]{odt, odt}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -249,10 +241,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1D),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, CRYPTO_SCOUT_GET_KLINE_1D),
                                 new Object[]{symbol, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -270,10 +262,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, CRYPTO_SCOUT_GET_KLINE_1W),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, CRYPTO_SCOUT_GET_KLINE_1W),
                                 new Object[]{symbol, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -291,10 +283,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_1M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -312,10 +304,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_5M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -333,10 +325,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_15M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -354,10 +346,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_60M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -375,10 +367,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_240M),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -396,10 +388,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_1D),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -416,10 +408,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_TICKER),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -437,10 +429,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_1M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -458,10 +450,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_5M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_5M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -479,10 +471,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_15M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_15M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -500,10 +492,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_60M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_60M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -521,10 +513,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_240M),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_240M),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -542,10 +534,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_KLINE_1D),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_KLINE_1D),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -562,10 +554,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_TICKER),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_TICKER),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -582,10 +574,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_1),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -602,10 +594,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_50),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -622,10 +614,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_200),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -642,10 +634,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_1000),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -663,10 +655,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_PUBLIC_TRADE),
                                 new Object[]{BYBIT_SPOT.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -683,10 +675,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_1),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -703,10 +695,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_50),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_50),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -723,10 +715,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_200),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_200),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -743,10 +735,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ORDER_BOOK_1000),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ORDER_BOOK_1000),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -764,10 +756,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_PUBLIC_TRADE),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_PUBLIC_TRADE),
                                 new Object[]{BYBIT_LINEAR.name(), BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -785,10 +777,10 @@ final class DataServiceTest {
 
         TestUtils.await(collectorTestPublisher.publish(AmqpConfig.getAmqpCryptoScoutExchange(),
                         AmqpConfig.getAmqpCollectorRoutingKey(),
-                        Message.of(Message.Command.of(Message.Type.REQUEST, ANALYST, BYBIT_GET_ALL_LIQUIDATION),
+                        Message.of(Message.Command.of(Message.Type.REQUEST, CHATBOT, BYBIT_GET_ALL_LIQUIDATION),
                                 new Object[]{BTC_USDT, from, from}))
-                .whenComplete(analystTestConsumer::start));
-        final var message = TestUtils.await(analystTestConsumer.getMessage());
+                .whenComplete(chatbotTestConsumer::start));
+        final var message = TestUtils.await(chatbotTestConsumer.getMessage());
 
         assertNotNull(message);
         assertEquals(Message.Type.RESPONSE, message.command().type());
@@ -799,17 +791,15 @@ final class DataServiceTest {
 
     @AfterAll
     static void cleanup() {
-        reactor.post(() -> analystTestConsumer.stop()
-                .whenComplete(() -> chatbotTestConsumer.stop()
-                        .whenComplete(() -> collectorTestPublisher.stop()
-                                .whenComplete(() -> chatbotPublisher.stop()
-                                        .whenComplete(() -> analystPublisher.stop()
-                                                .whenComplete(() -> collectorConsumer.stop()
-                                                        .whenComplete(() -> bybitStreamService.stop()
-                                                                .whenComplete(() -> cryptoScoutService.stop()
-                                                                        .whenComplete(() -> collectorDataSource.stop()
-                                                                                .whenComplete(() -> reactor.breakEventloop()
-                                                                                ))))))))));
+        reactor.post(() -> chatbotTestConsumer.stop()
+                .whenComplete(() -> collectorTestPublisher.stop()
+                        .whenComplete(() -> chatbotPublisher.stop()
+                                .whenComplete(() -> collectorConsumer.stop()
+                                        .whenComplete(() -> bybitStreamService.stop()
+                                                .whenComplete(() -> cryptoScoutService.stop()
+                                                        .whenComplete(() -> collectorDataSource.stop()
+                                                                .whenComplete(() -> reactor.breakEventloop()
+                                                                ))))))));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();
@@ -821,7 +811,6 @@ final class DataServiceTest {
         }
 
         static final String COLLECTOR_CONSUMER_CLIENT_NAME = "collector-consumer";
-        static final String ANALYST_PUBLISHER_CLIENT_NAME = "analyst-publisher";
         static final String CHATBOT_PUBLISHER_CLIENT_NAME = "chatbot-publisher";
     }
 }
