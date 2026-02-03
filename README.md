@@ -181,7 +181,7 @@ Default configuration is in `src/main/resources/application.properties`:
     - `amqp.bybit.stream` (default `bybit-stream`)
     - `amqp.bybit.ta.stream` (default `bybit-ta-stream`)
     - `amqp.crypto.scout.stream` (default `crypto-scout-stream`)
-    - `amqp.crypto.scout.exchange`, `amqp.collector.queue`, `amqp.chatbot.queue`, `amqp.analyst.queue`
+    - `amqp.crypto.scout.exchange`, `amqp.collector.queue`, `amqp.chatbot.queue`
 - **JDBC / HikariCP**
     - `jdbc.datasource.url` (default `jdbc:postgresql://localhost:5432/crypto_scout`)
     - `jdbc.datasource.username` (default `crypto_scout_db`)
