@@ -218,7 +218,7 @@ final class StreamServiceTest {
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cryptoScoutService.stop());
 
-        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
         assertEquals(1, cryptoScoutRepository.getKline1w(symbol, from, from).size());
         assertTableCount(CMC_KLINE_1W_TABLE, 1);
@@ -232,7 +232,7 @@ final class StreamServiceTest {
         Thread.sleep(Duration.ofSeconds(1));
         TestUtils.await(cryptoScoutService.stop());
 
-        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
         assertEquals(1, cryptoScoutRepository.getKline1d(symbol, from, from).size());
         assertTableCount(CMC_KLINE_1D_TABLE, 1);

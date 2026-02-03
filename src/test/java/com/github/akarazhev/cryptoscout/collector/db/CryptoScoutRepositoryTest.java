@@ -108,7 +108,7 @@ final class CryptoScoutRepositoryTest {
         final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_D);
         assertEquals(1, repository.saveKline1d(List.of(kline), 400L));
 
-        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
         assertEquals(1, repository.getKline1d(symbol, from, from).size());
     }
@@ -125,7 +125,7 @@ final class CryptoScoutRepositoryTest {
         final var kline = MockData.get(MockData.Source.CRYPTO_SCOUT, MockData.Type.KLINE_W);
         assertEquals(1, repository.saveKline1w(List.of(kline), 600L));
 
-        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).get(0)).get(QUOTE)).get(TIMESTAMP));
+        final var from = toOdt(((Map<?, ?>) ((Map<?, ?>) ((List<?>) kline.get(QUOTES)).getFirst()).get(QUOTE)).get(TIMESTAMP));
         final var symbol = (String) kline.get(SYMBOL);
         assertEquals(1, repository.getKline1w(symbol, from, from).size());
     }
