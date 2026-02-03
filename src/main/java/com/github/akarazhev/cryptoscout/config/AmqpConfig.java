@@ -28,8 +28,6 @@ import com.github.akarazhev.jcryptolib.config.AppConfig;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.stream.Environment;
 
-import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_QUEUE;
-import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_TA_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_QUEUE;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_ROUTING_KEY;
@@ -95,14 +93,6 @@ public final class AmqpConfig {
 
     public static String getAmqpChatbotRoutingKey() {
         return AppConfig.getAsString(AMQP_CHATBOT_ROUTING_KEY);
-    }
-
-    public static String getAmqpAnalystQueue() {
-        return AppConfig.getAsString(AMQP_ANALYST_QUEUE);
-    }
-
-    public static String getAmqpAnalystRoutingKey() {
-        return AppConfig.getAsString(AMQP_ANALYST_ROUTING_KEY);
     }
 
     private static int getAmqpRabbitmqPort() {

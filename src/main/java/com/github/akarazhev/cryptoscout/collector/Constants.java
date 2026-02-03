@@ -61,7 +61,6 @@ final class Constants {
         }
 
         static final String COLLECTOR = "collector";
-        static final String ANALYST = "analyst";
         static final String CHATBOT = "chatbot";
     }
 

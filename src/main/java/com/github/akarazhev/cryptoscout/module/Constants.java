@@ -35,12 +35,10 @@ final class Constants {
         }
 
         static final String HEALTH_API = "/health";
-        static final String ANALYST_PUBLISHER = "analystPublisher";
         static final String CHATBOT_PUBLISHER = "chatbotPublisher";
         static final String COLLECTOR_CONSUMER = "collectorConsumer";
 
         static final String COLLECTOR_CONSUMER_CLIENT_NAME = "collector-consumer";
-        static final String ANALYST_PUBLISHER_CLIENT_NAME = "analyst-publisher";
         static final String CHATBOT_PUBLISHER_CLIENT_NAME = "chatbot-publisher";
     }
 

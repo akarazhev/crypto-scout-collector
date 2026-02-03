@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 
-import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_QUEUE;
-import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_ANALYST_ROUTING_KEY;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_BYBIT_TA_STREAM;
 import static com.github.akarazhev.cryptoscout.config.Constants.AmqpConfig.AMQP_CHATBOT_QUEUE;
@@ -65,8 +63,6 @@ public final class ConfigValidator {
             AMQP_COLLECTOR_QUEUE,
             AMQP_CHATBOT_QUEUE,
             AMQP_CHATBOT_ROUTING_KEY,
-            AMQP_ANALYST_QUEUE,
-            AMQP_ANALYST_ROUTING_KEY,
             JDBC_URL,
             JDBC_USERNAME,
             JDBC_PASSWORD

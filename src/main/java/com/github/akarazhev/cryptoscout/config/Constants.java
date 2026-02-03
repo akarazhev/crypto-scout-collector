@@ -46,8 +46,6 @@ final class Constants {
         static final String AMQP_COLLECTOR_QUEUE = "amqp.collector.queue";
         static final String AMQP_CHATBOT_QUEUE = "amqp.chatbot.queue";
         static final String AMQP_CHATBOT_ROUTING_KEY = "amqp.chatbot.routing.key";
-        static final String AMQP_ANALYST_QUEUE = "amqp.analyst.queue";
-        static final String AMQP_ANALYST_ROUTING_KEY = "amqp.analyst.routing.key";
         static final String AMQP_RABBITMQ_PORT = "amqp.rabbitmq.port";
     }
 

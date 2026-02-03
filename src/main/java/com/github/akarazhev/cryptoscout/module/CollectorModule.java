@@ -44,8 +44,6 @@ import io.activej.reactor.nio.NioReactor;
 
 import java.util.concurrent.Executor;
 
-import static com.github.akarazhev.cryptoscout.module.Constants.Config.ANALYST_PUBLISHER;
-import static com.github.akarazhev.cryptoscout.module.Constants.Config.ANALYST_PUBLISHER_CLIENT_NAME;
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.CHATBOT_PUBLISHER;
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.CHATBOT_PUBLISHER_CLIENT_NAME;
 import static com.github.akarazhev.cryptoscout.module.Constants.Config.COLLECTOR_CONSUMER;
@@ -108,9 +106,8 @@ public final class CollectorModule extends AbstractModule {
     @Provides
     private DataService dataService(final BybitStreamService bybitStreamService,
                                     final CryptoScoutService cryptoScoutService,
-                                    @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher,
-                                    @Named(ANALYST_PUBLISHER) final AmqpPublisher analystPublisher) {
-        return DataService.create(bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
+                                    @Named(CHATBOT_PUBLISHER) final AmqpPublisher chatbotPublisher) {
+        return DataService.create(bybitStreamService, cryptoScoutService, chatbotPublisher);
     }
 
     @Provides
@@ -128,14 +125,6 @@ public final class CollectorModule extends AbstractModule {
     private AmqpPublisher chatbotPublisher(final NioReactor reactor, final Executor executor) {
         return AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(), CHATBOT_PUBLISHER_CLIENT_NAME,
                 AmqpConfig.getAmqpChatbotQueue());
-    }
-
-    @Provides
-    @Named(ANALYST_PUBLISHER)
-    @Eager
-    private AmqpPublisher analystPublisher(final NioReactor reactor, final Executor executor) {
-        return AmqpPublisher.create(reactor, executor, AmqpConfig.getConnectionFactory(), ANALYST_PUBLISHER_CLIENT_NAME,
-                AmqpConfig.getAmqpAnalystQueue());
     }
 
     @Provides

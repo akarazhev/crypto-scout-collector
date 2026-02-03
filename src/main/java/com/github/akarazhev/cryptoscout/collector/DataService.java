@@ -41,23 +41,19 @@ public final class DataService {
     private final BybitStreamService bybitStreamService;
     private final CryptoScoutService cryptoScoutService;
     private final AmqpPublisher chatbotPublisher;
-    private final AmqpPublisher analystPublisher;
 
     public static DataService create(final BybitStreamService bybitStreamService,
                                      final CryptoScoutService cryptoScoutService,
-                                     final AmqpPublisher chatbotPublisher,
-                                     final AmqpPublisher analystPublisher) {
-        return new DataService(bybitStreamService, cryptoScoutService, chatbotPublisher, analystPublisher);
+                                     final AmqpPublisher chatbotPublisher) {
+        return new DataService(bybitStreamService, cryptoScoutService, chatbotPublisher);
     }
 
     private DataService(final BybitStreamService bybitStreamService,
                         final CryptoScoutService cryptoScoutService,
-                        final AmqpPublisher chatbotPublisher,
-                        final AmqpPublisher analystPublisher) {
+                        final AmqpPublisher chatbotPublisher) {
         this.bybitStreamService = bybitStreamService;
         this.cryptoScoutService = cryptoScoutService;
         this.chatbotPublisher = chatbotPublisher;
-        this.analystPublisher = analystPublisher;
     }
 
     public StreamConsumer<byte[]> getStreamConsumer() {
@@ -218,12 +214,6 @@ public final class DataService {
             case Constants.Source.CHATBOT -> chatbotPublisher.publish(
                     AmqpConfig.getAmqpCryptoScoutExchange(),
                     AmqpConfig.getAmqpChatbotRoutingKey(),
-                    Message.of(command, data)
-            );
-
-            case Constants.Source.ANALYST -> analystPublisher.publish(
-                    AmqpConfig.getAmqpCryptoScoutExchange(),
-                    AmqpConfig.getAmqpAnalystRoutingKey(),
                     Message.of(command, data)
             );
 
