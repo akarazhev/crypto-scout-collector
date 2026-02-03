@@ -26,6 +26,7 @@ package com.github.akarazhev.cryptoscout.module;
 
 import com.github.akarazhev.cryptoscout.collector.AmqpConsumer;
 import com.github.akarazhev.cryptoscout.collector.AmqpPublisher;
+import com.github.akarazhev.cryptoscout.collector.AnalystService;
 import com.github.akarazhev.cryptoscout.collector.CryptoScoutService;
 import com.github.akarazhev.cryptoscout.collector.DataService;
 import com.github.akarazhev.cryptoscout.collector.StreamService;
@@ -85,6 +86,11 @@ public final class CollectorModule extends AbstractModule {
     private StreamOffsetsRepository streamOffsetsRepository(final NioReactor reactor,
                                                             final CollectorDataSource collectorDataSource) {
         return StreamOffsetsRepository.create(reactor, collectorDataSource);
+    }
+
+    @Provides
+    private AnalystService analystService(final NioReactor reactor, final Executor executor) {
+        return AnalystService.create(reactor, executor);
     }
 
     @Provides
