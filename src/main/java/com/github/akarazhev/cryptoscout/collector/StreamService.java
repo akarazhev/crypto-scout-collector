@@ -49,6 +49,7 @@ public final class StreamService extends AbstractReactive implements ReactiveSer
     private final static Logger LOGGER = LoggerFactory.getLogger(StreamService.class);
     private final Executor executor;
     private final StreamOffsetsRepository streamOffsetsRepository;
+    private final AnalystService analystService;
     private final BybitStreamService bybitStreamService;
     private final CryptoScoutService cryptoScoutService;
     private volatile Environment environment;
@@ -59,18 +60,22 @@ public final class StreamService extends AbstractReactive implements ReactiveSer
 
     public static StreamService create(final NioReactor reactor, final Executor executor,
                                        final StreamOffsetsRepository streamOffsetsRepository,
+                                       final AnalystService analystService,
                                        final BybitStreamService bybitStreamService,
                                        final CryptoScoutService cryptoScoutService) {
-        return new StreamService(reactor, executor, streamOffsetsRepository, bybitStreamService, cryptoScoutService);
+        return new StreamService(reactor, executor, streamOffsetsRepository, analystService, bybitStreamService,
+                cryptoScoutService);
     }
 
     private StreamService(final NioReactor reactor, final Executor executor,
                           final StreamOffsetsRepository streamOffsetsRepository,
+                          final AnalystService analystService,
                           final BybitStreamService bybitStreamService,
                           final CryptoScoutService cryptoScoutService) {
         super(reactor);
         this.executor = executor;
         this.streamOffsetsRepository = streamOffsetsRepository;
+        this.analystService = analystService;
         this.bybitStreamService = bybitStreamService;
         this.cryptoScoutService = cryptoScoutService;
     }
@@ -144,10 +149,13 @@ public final class StreamService extends AbstractReactive implements ReactiveSer
             return;
         }
 
+        reactor.execute(() -> analystService.analyze(payload, context.offset())
+                .whenException(ex -> LOGGER.error("Failed to analyze stream message from {}", type.name(), ex)));
+
         reactor.execute(() -> (switch (type) {
             case CRYPTO_SCOUT -> cryptoScoutService.save(payload, context.offset());
             case BYBIT_STREAM -> bybitStreamService.save(payload, context.offset());
-        }).whenException(ex -> LOGGER.error("Failed to process stream message from {}", type.name(), ex)));
+        }).whenException(ex -> LOGGER.error("Failed to save stream message from {}", type.name(), ex)));
     }
 
     private void closeConsumer(final Consumer consumer) {

@@ -24,6 +24,9 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
+import com.github.akarazhev.cryptoscout.collector.db.AnalystRepository;
+import com.github.akarazhev.cryptoscout.collector.db.StreamOffsetsRepository;
+import com.github.akarazhev.jcryptolib.stream.Payload;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
 import io.activej.reactor.AbstractReactive;
@@ -31,19 +34,28 @@ import io.activej.reactor.nio.NioReactor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
 import java.util.concurrent.Executor;
 
 public final class AnalystService extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AnalystService.class);
     private final Executor executor;
+    private final StreamOffsetsRepository streamOffsetsRepository;
+    private final AnalystRepository analystRepository;
 
-    public static AnalystService create(final NioReactor reactor, final Executor executor) {
-        return new AnalystService(reactor, executor);
+    public static AnalystService create(final NioReactor reactor, final Executor executor,
+                                        final StreamOffsetsRepository streamOffsetsRepository,
+                                        final AnalystRepository analystRepository) {
+        return new AnalystService(reactor, executor, streamOffsetsRepository, analystRepository);
     }
 
-    private AnalystService(final NioReactor reactor, final Executor executor) {
+    private AnalystService(final NioReactor reactor, final Executor executor,
+                           final StreamOffsetsRepository streamOffsetsRepository,
+                           final AnalystRepository analystRepository) {
         super(reactor);
         this.executor = executor;
+        this.streamOffsetsRepository = streamOffsetsRepository;
+        this.analystRepository = analystRepository;
     }
 
     @Override
@@ -53,6 +65,10 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
 
     @Override
     public Promise<Void> stop() {
+        return Promise.complete();
+    }
+
+    public Promise<Void> analyze(final Payload<Map<String, Object>> payload, final long offset) {
         return Promise.complete();
     }
 }

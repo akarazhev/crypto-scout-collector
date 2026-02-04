@@ -31,6 +31,7 @@ import com.github.akarazhev.cryptoscout.collector.CryptoScoutService;
 import com.github.akarazhev.cryptoscout.collector.DataService;
 import com.github.akarazhev.cryptoscout.collector.StreamService;
 import com.github.akarazhev.cryptoscout.collector.BybitStreamService;
+import com.github.akarazhev.cryptoscout.collector.db.AnalystRepository;
 import com.github.akarazhev.cryptoscout.collector.db.BybitLinearRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
 import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
@@ -77,6 +78,12 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
+    private AnalystRepository analystRepository(final NioReactor reactor,
+                                                final CollectorDataSource collectorDataSource) {
+        return AnalystRepository.create(reactor, collectorDataSource);
+    }
+
+    @Provides
     private CryptoScoutRepository cryptoScoutRepository(final NioReactor reactor,
                                                         final CollectorDataSource collectorDataSource) {
         return CryptoScoutRepository.create(reactor, collectorDataSource);
@@ -89,17 +96,19 @@ public final class CollectorModule extends AbstractModule {
     }
 
     @Provides
-    private AnalystService analystService(final NioReactor reactor, final Executor executor) {
-        return AnalystService.create(reactor, executor);
-    }
-
-    @Provides
     private BybitStreamService bybitStreamService(final NioReactor reactor, final Executor executor,
                                                   final StreamOffsetsRepository streamOffsetsRepository,
                                                   final BybitSpotRepository bybitSpotRepository,
                                                   final BybitLinearRepository bybitLinearRepository) {
         return BybitStreamService.create(reactor, executor, streamOffsetsRepository, bybitSpotRepository,
                 bybitLinearRepository);
+    }
+
+    @Provides
+    private AnalystService analystService(final NioReactor reactor, final Executor executor,
+                                          final StreamOffsetsRepository streamOffsetsRepository,
+                                          final AnalystRepository analystRepository) {
+        return AnalystService.create(reactor, executor, streamOffsetsRepository, analystRepository);
     }
 
     @Provides
@@ -120,9 +129,11 @@ public final class CollectorModule extends AbstractModule {
     @Eager
     private StreamService streamService(final NioReactor reactor, final Executor executor,
                                         final StreamOffsetsRepository streamOffsetsRepository,
+                                        final AnalystService analystService,
                                         final BybitStreamService bybitStreamService,
                                         final CryptoScoutService cryptoScoutService) {
-        return StreamService.create(reactor, executor, streamOffsetsRepository, bybitStreamService, cryptoScoutService);
+        return StreamService.create(reactor, executor, streamOffsetsRepository, analystService, bybitStreamService,
+                cryptoScoutService);
     }
 
     @Provides
