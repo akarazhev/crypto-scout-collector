@@ -4,7 +4,7 @@ This document provides guidelines for agentic coding contributors to this reposi
 
 ## Project Overview
 
-Java 25 Maven microservice that collects crypto market data from Bybit and CoinMarketCap, then publishes structured events to RabbitMQ Streams. Built on ActiveJ for fully async I/O.
+Java 25 Maven microservice that consumes market data from RabbitMQ Streams and persists it to TimescaleDB. Provides exactly-once processing with database-backed offset management. Built on ActiveJ for fully async I/O.
 
 ## Build, Test, and Lint Commands
 
