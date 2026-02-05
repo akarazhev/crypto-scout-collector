@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
+import com.github.akarazhev.cryptoscout.collector.db.AnalystRepository;
 import com.github.akarazhev.cryptoscout.collector.db.BybitLinearRepository;
 import com.github.akarazhev.cryptoscout.collector.db.BybitSpotRepository;
 import com.github.akarazhev.cryptoscout.collector.db.CollectorDataSource;
@@ -110,8 +111,10 @@ final class StreamServiceTest {
     private static CryptoScoutRepository cryptoScoutRepository;
     private static StreamOffsetsRepository streamOffsetsRepository;
 
+    private static AnalystRepository analystRepository;
     private static BybitStreamService bybitStreamService;
     private static CryptoScoutService cryptoScoutService;
+    private static AnalystService analystService;
     private static StreamService streamService;
 
     private static StreamTestPublisher bybitStreamTestPublisher;
@@ -128,14 +131,16 @@ final class StreamServiceTest {
         spotRepository = BybitSpotRepository.create(reactor, collectorDataSource);
         streamOffsetsRepository = StreamOffsetsRepository.create(reactor, collectorDataSource);
         cryptoScoutRepository = CryptoScoutRepository.create(reactor, collectorDataSource);
+        analystRepository = AnalystRepository.create(reactor, collectorDataSource);
 
         bybitStreamService = BybitStreamService.create(reactor, executor, streamOffsetsRepository, spotRepository,
                 linearRepository);
         cryptoScoutService = CryptoScoutService.create(reactor, executor, streamOffsetsRepository,
                 cryptoScoutRepository);
+        analystService = AnalystService.create(reactor, executor, streamOffsetsRepository, analystRepository);
 
-        streamService = StreamService.create(reactor, executor, streamOffsetsRepository, bybitStreamService,
-                cryptoScoutService);
+        streamService = StreamService.create(reactor, executor, streamOffsetsRepository, analystService,
+                bybitStreamService, cryptoScoutService);
 
         final var environment = AmqpConfig.getEnvironment();
         bybitStreamTestPublisher = StreamTestPublisher.create(reactor, executor, environment,
@@ -188,11 +193,12 @@ final class StreamServiceTest {
         reactor.post(() -> bybitStreamTestPublisher.stop()
                 .whenComplete(() -> cryptoScoutStreamTestPublisher.stop()
                         .whenComplete(() -> streamService.stop()
-                                .whenComplete(() -> bybitStreamService.stop()
-                                        .whenComplete(() -> cryptoScoutService.stop()
-                                                .whenComplete(() -> collectorDataSource.stop()
-                                                        .whenComplete(() -> reactor.breakEventloop()
-                                                        )))))));
+                                .whenComplete(() -> analystService.stop()
+                                        .whenComplete(() -> bybitStreamService.stop()
+                                                .whenComplete(() -> cryptoScoutService.stop()
+                                                        .whenComplete(() -> collectorDataSource.stop()
+                                                                .whenComplete(() -> reactor.breakEventloop()
+                                                                ))))))));
         reactor.run();
         executor.shutdown();
         PodmanCompose.down();

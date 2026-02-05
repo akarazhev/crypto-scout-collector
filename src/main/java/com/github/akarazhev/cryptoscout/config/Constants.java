@@ -62,6 +62,10 @@ final class Constants {
         static final String JDBC_CRYPTO_SCOUT_FLUSH_INTERVAL_MS = "jdbc.crypto.scout.flush-interval-ms";
         static final String JDBC_BYBIT_BATCH_SIZE = "jdbc.bybit.batch-size";
         static final String JDBC_BYBIT_FLUSH_INTERVAL_MS = "jdbc.bybit.flush-interval-ms";
+        // Analyst service configuration
+        static final String JDBC_ANALYST_BATCH_SIZE = "jdbc.analyst.batch-size";
+        static final String JDBC_ANALYST_FLUSH_INTERVAL_MS = "jdbc.analyst.flush-interval-ms";
+        static final String JDBC_ANALYST_LOOKBACK_DAYS = "jdbc.analyst.lookback-days";
         // HikariCP pool configuration
         static final String HIKARI_MAXIMUM_POOL_SIZE = "jdbc.hikari.maximum-pool-size";
         static final String HIKARI_MINIMUM_IDLE = "jdbc.hikari.minimum-idle";

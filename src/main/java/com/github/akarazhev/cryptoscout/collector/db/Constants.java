@@ -402,6 +402,57 @@ public final class Constants {
         static final int LINEAR_ALL_LIQUIDATION_BANKRUPTCY_PRICE = 5;
     }
 
+    public final static class CmcKline1wIndicators {
+        private CmcKline1wIndicators() {
+            throw new UnsupportedOperationException();
+        }
+
+        // Reference to base table
+        public static final String CMC_KLINE_1W_TABLE = "crypto_scout.cmc_kline_1w";
+        public static final String INDICATORS_TABLE = "crypto_scout.cmc_kline_1w_indicators";
+        public static final String VIEW_WITH_INDICATORS = "crypto_scout.cmc_kline_1w_with_indicators";
+
+        // Indicator column indices
+        static final int IND_SYMBOL = 1;
+        static final int IND_TIMESTAMP = 2;
+        static final int IND_CLOSE_PRICE = 3;
+        static final int IND_SMA_50 = 4;
+        static final int IND_SMA_100 = 5;
+        static final int IND_SMA_200 = 6;
+        static final int IND_EMA_50 = 7;
+        static final int IND_EMA_100 = 8;
+        static final int IND_EMA_200 = 9;
+
+        // Insert/Update with conflict resolution
+        static final String INDICATORS_UPSERT =
+            "INSERT INTO " + INDICATORS_TABLE +
+            "(symbol, timestamp, close_price, sma_50, sma_100, sma_200, ema_50, ema_100, ema_200) VALUES " +
+            "(?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+            "ON CONFLICT (symbol, timestamp) DO UPDATE SET " +
+            "close_price = EXCLUDED.close_price, " +
+            "sma_50 = EXCLUDED.sma_50, " +
+            "sma_100 = EXCLUDED.sma_100, " +
+            "sma_200 = EXCLUDED.sma_200, " +
+            "ema_50 = EXCLUDED.ema_50, " +
+            "ema_100 = EXCLUDED.ema_100, " +
+            "ema_200 = EXCLUDED.ema_200, " +
+            "updated_at = NOW()";
+
+        // Select recent indicators for EMA initialization
+        static final String INDICATORS_SELECT_RECENT =
+            "SELECT symbol, timestamp, close_price, sma_50, sma_100, sma_200, " +
+            "ema_50, ema_100, ema_200 " +
+            "FROM " + INDICATORS_TABLE +
+            " WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?";
+
+        // Select recent klines from base table for initialization
+        static final String KLINE_1W_SELECT_RECENT =
+            "SELECT symbol, time_open, time_close, time_high, time_low, " +
+            "open, high, low, close, volume, market_cap, circulating_supply, timestamp " +
+            "FROM " + CMC_KLINE_1W_TABLE +
+            " WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?";
+    }
+
     public final static class Offsets {
         private Offsets() {
             throw new UnsupportedOperationException();

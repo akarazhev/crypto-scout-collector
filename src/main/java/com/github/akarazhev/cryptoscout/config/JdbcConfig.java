@@ -34,6 +34,9 @@ import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.HIKAR
 import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.HIKARI_MINIMUM_IDLE;
 import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.HIKARI_REGISTER_MBEANS;
 import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.JDBC_BYBIT_BATCH_SIZE;
+import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.JDBC_ANALYST_BATCH_SIZE;
+import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.JDBC_ANALYST_FLUSH_INTERVAL_MS;
+import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.JDBC_ANALYST_LOOKBACK_DAYS;
 import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.JDBC_BYBIT_FLUSH_INTERVAL_MS;
 import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.JDBC_CRYPTO_SCOUT_BATCH_SIZE;
 import static com.github.akarazhev.cryptoscout.config.Constants.JdbcConfig.JDBC_CRYPTO_SCOUT_FLUSH_INTERVAL_MS;
@@ -107,6 +110,23 @@ public final class JdbcConfig {
 
     public static long getBybitFlushIntervalMs() {
         return AppConfig.getAsInt(JDBC_BYBIT_FLUSH_INTERVAL_MS);
+    }
+
+    public static int getAnalystBatchSize() {
+        final var size = AppConfig.getAsInt(JDBC_ANALYST_BATCH_SIZE);
+        if (size < 1 || size > 10000) {
+            throw new IllegalArgumentException(
+                "jdbc.analyst.batch-size must be between 1 and 10000, got: " + size);
+        }
+        return size;
+    }
+
+    public static long getAnalystFlushIntervalMs() {
+        return AppConfig.getAsInt(JDBC_ANALYST_FLUSH_INTERVAL_MS);
+    }
+
+    public static int getAnalystLookbackDays() {
+        return AppConfig.getAsInt(JDBC_ANALYST_LOOKBACK_DAYS);
     }
 
     public static HikariConfig getHikariConfig() {
