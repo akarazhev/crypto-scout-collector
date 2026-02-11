@@ -1,6 +1,6 @@
 ---
 name: java-microservice
-description: Java 25 microservice development patterns for crypto-scout-collector including modules, AMQP consuming, and stream processing
+description: Java 25 microservice development patterns for crypto-scout-collector including stream consumption, batch processing, and repository patterns
 license: MIT
 compatibility: opencode
 metadata:
@@ -16,44 +16,124 @@ Provide guidance for developing and maintaining the crypto-scout-collector micro
 ## Core Components
 
 ### Modules
-Activej DI modules for separation of concerns:
+ActiveJ DI modules for separation of concerns:
 ```java
-// CoreModule - reactor and executor (virtual threads)
-// WebModule - HTTP server, clients, health routes, DNS
-// ClientModule - AMQP publisher lifecycle
-// BybitSpotModule - Spot WebSocket streams + consumers
-// BybitLinearModule - Linear WebSocket streams + consumers
-// CmcParserModule - CMC HTTP parser + consumer
+// CoreModule - reactor and virtual-thread executor
+// WebModule - HTTP server with /health endpoint
+// CollectorModule - DI wiring for repositories and services
 ```
 
-### AmqpPublisher
-Publishes structured events to RabbitMQ Streams:
+### StreamService
+Consumes from RabbitMQ Streams with database-backed offset management:
 ```java
-// Routes payloads to configured streams based on provider/source
-amqpPublisher.publish(payload);  // Bybit data -> bybit-stream
-amqpPublisher.publish(cmcPayload);  // CMC data -> crypto-scout-stream
+// Subscribes to: crypto-scout-stream, bybit-stream
+// External offset tracking in crypto_scout.stream_offsets
+// Dispatches to: CryptoScoutService, BybitStreamService, AnalystService
 ```
 
-### Bybit Stream Consumers
-WebSocket consumers for market data:
+### BybitStreamService
+Processes Bybit market data with batching:
 ```java
-// AbstractBybitStreamConsumer base class provides common lifecycle
-// BybitSpotBtcUsdtConsumer, BybitSpotEthUsdtConsumer
-// BybitLinearBtcUsdtConsumer, BybitLinearEthUsdtConsumer
+// Spot data: PMST source - klines, tickers, trades, order books
+// Linear data: PML source - klines, tickers, trades, order books, liquidations
+// Batching: Configurable batch size and flush interval
+// Exactly-once: Transactional data+offset writes
 ```
 
-### CmcParserConsumer
-HTTP-based data collection:
+### CryptoScoutService
+Processes CMC data with batching:
 ```java
-// Retrieves Fear & Greed Index (API Pro Latest)
-// Retrieves BTC/USD quotes (1D, 1W)
-// Publishes to crypto-scout-stream
+// Fear & Greed Index (FGI source)
+// BTC/USD daily klines (BTC_USD_1D source)
+// BTC/USD weekly klines (BTC_USD_1W source)
+// Batching and transactional offset updates
 ```
 
-### Health Endpoints
+### Repository Pattern
+JDBC/HikariCP repositories for database access:
 ```java
-// GET /health - returns "ok" when ready, 503 otherwise
-// Used for liveness and readiness checks
+// BybitSpotRepository - spot market data
+// BybitLinearRepository - linear/perps market data
+// CryptoScoutRepository - CMC FGI and klines
+// StreamOffsetsRepository - offset management
+// AnalystRepository - technical analysis data
+```
+
+### AmqpConsumer/AmqpPublisher
+AMQP integration for control messages:
+```java
+// Consumer: receives data queries from collector-queue
+// Publisher: sends responses to chatbot-queue
+// Automatic reconnection with exponential backoff
+```
+
+### DataService
+Handles AMQP request/response:
+```java
+// Processes incoming query messages
+// Coordinates repository calls
+// Formats and publishes responses
+```
+
+### Health Endpoint
+```java
+// GET /health - returns JSON status
+// {"status":"UP","database":{"status":"UP"},"amqp":{"status":"UP"}}
+// HTTP 200 when healthy, HTTP 503 when degraded
+```
+
+## Architecture Patterns
+
+### Batching Service Pattern
+```java
+public final class ExampleService extends AbstractReactive implements ReactiveService {
+    private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
+    private final AtomicBoolean flushInProgress = new AtomicBoolean(false);
+    private final AtomicBoolean running = new AtomicBoolean(false);
+    
+    @Override
+    public Promise<Void> start() {
+        running.set(true);
+        reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
+        return Promise.complete();
+    }
+    
+    public Promise<Void> save(final Payload<Map<String, Object>> payload, final long offset) {
+        buffer.add(OffsetPayload.of(payload, offset));
+        if (buffer.size() >= batchSize) {
+            return flush();
+        }
+        return Promise.complete();
+    }
+    
+    private Promise<Void> flush() {
+        // Drain buffer, batch insert, update offset transactionally
+    }
+}
+```
+
+### Repository Pattern
+```java
+public final class ExampleRepository {
+    private final DataSource dataSource;
+    
+    public int saveBatch(final List<Map<String, Object>> items, final long offset) throws SQLException {
+        try (final var conn = dataSource.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                // Insert data batch
+                final var count = insertBatch(conn, items);
+                // Update offset
+                upsertOffset(conn, stream, offset);
+                conn.commit();
+                return count;
+            } catch (final SQLException e) {
+                conn.rollback();
+                throw e;
+            }
+        }
+    }
+}
 ```
 
 ## Configuration
@@ -66,16 +146,25 @@ All settings via system properties or environment variables:
 | `amqp.rabbitmq.host` | `localhost` | RabbitMQ host |
 | `amqp.stream.port` | `5552` | RabbitMQ Streams port |
 | `amqp.rabbitmq.username` | `crypto_scout_mq` | RabbitMQ user |
+| `amqp.rabbitmq.password` | (empty) | RabbitMQ password (required) |
 | `amqp.bybit.stream` | `bybit-stream` | Bybit data stream name |
 | `amqp.crypto.scout.stream` | `crypto-scout-stream` | CMC data stream name |
-| `bybit.stream.module.enabled` | `false` | Enable Bybit modules |
-| `cmc.parser.module.enabled` | `true` | Enable CMC module |
+| `jdbc.datasource.url` | `jdbc:postgresql://localhost:5432/crypto_scout` | Database URL |
+| `jdbc.datasource.username` | `crypto_scout_db` | Database user |
+| `jdbc.datasource.password` | (empty) | Database password (required) |
+| `jdbc.bybit.batch-size` | `1000` | Bybit batch size (1-10000) |
+| `jdbc.bybit.flush-interval-ms` | `1000` | Bybit flush interval |
+| `jdbc.crypto.scout.batch-size` | `100` | CMC batch size (1-10000) |
+| `jdbc.crypto.scout.flush-interval-ms` | `1000` | CMC flush interval |
 
 ## When to Use Me
 
 Use this skill when:
-- Implementing new modules or consumers
+- Implementing new stream consumers or services
+- Creating new database repositories
 - Understanding the microservice architecture
-- Configuring AMQP publishing and streams
-- Working with Bybit WebSocket or CMC HTTP APIs
+- Working with RabbitMQ Streams consumption
+- Implementing batch processing patterns
 - Adding health checks or observability features
+- Configuring database connection pooling
+- Understanding offset management patterns
