@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
+import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -75,6 +76,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
     private static final String TARGET_SYMBOL = "BTC";
     private static final Source TARGET_SOURCE = Source.BTC_USD_1W;
     private static final int INITIAL_LOOKBACK = 250;
+    private static final Duration LOOKBACK_PERIOD = Duration.ofDays(7L * INITIAL_LOOKBACK);
 
     public static AnalystService create(final NioReactor reactor, final Executor executor,
                                         final StreamOffsetsRepository streamOffsetsRepository,
@@ -134,8 +136,11 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
     private Promise<Void> initializeCalculator() {
         return Promise.ofBlocking(executor, () -> {
             try {
+                final var now = OffsetDateTime.now();
+                final var from = now.minus(LOOKBACK_PERIOD);
+
                 // Step 1: Try to load existing indicators (has EMA values)
-                final var existingIndicators = analystRepository.getIndicators(TARGET_SYMBOL, INITIAL_LOOKBACK);
+                final var existingIndicators = analystRepository.getIndicators(TARGET_SYMBOL, from, now);
 
                 if (!existingIndicators.isEmpty()) {
                     maCalculator.initialize(existingIndicators);
@@ -149,7 +154,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
                 final var neededDataPoints = Math.max(0, 200 - currentDataCount);
 
                 if (neededDataPoints > 0) {
-                    final var klines = analystRepository.getKlines(TARGET_SYMBOL, INITIAL_LOOKBACK);
+                    final var klines = analystRepository.getKlines(TARGET_SYMBOL, from, now);
 
                     if (!klines.isEmpty()) {
                         initializeFromKlines(klines, neededDataPoints);
