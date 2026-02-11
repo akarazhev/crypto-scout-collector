@@ -40,7 +40,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.KLINE_1W_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.TIME_CLOSE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.TIME_HIGH;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.TIME_LOW;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.TIME_OPEN;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.CLOSE_PRICE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.EMA_100;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.EMA_200;
@@ -133,11 +139,17 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
                     final var row = new HashMap<String, Object>();
                     row.put(SYMBOL, rs.getString(SYMBOL));
                     row.put(TIMESTAMP, rs.getObject(TIMESTAMP, OffsetDateTime.class));
-                    row.put(CLOSE, rs.getDouble(CLOSE));
+                    row.put(TIME_OPEN, rs.getObject(TIME_OPEN, OffsetDateTime.class));
+                    row.put(TIME_CLOSE, rs.getObject(TIME_CLOSE, OffsetDateTime.class));
+                    row.put(TIME_HIGH, rs.getObject(TIME_HIGH, OffsetDateTime.class));
+                    row.put(TIME_LOW, rs.getObject(TIME_LOW, OffsetDateTime.class));
                     row.put(OPEN, rs.getDouble(OPEN));
                     row.put(HIGH, rs.getDouble(HIGH));
                     row.put(LOW, rs.getDouble(LOW));
+                    row.put(CLOSE, rs.getDouble(CLOSE));
                     row.put(VOLUME, rs.getDouble(VOLUME));
+                    row.put(MARKET_CAP, rs.getDouble(MARKET_CAP));
+                    row.put(CIRCULATING_SUPPLY, rs.getLong(CIRCULATING_SUPPLY));
                     results.add(row);
                 }
             }

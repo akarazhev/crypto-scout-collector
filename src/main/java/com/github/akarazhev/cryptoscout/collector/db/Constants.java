@@ -58,6 +58,14 @@ public final class Constants {
         // CMC BTC-USD kline 1w table
         public static final String CMC_KLINE_1W_TABLE = "crypto_scout.cmc_kline_1w";
 
+        // CMC kline column names
+        public static final String CIRCULATING_SUPPLY = "circulating_supply";
+        public static final String MARKET_CAP = "market_cap";
+        public static final String TIME_CLOSE = "time_close";
+        public static final String TIME_HIGH = "time_high";
+        public static final String TIME_LOW = "time_low";
+        public static final String TIME_OPEN = "time_open";
+
         // CMC fgi
         static final String FGI_INSERT = "INSERT INTO " + CMC_FGI_TABLE +
                 "(value, value_classification, update_time) VALUES " +
@@ -89,7 +97,8 @@ public final class Constants {
                         "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1W_TABLE +
                         " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
         static final String KLINE_1W_SELECT_BY_SYMBOL =
-                "SELECT symbol, timestamp, open, high, low, close, volume FROM " + CMC_KLINE_1W_TABLE +
+                "SELECT symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, " +
+                        "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1W_TABLE +
                         " WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?";
         static final int CMC_KLINE_SYMBOL = 1;
         static final int CMC_KLINE_TIME_OPEN = 2;
