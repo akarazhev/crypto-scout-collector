@@ -40,8 +40,6 @@ public final class Constants {
         static final int TO_WITH_SYMBOL = 3;
         static final int FROM = 1;
         static final int TO = 2;
-        // Limit for queries
-        static final int LIMIT = 2;
     }
 
     public final static class Cmc {
@@ -446,11 +444,6 @@ public final class Constants {
                 "ema_100 = EXCLUDED.ema_100, " +
                 "ema_200 = EXCLUDED.ema_200, " +
                 "updated_at = NOW()";
-        static final String INDICATORS_SELECT_BY_SYMBOL =
-                "SELECT symbol, timestamp, close_price, sma_50, sma_100, sma_200, " +
-                        "ema_50, ema_100, ema_200 " +
-                        "FROM " + CMC_KLINE_1W_INDICATORS_TABLE +
-                        " WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?";
         static final String INDICATORS_SELECT_BY_SYMBOL_RANGE =
                 "SELECT symbol, timestamp, close_price, sma_50, sma_100, sma_200, " +
                         "ema_50, ema_100, ema_200 " +
@@ -465,11 +458,6 @@ public final class Constants {
         static final int IND_EMA_50 = 7;
         static final int IND_EMA_100 = 8;
         static final int IND_EMA_200 = 9;
-
-        // Range query parameter indices (follows Range pattern)
-        static final int IND_RANGE_SYMBOL = 1;
-        static final int IND_RANGE_FROM = 2;
-        static final int IND_RANGE_TO = 3;
     }
 
     public final static class Offsets {
