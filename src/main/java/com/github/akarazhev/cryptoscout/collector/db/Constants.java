@@ -451,6 +451,11 @@ public final class Constants {
                         "ema_50, ema_100, ema_200 " +
                         "FROM " + CMC_KLINE_1W_INDICATORS_TABLE +
                         " WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?";
+        static final String INDICATORS_SELECT_BY_SYMBOL_RANGE =
+                "SELECT symbol, timestamp, close_price, sma_50, sma_100, sma_200, " +
+                        "ema_50, ema_100, ema_200 " +
+                        "FROM " + CMC_KLINE_1W_INDICATORS_TABLE +
+                        " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
         static final int IND_SYMBOL = 1;
         static final int IND_TIMESTAMP = 2;
         static final int IND_CLOSE_PRICE = 3;
@@ -460,6 +465,11 @@ public final class Constants {
         static final int IND_EMA_50 = 7;
         static final int IND_EMA_100 = 8;
         static final int IND_EMA_200 = 9;
+
+        // Range query parameter indices (follows Range pattern)
+        static final int IND_RANGE_SYMBOL = 1;
+        static final int IND_RANGE_FROM = 2;
+        static final int IND_RANGE_TO = 3;
     }
 
     public final static class Offsets {
