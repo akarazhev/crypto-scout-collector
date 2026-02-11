@@ -51,6 +51,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
+import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
+
 public final class AnalystService extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AnalystService.class);
     private final Executor executor;
@@ -159,7 +166,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
     private void initializeFromKlines(final List<Map<String, Object>> klines, final int neededPoints) {
         // Sort ascending (oldest first)
         final var sorted = klines.stream()
-            .sorted(Comparator.comparing(m -> (OffsetDateTime) m.get("timestamp")))
+            .sorted(Comparator.comparing(m -> (OffsetDateTime) m.get(TIMESTAMP)))
             .toList();
 
         // Take only what we need from the end, but process in order
@@ -167,8 +174,8 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
             sorted : sorted.subList(sorted.size() - neededPoints, sorted.size());
 
         for (final var kline : toProcess) {
-            final var timestamp = (OffsetDateTime) kline.get("timestamp");
-            final var close = ((Number) kline.get("close")).doubleValue();
+            final var timestamp = (OffsetDateTime) kline.get(TIMESTAMP);
+            final var close = ((Number) kline.get(CLOSE)).doubleValue();
             maCalculator.addPrice(timestamp, close);
         }
 
@@ -250,7 +257,15 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
     }
 
     private OffsetDateTime extractTimestamp(final Map<String, Object> data) {
-        final var ts = data.get("timestamp") != null ? data.get("timestamp") : data.get("time_close");
+        final var row = getFirstRow(QUOTES, data);
+        if (row == null) {
+            return null;
+        }
+        final var quote = getRow(QUOTE, row);
+        if (quote == null) {
+            return null;
+        }
+        final var ts = quote.get(TIMESTAMP);
         if (ts instanceof OffsetDateTime) {
             return (OffsetDateTime) ts;
         }
@@ -260,20 +275,16 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         return null;
     }
 
-    @SuppressWarnings("unchecked")
     private double extractClosePrice(final Map<String, Object> data) {
-        final var quotes = (Map<String, Object>) data.get("quote");
-        if (quotes != null) {
-            final var quote = (Map<String, Object>) quotes.get("USD");
-            if (quote != null) {
-                final var closeObj = quote.get("close");
-                if (closeObj instanceof Number) {
-                    return ((Number) closeObj).doubleValue();
-                }
-            }
+        final var row = getFirstRow(QUOTES, data);
+        if (row == null) {
+            return Double.NaN;
         }
-        // Fallback: try direct close field
-        final var closeObj = data.get("close");
+        final var quote = getRow(QUOTE, row);
+        if (quote == null) {
+            return Double.NaN;
+        }
+        final var closeObj = quote.get(CLOSE);
         if (closeObj instanceof Number) {
             return ((Number) closeObj).doubleValue();
         }

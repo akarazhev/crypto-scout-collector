@@ -416,6 +416,15 @@ public final class Constants {
         // CMC kline 1w indicators table
         public static final String CMC_KLINE_1W_INDICATORS_TABLE = "crypto_scout.cmc_kline_1w_indicators";
 
+        // Column names
+        public static final String CLOSE_PRICE = "close_price";
+        public static final String EMA_50 = "ema_50";
+        public static final String EMA_100 = "ema_100";
+        public static final String EMA_200 = "ema_200";
+        public static final String SMA_50 = "sma_50";
+        public static final String SMA_100 = "sma_100";
+        public static final String SMA_200 = "sma_200";
+
         // CMC kline 1w indicators
         static final String INDICATORS_INSERT = "INSERT INTO " + CMC_KLINE_1W_INDICATORS_TABLE +
                 "(symbol, timestamp, close_price, sma_50, sma_100, sma_200, ema_50, ema_100, ema_200) VALUES " +

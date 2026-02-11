@@ -41,6 +41,10 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.KLINE_1W_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.CLOSE_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.EMA_100;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.EMA_200;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.EMA_50;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.INDICATORS_INSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.INDICATORS_SELECT_BY_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_CLOSE_PRICE;
@@ -52,10 +56,20 @@ import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1w
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_SMA_50;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_TIMESTAMP;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.SMA_100;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.SMA_200;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.SMA_50;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.LIMIT;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.HIGH;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.LOW;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.OPEN;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.SYMBOL;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.VOLUME;
 
 public final class AnalystRepository extends AbstractReactive implements ReactiveService {
     private final DataSource dataSource;
@@ -92,15 +106,15 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();
-                    row.put("symbol", rs.getString("symbol"));
-                    row.put("timestamp", rs.getObject("timestamp", OffsetDateTime.class));
-                    row.put("close_price", rs.getDouble("close_price"));
-                    row.put("sma_50", rs.getObject("sma_50"));
-                    row.put("sma_100", rs.getObject("sma_100"));
-                    row.put("sma_200", rs.getObject("sma_200"));
-                    row.put("ema_50", rs.getObject("ema_50"));
-                    row.put("ema_100", rs.getObject("ema_100"));
-                    row.put("ema_200", rs.getObject("ema_200"));
+                    row.put(SYMBOL, rs.getString(SYMBOL));
+                    row.put(TIMESTAMP, rs.getObject(TIMESTAMP, OffsetDateTime.class));
+                    row.put(CLOSE_PRICE, rs.getDouble(CLOSE_PRICE));
+                    row.put(SMA_50, rs.getObject(SMA_50));
+                    row.put(SMA_100, rs.getObject(SMA_100));
+                    row.put(SMA_200, rs.getObject(SMA_200));
+                    row.put(EMA_50, rs.getObject(EMA_50));
+                    row.put(EMA_100, rs.getObject(EMA_100));
+                    row.put(EMA_200, rs.getObject(EMA_200));
                     results.add(row);
                 }
             }
@@ -117,13 +131,13 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();
-                    row.put("symbol", rs.getString("symbol"));
-                    row.put("timestamp", rs.getObject("timestamp", OffsetDateTime.class));
-                    row.put("close", rs.getDouble("close"));
-                    row.put("open", rs.getDouble("open"));
-                    row.put("high", rs.getDouble("high"));
-                    row.put("low", rs.getDouble("low"));
-                    row.put("volume", rs.getDouble("volume"));
+                    row.put(SYMBOL, rs.getString(SYMBOL));
+                    row.put(TIMESTAMP, rs.getObject(TIMESTAMP, OffsetDateTime.class));
+                    row.put(CLOSE, rs.getDouble(CLOSE));
+                    row.put(OPEN, rs.getDouble(OPEN));
+                    row.put(HIGH, rs.getDouble(HIGH));
+                    row.put(LOW, rs.getDouble(LOW));
+                    row.put(VOLUME, rs.getDouble(VOLUME));
                     results.add(row);
                 }
             }
@@ -139,15 +153,15 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
             try (final var ps = c.prepareStatement(INDICATORS_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
                 for (final var indicator : indicators) {
-                    ps.setString(IND_SYMBOL, (String) indicator.get("symbol"));
-                    ps.setObject(IND_TIMESTAMP, indicator.get("timestamp"));
-                    ps.setDouble(IND_CLOSE_PRICE, ((Number) indicator.get("close_price")).doubleValue());
-                    setNullableDouble(ps, IND_SMA_50, indicator.get("sma_50"));
-                    setNullableDouble(ps, IND_SMA_100, indicator.get("sma_100"));
-                    setNullableDouble(ps, IND_SMA_200, indicator.get("sma_200"));
-                    setNullableDouble(ps, IND_EMA_50, indicator.get("ema_50"));
-                    setNullableDouble(ps, IND_EMA_100, indicator.get("ema_100"));
-                    setNullableDouble(ps, IND_EMA_200, indicator.get("ema_200"));
+                    ps.setString(IND_SYMBOL, (String) indicator.get(SYMBOL));
+                    ps.setObject(IND_TIMESTAMP, indicator.get(TIMESTAMP));
+                    ps.setDouble(IND_CLOSE_PRICE, ((Number) indicator.get(CLOSE_PRICE)).doubleValue());
+                    setNullableDouble(ps, IND_SMA_50, indicator.get(SMA_50));
+                    setNullableDouble(ps, IND_SMA_100, indicator.get(SMA_100));
+                    setNullableDouble(ps, IND_SMA_200, indicator.get(SMA_200));
+                    setNullableDouble(ps, IND_EMA_50, indicator.get(EMA_50));
+                    setNullableDouble(ps, IND_EMA_100, indicator.get(EMA_100));
+                    setNullableDouble(ps, IND_EMA_200, indicator.get(EMA_200));
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {
