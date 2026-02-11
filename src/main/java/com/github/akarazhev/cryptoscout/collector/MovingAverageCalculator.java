@@ -82,11 +82,7 @@ final class MovingAverageCalculator {
             this.ema200 = ema200;
         }
 
-        /**
-         * Convert to map with underscore keys for repository.
-         */
-        Map<String, Object> toMap(final String symbol, final OffsetDateTime timestamp,
-                                  final double closePrice) {
+        Map<String, Object> toMap(final String symbol, final OffsetDateTime timestamp, final double closePrice) {
             final var map = new HashMap<String, Object>();
             map.put("symbol", symbol);
             map.put("timestamp", timestamp);
@@ -109,10 +105,6 @@ final class MovingAverageCalculator {
         this.maxSize = Math.max(maxPeriod, MAX_PERIOD);
     }
 
-    /**
-     * Initialize with historical data from database (newest first in list).
-     * The data will be sorted to chronological order internally.
-     */
     synchronized void initialize(final List<Map<String, Object>> historicalData) {
         if (historicalData == null || historicalData.isEmpty()) {
             return;
@@ -140,9 +132,6 @@ final class MovingAverageCalculator {
         lastEma200 = (Double) last.get("ema_200");
     }
 
-    /**
-     * Add new price point and compute moving averages.
-     */
     synchronized MovingAverages addPrice(final OffsetDateTime timestamp, final double close) {
         // Add to buffer
         priceBuffer.addLast(new PricePoint(timestamp, close));
@@ -173,7 +162,6 @@ final class MovingAverageCalculator {
             return Double.NaN;
         }
 
-        // Sum last 'period' prices
         final var prices = priceBuffer.stream()
             .skip(Math.max(0, priceBuffer.size() - period))
             .mapToDouble(pp -> pp.close)
@@ -182,18 +170,11 @@ final class MovingAverageCalculator {
         return Arrays.stream(prices).average().orElse(Double.NaN);
     }
 
-    private double computeEma(final double close, final int period,
-                              final Double lastEma, final double multiplier) {
+    private double computeEma(final double close, final int period, final Double lastEma, final double multiplier) {
         if (lastEma == null || Double.isNaN(lastEma)) {
-            // First EMA = SMA
             return computeSma(period);
         }
-        // EMA = (Close * multiplier) + (Last EMA * (1 - multiplier))
         return (close * multiplier) + (lastEma * (1 - multiplier));
-    }
-
-    synchronized boolean hasEnoughData(final int period) {
-        return priceBuffer.size() >= period;
     }
 
     synchronized int getDataCount() {

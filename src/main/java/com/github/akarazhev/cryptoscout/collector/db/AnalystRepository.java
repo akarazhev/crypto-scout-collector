@@ -24,6 +24,7 @@
 
 package com.github.akarazhev.cryptoscout.collector.db;
 
+import com.github.akarazhev.cryptoscout.config.AmqpConfig;
 import com.github.akarazhev.cryptoscout.config.JdbcConfig;
 import io.activej.async.service.ReactiveService;
 import io.activej.promise.Promise;
@@ -39,8 +40,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.*;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.KLINE_1W_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.INDICATORS_INSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.INDICATORS_SELECT_BY_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_CLOSE_PRICE;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_EMA_100;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_EMA_200;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_EMA_50;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_SMA_100;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_SMA_200;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_SMA_50;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_SYMBOL;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.CmcKline1wIndicators.IND_TIMESTAMP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Offsets.STREAM_OFFSETS_UPSERT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.LIMIT;
+import static com.github.akarazhev.cryptoscout.collector.db.Constants.Range.SYMBOL;
 import static com.github.akarazhev.cryptoscout.collector.db.DBUtils.updateOffset;
 
 public final class AnalystRepository extends AbstractReactive implements ReactiveService {
@@ -48,17 +62,15 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
     private final int batchSize;
     private final String stream;
 
-    public static AnalystRepository create(final NioReactor reactor,
-                                           final CollectorDataSource collectorDataSource) {
+    public static AnalystRepository create(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         return new AnalystRepository(reactor, collectorDataSource);
     }
 
-    private AnalystRepository(final NioReactor reactor,
-                              final CollectorDataSource collectorDataSource) {
+    private AnalystRepository(final NioReactor reactor, final CollectorDataSource collectorDataSource) {
         super(reactor);
         this.dataSource = collectorDataSource.getDataSource();
         this.batchSize = JdbcConfig.getAnalystBatchSize();
-        this.stream = "analyst-cmc-kline-1w";
+        this.stream = AmqpConfig.getAmqpCryptoScoutStream();
     }
 
     @Override
@@ -71,17 +83,12 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
         return Promise.complete();
     }
 
-    /**
-     * Load recent indicators for EMA initialization.
-     * Returns data in descending timestamp order (newest first).
-     */
-    public List<Map<String, Object>> getRecentIndicators(final String symbol, final int limit)
-            throws SQLException {
+    public List<Map<String, Object>> getIndicators(final String symbol, final int limit) throws SQLException {
         final var results = new ArrayList<Map<String, Object>>();
         try (final var c = dataSource.getConnection();
-             final var ps = c.prepareStatement(INDICATORS_SELECT_RECENT)) {
-            ps.setString(1, symbol);
-            ps.setInt(2, limit);
+             final var ps = c.prepareStatement(INDICATORS_SELECT_BY_SYMBOL)) {
+            ps.setString(SYMBOL, symbol);
+            ps.setInt(LIMIT, limit);
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();
@@ -101,17 +108,12 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
         return results;
     }
 
-    /**
-     * Load recent klines from base cmc_kline_1w table for initialization.
-     * Returns data in descending timestamp order (newest first).
-     */
-    public List<Map<String, Object>> getRecentKlines(final String symbol, final int limit)
-            throws SQLException {
+    public List<Map<String, Object>> getKlines(final String symbol, final int limit) throws SQLException {
         final var results = new ArrayList<Map<String, Object>>();
         try (final var c = dataSource.getConnection();
-             final var ps = c.prepareStatement(KLINE_1W_SELECT_RECENT)) {
-            ps.setString(1, symbol);
-            ps.setInt(2, limit);
+             final var ps = c.prepareStatement(KLINE_1W_SELECT_BY_SYMBOL)) {
+            ps.setString(SYMBOL, symbol);
+            ps.setInt(LIMIT, limit);
             try (final var rs = ps.executeQuery()) {
                 while (rs.next()) {
                     final var row = new HashMap<String, Object>();
@@ -129,28 +131,23 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
         return results;
     }
 
-    /**
-     * Save indicators with batching and offset tracking.
-     */
-    public int saveIndicators(final List<Map<String, Object>> indicators, final long offset)
-            throws SQLException {
+    public int saveIndicators(final List<Map<String, Object>> indicators, final long offset) throws SQLException {
         var count = 0;
         try (final var c = dataSource.getConnection()) {
             final var oldAutoCommit = c.getAutoCommit();
             c.setAutoCommit(false);
-            try (final var ps = c.prepareStatement(INDICATORS_UPSERT);
+            try (final var ps = c.prepareStatement(INDICATORS_INSERT);
                  final var psOffset = c.prepareStatement(STREAM_OFFSETS_UPSERT)) {
-
-                for (final var ind : indicators) {
-                    ps.setString(IND_SYMBOL, (String) ind.get("symbol"));
-                    ps.setObject(IND_TIMESTAMP, ind.get("timestamp"));
-                    ps.setDouble(IND_CLOSE_PRICE, ((Number) ind.get("close_price")).doubleValue());
-                    setNullableDouble(ps, IND_SMA_50, ind.get("sma_50"));
-                    setNullableDouble(ps, IND_SMA_100, ind.get("sma_100"));
-                    setNullableDouble(ps, IND_SMA_200, ind.get("sma_200"));
-                    setNullableDouble(ps, IND_EMA_50, ind.get("ema_50"));
-                    setNullableDouble(ps, IND_EMA_100, ind.get("ema_100"));
-                    setNullableDouble(ps, IND_EMA_200, ind.get("ema_200"));
+                for (final var indicator : indicators) {
+                    ps.setString(IND_SYMBOL, (String) indicator.get("symbol"));
+                    ps.setObject(IND_TIMESTAMP, indicator.get("timestamp"));
+                    ps.setDouble(IND_CLOSE_PRICE, ((Number) indicator.get("close_price")).doubleValue());
+                    setNullableDouble(ps, IND_SMA_50, indicator.get("sma_50"));
+                    setNullableDouble(ps, IND_SMA_100, indicator.get("sma_100"));
+                    setNullableDouble(ps, IND_SMA_200, indicator.get("sma_200"));
+                    setNullableDouble(ps, IND_EMA_50, indicator.get("ema_50"));
+                    setNullableDouble(ps, IND_EMA_100, indicator.get("ema_100"));
+                    setNullableDouble(ps, IND_EMA_200, indicator.get("ema_200"));
 
                     ps.addBatch();
                     if (++count % batchSize == 0) {
@@ -171,12 +168,11 @@ public final class AnalystRepository extends AbstractReactive implements Reactiv
         return count;
     }
 
-    private void setNullableDouble(final java.sql.PreparedStatement ps, final int index,
-                                    final Object value) throws SQLException {
+    private void setNullableDouble(final java.sql.PreparedStatement ps, final int index, final Object value)
+            throws SQLException {
         if (value == null) {
             ps.setNull(index, Types.DOUBLE);
-        } else if (value instanceof Double) {
-            final var d = (Double) value;
+        } else if (value instanceof Double d) {
             if (Double.isNaN(d)) {
                 ps.setNull(index, Types.DOUBLE);
             } else {

@@ -149,8 +149,8 @@ public final class StreamService extends AbstractReactive implements ReactiveSer
             return;
         }
 
-        reactor.execute(() -> analystService.analyze(payload, context.offset())
-                .whenException(ex -> LOGGER.error("Failed to analyze stream message from {}", type.name(), ex)));
+        reactor.execute(() -> analystService.save(payload, context.offset())
+                .whenException(ex -> LOGGER.error("Failed to save stream message from {}", type.name(), ex)));
 
         reactor.execute(() -> (switch (type) {
             case CRYPTO_SCOUT -> cryptoScoutService.save(payload, context.offset());
