@@ -40,24 +40,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
-import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
-import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
-import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
-import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
 
 public final class AnalystService extends AbstractReactive implements ReactiveService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AnalystService.class);
@@ -70,13 +60,6 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
     private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
     private final AtomicBoolean flushInProgress = new AtomicBoolean(false);
     private final AtomicBoolean running = new AtomicBoolean(false);
-    private final MovingAverageCalculator maCalculator;
-
-    // Target configuration for cmc_kline_1w
-    private static final String TARGET_SYMBOL = "BTC";
-    private static final Source TARGET_SOURCE = Source.BTC_USD_1W;
-    private static final int INITIAL_LOOKBACK = 250;
-    private static final Duration LOOKBACK_PERIOD = Duration.ofDays(7L * INITIAL_LOOKBACK);
 
     public static AnalystService create(final NioReactor reactor, final Executor executor,
                                         final StreamOffsetsRepository streamOffsetsRepository,
@@ -94,18 +77,13 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         this.batchSize = JdbcConfig.getAnalystBatchSize();
         this.flushIntervalMs = JdbcConfig.getAnalystFlushIntervalMs();
         this.stream = AmqpConfig.getAmqpCryptoScoutStream();
-        this.maCalculator = new MovingAverageCalculator(INITIAL_LOOKBACK);
     }
 
     @Override
     public Promise<Void> start() {
-        return initializeCalculator()
-            .then(() -> {
-                running.set(true);
-                reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
-                LOGGER.info("AnalystService started");
-                return Promise.complete();
-            });
+        running.set(true);
+        reactor.delayBackground(flushIntervalMs, this::scheduledFlush);
+        return Promise.complete();
     }
 
     @Override
@@ -120,11 +98,6 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
             return Promise.complete();
         }
 
-        // Filter for BTC 1W data only
-        if (!TARGET_SOURCE.equals(payload.getSource())) {
-            return Promise.complete();
-        }
-
         buffer.add(OffsetPayload.of(payload, offset));
         if (buffer.size() >= batchSize) {
             return flush();
@@ -133,58 +106,14 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         return Promise.complete();
     }
 
-    private Promise<Void> initializeCalculator() {
-        return Promise.ofBlocking(executor, () -> {
-            try {
-                final var now = OffsetDateTime.now();
-                final var from = now.minus(LOOKBACK_PERIOD);
-
-                // Step 1: Try to load existing indicators (has EMA values)
-                final var existingIndicators = analystRepository.getIndicators(TARGET_SYMBOL, from, now);
-
-                if (!existingIndicators.isEmpty()) {
-                    maCalculator.initialize(existingIndicators);
-                    LOGGER.info("Initialized from {} existing indicators", existingIndicators.size());
-                } else {
-                    LOGGER.info("No existing indicators found, will compute from raw klines");
-                }
-
-                // Step 2: Load raw klines from cmc_kline_1w to fill gaps or initialize
-                final var currentDataCount = maCalculator.getDataCount();
-                final var neededDataPoints = Math.max(0, 200 - currentDataCount);
-
-                if (neededDataPoints > 0) {
-                    final var klines = analystRepository.getKlines(TARGET_SYMBOL, from, now);
-
-                    if (!klines.isEmpty()) {
-                        initializeFromKlines(klines, neededDataPoints);
-                    }
-                }
-
-                LOGGER.info("Calculator initialized with {} data points", maCalculator.getDataCount());
-            } catch (final SQLException e) {
-                throw new IllegalStateException("Failed to initialize calculator", e);
-            }
-        });
+    public Promise<List<Map<String, Object>>> getIndicators(final String symbol, final OffsetDateTime from,
+                                                            final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> analystRepository.getIndicators(symbol, from, to));
     }
 
-    private void initializeFromKlines(final List<Map<String, Object>> klines, final int neededPoints) {
-        // Sort ascending (oldest first)
-        final var sorted = klines.stream()
-            .sorted(Comparator.comparing(m -> (OffsetDateTime) m.get(TIMESTAMP)))
-            .toList();
-
-        // Take only what we need from the end, but process in order
-        final var toProcess = sorted.size() <= neededPoints ?
-            sorted : sorted.subList(sorted.size() - neededPoints, sorted.size());
-
-        for (final var kline : toProcess) {
-            final var timestamp = (OffsetDateTime) kline.get(TIMESTAMP);
-            final var close = ((Number) kline.get(CLOSE)).doubleValue();
-            maCalculator.addPrice(timestamp, close);
-        }
-
-        LOGGER.info("Loaded {} klines from cmc_kline_1w", toProcess.size());
+    public Promise<List<Map<String, Object>>> getKlines(final String symbol, final OffsetDateTime from,
+                                                        final OffsetDateTime to) {
+        return Promise.ofBlocking(executor, () -> analystRepository.getKlines(symbol, from, to));
     }
 
     private void scheduledFlush() {
@@ -204,7 +133,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
             return Promise.complete();
         }
 
-        final var items = new LinkedList<OffsetPayload<Map<String, Object>>>();
+        final var items = new ArrayList<OffsetPayload<Map<String, Object>>>();
         while (true) {
             final var item = buffer.poll();
             if (item == null) {
@@ -221,24 +150,18 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         return Promise.ofBlocking(executor, () -> {
             var maxOffset = -1L;
             final var indicators = new ArrayList<Map<String, Object>>();
-
             for (final var item : items) {
                 final var payload = item.payload();
+                final var source = payload.getSource();
                 final var data = payload.getData();
-                final var timestamp = extractTimestamp(data);
-                final var close = extractClosePrice(data);
-
-                if (timestamp != null && !Double.isNaN(close)) {
-                    final var mas = maCalculator.addPrice(timestamp, close);
-                    final var indicator = mas.toMap(TARGET_SYMBOL, timestamp, close);
-                    indicators.add(indicator);
+                if (Source.BTC_USD_1W.equals(source)) {
+                    indicators.add(data);
                 }
 
                 if (item.offset() > maxOffset) {
                     maxOffset = item.offset();
                 }
             }
-
             // No data to insert but we still may want to advance offset in rare cases
             if (indicators.isEmpty()) {
                 if (maxOffset >= 0) {
@@ -259,40 +182,5 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
                 LOGGER.info("Save {} indicators (tx) and updated offset {}", count, maxOffset);
             }
         }
-    }
-
-    private OffsetDateTime extractTimestamp(final Map<String, Object> data) {
-        final var row = getFirstRow(QUOTES, data);
-        if (row == null) {
-            return null;
-        }
-        final var quote = getRow(QUOTE, row);
-        if (quote == null) {
-            return null;
-        }
-        final var ts = quote.get(TIMESTAMP);
-        if (ts instanceof OffsetDateTime) {
-            return (OffsetDateTime) ts;
-        }
-        if (ts instanceof String) {
-            return OffsetDateTime.parse((String) ts);
-        }
-        return null;
-    }
-
-    private double extractClosePrice(final Map<String, Object> data) {
-        final var row = getFirstRow(QUOTES, data);
-        if (row == null) {
-            return Double.NaN;
-        }
-        final var quote = getRow(QUOTE, row);
-        if (quote == null) {
-            return Double.NaN;
-        }
-        final var closeObj = quote.get(CLOSE);
-        if (closeObj instanceof Number) {
-            return ((Number) closeObj).doubleValue();
-        }
-        return Double.NaN;
     }
 }
