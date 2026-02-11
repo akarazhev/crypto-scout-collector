@@ -89,8 +89,7 @@ public final class Constants {
                         "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1W_TABLE +
                         " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
         static final String KLINE_1W_SELECT_BY_SYMBOL =
-                "SELECT symbol, time_open, time_close, time_high, time_low, open, high, low, close, volume, " +
-                        "market_cap, circulating_supply, timestamp FROM " + CMC_KLINE_1W_TABLE +
+                "SELECT symbol, timestamp, open, high, low, close, volume FROM " + CMC_KLINE_1W_TABLE +
                         " WHERE symbol = ? ORDER BY timestamp DESC LIMIT ?";
         static final int CMC_KLINE_SYMBOL = 1;
         static final int CMC_KLINE_TIME_OPEN = 2;
