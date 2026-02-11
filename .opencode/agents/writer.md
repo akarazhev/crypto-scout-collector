@@ -1,7 +1,7 @@
 ---
 description: Creates and maintains technical documentation for the crypto-scout-collector microservice
 mode: subagent
-model: zai-coding-plan/glm-4.7
+model: opencode/kimi-k2.5-free
 temperature: 0.3
 tools:
   write: true

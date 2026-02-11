@@ -1,7 +1,7 @@
 ---
 description: Reviews Java code for quality, security, and adherence to crypto-scout-collector conventions
 mode: subagent
-model: zai-coding-plan/glm-4.7
+model: opencode/kimi-k2.5-free
 temperature: 0.1
 tools:
   write: false

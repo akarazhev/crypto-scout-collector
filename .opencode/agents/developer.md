@@ -1,7 +1,7 @@
 ---
 description: Develops and maintains the Java 25 crypto-scout-collector microservice for the crypto-scout ecosystem
 mode: primary
-model: zai-coding-plan/glm-4.7
+model: opencode/kimi-k2.5-free
 temperature: 0.2
 tools:
   write: true
