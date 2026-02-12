@@ -42,19 +42,12 @@
         <stream-client.version>1.4.0</stream-client.version>
         <postgresql.version>42.7.9</postgresql.version>
         <hikari.version>7.0.2</hikari.version>
-        <ta4j-core.version>0.22.1</ta4j-core.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.github.akarazhev.jcryptolib</groupId>
             <artifactId>jcryptolib</artifactId>
             <version>${jcryptolib.version}</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/org.ta4j/ta4j-core -->
-        <dependency>
-            <groupId>org.ta4j</groupId>
-            <artifactId>ta4j-core</artifactId>
-            <version>${ta4j-core.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/io.activej/activej-servicegraph -->
         <dependency>
