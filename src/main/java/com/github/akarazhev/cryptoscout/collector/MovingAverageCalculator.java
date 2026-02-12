@@ -25,7 +25,6 @@
 package com.github.akarazhev.cryptoscout.collector;
 
 import org.ta4j.core.BarSeries;
-import org.ta4j.core.BaseBar;
 import org.ta4j.core.BaseBarSeriesBuilder;
 import org.ta4j.core.indicators.averages.EMAIndicator;
 import org.ta4j.core.indicators.averages.SMAIndicator;
@@ -159,7 +158,7 @@ final class MovingAverageCalculator {
 
     private void addBar(final OffsetDateTime timestamp, final double close) {
         final var instant = timestamp.toInstant();
-        final var bar = BaseBar.builder()
+        final var bar = barSeries.barBuilder()
             .timePeriod(DEFAULT_DURATION)
             .endTime(instant)
             .openPrice(close)
