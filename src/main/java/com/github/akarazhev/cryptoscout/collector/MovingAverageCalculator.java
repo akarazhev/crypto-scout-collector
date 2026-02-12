@@ -27,9 +27,9 @@ package com.github.akarazhev.cryptoscout.collector;
 import org.ta4j.core.BarSeries;
 import org.ta4j.core.BaseBar;
 import org.ta4j.core.BaseBarSeriesBuilder;
-import org.ta4j.core.indicators.ClosePriceIndicator;
 import org.ta4j.core.indicators.EMAIndicator;
 import org.ta4j.core.indicators.SMAIndicator;
+import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
