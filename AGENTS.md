@@ -36,6 +36,13 @@ The MCP server is configured in `.opencode/package.json`:
 }
 ```
 
+**Note:** The API key is loaded from the `CONTEXT7_API_KEY` environment variable. Set it before running OpenCode:
+```bash
+export CONTEXT7_API_KEY="your-api-key-here"
+```
+
+**Important:** The MCP server must be configured in your **global OpenCode config** (`~/.config/opencode/opencode.json`) to be active. The project's `.opencode/package.json` serves as documentation and reference for the expected configuration. See the root project's AGENTS.md for the complete global configuration.
+
 ### Usage Guidelines
 
 1. **PostgreSQL/TimescaleDB**: Use `resolve-library-id` for "postgresql" or "timescaledb" to get latest JDBC patterns, batch insert optimizations, and hypertable management docs.
