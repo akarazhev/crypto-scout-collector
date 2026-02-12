@@ -6,6 +6,46 @@ This document provides guidelines for agentic coding contributors to the crypto-
 
 **crypto-scout-collector** is a Java 25 microservice that consumes cryptocurrency market data from RabbitMQ Streams and persists it to TimescaleDB. It provides exactly-once processing semantics with database-backed offset management. Built on ActiveJ for high-performance async I/O.
 
+## MCP Server Configuration
+
+This module uses the **Context7 MCP server** for enhanced code intelligence and documentation retrieval.
+
+### Available MCP Tools
+
+When working with this codebase, you can use the following MCP tools via the context7 server:
+
+- **resolve-library-id**: Resolve a library name to its Context7 library ID
+- **get-library-docs**: Retrieve up-to-date documentation for a library by its ID
+
+### Configuration
+
+The MCP server is configured in `.opencode/package.json`:
+
+```json
+{
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-4cec80b8-d947-4ff4-a29a-d00bea5a2fac"
+      },
+      "enabled": true
+    }
+  }
+}
+```
+
+### Usage Guidelines
+
+1. **PostgreSQL/TimescaleDB**: Use `resolve-library-id` for "postgresql" or "timescaledb" to get latest JDBC patterns, batch insert optimizations, and hypertable management docs.
+
+2. **HikariCP**: Retrieve connection pool configuration best practices and monitoring guidance.
+
+3. **RabbitMQ Streams**: Access stream consumer documentation for offset management and exactly-once processing patterns.
+
+4. **ActiveJ**: Get async I/O patterns for repository implementations and service lifecycle management.
+
 | Attribute | Value |
 |-----------|-------|
 | **Language** | Java 25 |
