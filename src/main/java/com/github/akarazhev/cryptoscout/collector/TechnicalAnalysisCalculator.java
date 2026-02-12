@@ -53,7 +53,7 @@ import java.util.Map;
  * Supports OHLCV data, multiple technical indicators, and market fundamentals.
  * Maintains backward compatibility with the original MovingAverageCalculator API.
  */
-final class MovingAverageCalculator {
+final class TechnicalAnalysisCalculator {
     private static final int DEFAULT_MAX_PERIOD = 200;
     private static final Duration DEFAULT_DURATION = Duration.ofDays(7);
     private static final int RSI_PERIOD = 14;
@@ -457,12 +457,12 @@ final class MovingAverageCalculator {
     }
 
     // Legacy constructor for backward compatibility
-    MovingAverageCalculator(final int maxPeriod) {
+    TechnicalAnalysisCalculator(final int maxPeriod) {
         this(Config.builder().maxPeriod(maxPeriod).build());
     }
 
     // New constructor with configuration
-    MovingAverageCalculator(final Config config) {
+    TechnicalAnalysisCalculator(final Config config) {
         this.config = config != null ? config : Config.builder().build();
         final var maxSize = Math.max(this.config.maxPeriod, DEFAULT_MAX_PERIOD);
 

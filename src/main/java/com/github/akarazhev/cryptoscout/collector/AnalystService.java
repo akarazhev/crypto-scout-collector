@@ -69,7 +69,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
     private final Queue<OffsetPayload<Map<String, Object>>> buffer = new ConcurrentLinkedQueue<>();
     private final AtomicBoolean flushInProgress = new AtomicBoolean(false);
     private final AtomicBoolean running = new AtomicBoolean(false);
-    private final MovingAverageCalculator maCalculator;
+    private final TechnicalAnalysisCalculator taCalculator;
 
     // Target configuration for cmc_kline_1w
     private static final String TARGET_SYMBOL = "BTC";
@@ -93,7 +93,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         this.batchSize = JdbcConfig.getAnalystBatchSize();
         this.flushIntervalMs = JdbcConfig.getAnalystFlushIntervalMs();
         this.stream = AmqpConfig.getAmqpCryptoScoutStream();
-        this.maCalculator = new MovingAverageCalculator(INITIAL_LOOKBACK);
+        this.taCalculator = new TechnicalAnalysisCalculator(INITIAL_LOOKBACK);
     }
 
     @Override
@@ -117,14 +117,14 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
                 final var existingIndicators = analystRepository.getIndicators(TARGET_SYMBOL, from, now);
 
                 if (!existingIndicators.isEmpty()) {
-                    maCalculator.initialize(existingIndicators);
+                    taCalculator.initialize(existingIndicators);
                     LOGGER.info("Initialized from {} existing indicators", existingIndicators.size());
                 } else {
                     LOGGER.info("No existing indicators found, will compute from raw klines");
                 }
 
                 // Step 2: Load raw klines from cmc_kline_1w to fill gaps or initialize
-                final var currentDataCount = maCalculator.getDataCount();
+                final var currentDataCount = taCalculator.getDataCount();
                 final var neededDataPoints = Math.max(0, 200 - currentDataCount);
 
                 if (neededDataPoints > 0) {
@@ -135,7 +135,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
                     }
                 }
 
-                LOGGER.info("Calculator initialized with {} data points", maCalculator.getDataCount());
+                LOGGER.info("Calculator initialized with {} data points", taCalculator.getDataCount());
             } catch (final SQLException e) {
                 throw new IllegalStateException("Failed to initialize calculator", e);
             }
@@ -155,7 +155,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         for (final var kline : toProcess) {
             final var timestamp = (OffsetDateTime) kline.get(TIMESTAMP);
             final var close = ((Number) kline.get(CLOSE)).doubleValue();
-            maCalculator.addPrice(timestamp, close);
+            taCalculator.addPrice(timestamp, close);
         }
 
         LOGGER.info("Loaded {} klines from cmc_kline_1w", toProcess.size());
@@ -238,7 +238,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
                 final var close = extractClosePrice(data);
 
                 if (timestamp != null && !Double.isNaN(close)) {
-                    final var mas = maCalculator.addPrice(timestamp, close);
+                    final var mas = taCalculator.addPrice(timestamp, close);
                     final var indicator = mas.toMap(TARGET_SYMBOL, timestamp, close);
                     indicators.add(indicator);
                 }
