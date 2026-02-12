@@ -24,35 +24,36 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
+import org.ta4j.core.BarSeries;
+import org.ta4j.core.BaseBar;
+import org.ta4j.core.BaseBarSeriesBuilder;
+import org.ta4j.core.indicators.ClosePriceIndicator;
+import org.ta4j.core.indicators.EMAIndicator;
+import org.ta4j.core.indicators.SMAIndicator;
+
+import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Thread-safe stateful calculator for SMA and EMA.
- * Maintains circular buffers for price history and last EMA values.
+ * Thread-safe stateful calculator for SMA and EMA using ta4j library.
+ * Maintains a BarSeries for price history and computes indicators using ta4j.
  */
 final class MovingAverageCalculator {
     private static final int MAX_PERIOD = 200;
+    private static final Duration DEFAULT_DURATION = Duration.ofDays(7);
 
-    // Circular buffer for close prices (oldest at head, newest at tail)
-    private final Deque<PricePoint> priceBuffer = new ArrayDeque<>();
-    private final int maxSize;
-
-    // Last EMA values (initialized to null)
-    private Double lastEma50;
-    private Double lastEma100;
-    private Double lastEma200;
-
-    // EMA multipliers: 2 / (period + 1)
-    private static final double EMA50_MULTIPLIER = 2.0 / 51.0;
-    private static final double EMA100_MULTIPLIER = 2.0 / 101.0;
-    private static final double EMA200_MULTIPLIER = 2.0 / 201.0;
+    private final BarSeries barSeries;
+    private final ClosePriceIndicator closePriceIndicator;
+    private final SMAIndicator sma50Indicator;
+    private final SMAIndicator sma100Indicator;
+    private final SMAIndicator sma200Indicator;
+    private final EMAIndicator ema50Indicator;
+    private final EMAIndicator ema100Indicator;
+    private final EMAIndicator ema200Indicator;
 
     static final class PricePoint {
         final OffsetDateTime timestamp;
@@ -102,7 +103,18 @@ final class MovingAverageCalculator {
     }
 
     MovingAverageCalculator(final int maxPeriod) {
-        this.maxSize = Math.max(maxPeriod, MAX_PERIOD);
+        final var maxSize = Math.max(maxPeriod, MAX_PERIOD);
+        this.barSeries = new BaseBarSeriesBuilder()
+            .withMaxBarCount(maxSize)
+            .withName("MA_Calculator")
+            .build();
+        this.closePriceIndicator = new ClosePriceIndicator(barSeries);
+        this.sma50Indicator = new SMAIndicator(closePriceIndicator, 50);
+        this.sma100Indicator = new SMAIndicator(closePriceIndicator, 100);
+        this.sma200Indicator = new SMAIndicator(closePriceIndicator, 200);
+        this.ema50Indicator = new EMAIndicator(closePriceIndicator, 50);
+        this.ema100Indicator = new EMAIndicator(closePriceIndicator, 100);
+        this.ema200Indicator = new EMAIndicator(closePriceIndicator, 200);
     }
 
     synchronized void initialize(final List<Map<String, Object>> historicalData) {
@@ -115,69 +127,56 @@ final class MovingAverageCalculator {
             .sorted(Comparator.comparing(m -> (OffsetDateTime) m.get("timestamp")))
             .toList();
 
-        // Load into buffer
+        // Load into BarSeries
         for (final var row : sorted) {
             final var timestamp = (OffsetDateTime) row.get("timestamp");
             final var close = ((Number) row.get("close_price")).doubleValue();
-            priceBuffer.addLast(new PricePoint(timestamp, close));
-            if (priceBuffer.size() > maxSize) {
-                priceBuffer.removeFirst();
-            }
+            addBar(timestamp, close);
         }
-
-        // Initialize EMAs from last calculated values if available
-        final var last = sorted.get(sorted.size() - 1);
-        lastEma50 = (Double) last.get("ema_50");
-        lastEma100 = (Double) last.get("ema_100");
-        lastEma200 = (Double) last.get("ema_200");
     }
 
     synchronized MovingAverages addPrice(final OffsetDateTime timestamp, final double close) {
-        // Add to buffer
-        priceBuffer.addLast(new PricePoint(timestamp, close));
-        if (priceBuffer.size() > maxSize) {
-            priceBuffer.removeFirst();
-        }
+        addBar(timestamp, close);
 
-        // Compute SMAs
-        final var sma50 = computeSma(50);
-        final var sma100 = computeSma(100);
-        final var sma200 = computeSma(200);
+        final var lastIndex = barSeries.getEndIndex();
 
-        // Compute EMAs
-        final var ema50 = computeEma(close, 50, lastEma50, EMA50_MULTIPLIER);
-        final var ema100 = computeEma(close, 100, lastEma100, EMA100_MULTIPLIER);
-        final var ema200 = computeEma(close, 200, lastEma200, EMA200_MULTIPLIER);
+        // Compute SMAs (return NaN if insufficient data)
+        final var sma50 = getIndicatorValue(sma50Indicator, lastIndex, 50);
+        final var sma100 = getIndicatorValue(sma100Indicator, lastIndex, 100);
+        final var sma200 = getIndicatorValue(sma200Indicator, lastIndex, 200);
 
-        // Update last EMA values
-        lastEma50 = ema50;
-        lastEma100 = ema100;
-        lastEma200 = ema200;
+        // Compute EMAs (return NaN if insufficient data)
+        final var ema50 = getIndicatorValue(ema50Indicator, lastIndex, 50);
+        final var ema100 = getIndicatorValue(ema100Indicator, lastIndex, 100);
+        final var ema200 = getIndicatorValue(ema200Indicator, lastIndex, 200);
 
         return new MovingAverages(sma50, sma100, sma200, ema50, ema100, ema200);
     }
 
-    private double computeSma(final int period) {
-        if (priceBuffer.size() < period) {
+    synchronized int getDataCount() {
+        return barSeries.getBarCount();
+    }
+
+    private void addBar(final OffsetDateTime timestamp, final double close) {
+        final var instant = timestamp.toInstant();
+        final var bar = BaseBar.builder()
+            .timePeriod(DEFAULT_DURATION)
+            .endTime(instant)
+            .openPrice(close)
+            .highPrice(close)
+            .lowPrice(close)
+            .closePrice(close)
+            .volume(0)
+            .build();
+        barSeries.addBar(bar);
+    }
+
+    private double getIndicatorValue(final org.ta4j.core.Indicator<org.ta4j.core.num.Num> indicator,
+                                     final int index,
+                                     final int period) {
+        if (barSeries.getBarCount() < period) {
             return Double.NaN;
         }
-
-        final var prices = priceBuffer.stream()
-            .skip(Math.max(0, priceBuffer.size() - period))
-            .mapToDouble(pp -> pp.close)
-            .toArray();
-
-        return Arrays.stream(prices).average().orElse(Double.NaN);
-    }
-
-    private double computeEma(final double close, final int period, final Double lastEma, final double multiplier) {
-        if (lastEma == null || Double.isNaN(lastEma)) {
-            return computeSma(period);
-        }
-        return (close * multiplier) + (lastEma * (1 - multiplier));
-    }
-
-    synchronized int getDataCount() {
-        return priceBuffer.size();
+        return indicator.getValue(index).doubleValue();
     }
 }
