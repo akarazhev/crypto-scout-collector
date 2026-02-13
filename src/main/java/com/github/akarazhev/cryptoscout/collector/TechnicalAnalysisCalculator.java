@@ -39,7 +39,7 @@ import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.VolumeIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
-import org.ta4j.core.num.DecimalNum;
+import org.ta4j.core.num.DecimalNumFactory;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
@@ -469,7 +469,7 @@ final class TechnicalAnalysisCalculator {
         this.barSeries = new BaseBarSeriesBuilder()
             .withMaxBarCount(maxSize)
             .withName("MA_Calculator")
-            .withNumTypeOf(DecimalNum.class)
+            .withNumFactory(DecimalNumFactory.getInstance())
             .build();
 
         // Core indicators (always initialized)
@@ -494,14 +494,18 @@ final class TechnicalAnalysisCalculator {
         this.macdSignalIndicator = this.config.enableMacd && this.macdIndicator != null
             ? new SMAIndicator(macdIndicator, MACD_SIGNAL)
             : null;
+        // Bollinger Bands - need stdDev for upper/lower bands
+        final StandardDeviationIndicator bbStdDev = this.config.enableBollinger
+            ? new StandardDeviationIndicator(closePriceIndicator, BB_PERIOD)
+            : null;
         this.bbMiddleIndicator = this.config.enableBollinger
             ? new BollingerBandsMiddleIndicator(closePriceIndicator)
             : null;
-        this.bbUpperIndicator = this.config.enableBollinger && this.bbMiddleIndicator != null
-            ? new BollingerBandsUpperIndicator(bbMiddleIndicator, closePriceIndicator, barSeries, DecimalNum.valueOf(BB_MULTIPLIER))
+        this.bbUpperIndicator = this.config.enableBollinger && this.bbMiddleIndicator != null && bbStdDev != null
+            ? new BollingerBandsUpperIndicator(bbMiddleIndicator, bbStdDev)
             : null;
-        this.bbLowerIndicator = this.config.enableBollinger && this.bbMiddleIndicator != null
-            ? new BollingerBandsLowerIndicator(bbMiddleIndicator, closePriceIndicator, barSeries, DecimalNum.valueOf(BB_MULTIPLIER))
+        this.bbLowerIndicator = this.config.enableBollinger && this.bbMiddleIndicator != null && bbStdDev != null
+            ? new BollingerBandsLowerIndicator(bbMiddleIndicator, bbStdDev)
             : null;
 
         // Volatility indicators
@@ -514,7 +518,7 @@ final class TechnicalAnalysisCalculator {
         this.volumeIndicator = (this.config.enableVwap || this.config.enableVolumeSma)
             ? new VolumeIndicator(barSeries)
             : null;
-        this.vwapIndicator = this.config.enableVwap ? new VWAPIndicator(barSeries) : null;
+        this.vwapIndicator = this.config.enableVwap ? new VWAPIndicator(barSeries, BB_PERIOD) : null;
         this.volumeSmaIndicator = this.config.enableVolumeSma && this.volumeIndicator != null
             ? new SMAIndicator(volumeIndicator, VOLUME_SMA_PERIOD)
             : null;
@@ -622,7 +626,6 @@ final class TechnicalAnalysisCalculator {
 
     private AnalysisResult computeAnalysisResult() {
         final var lastIndex = barSeries.getEndIndex();
-        final var currentPrice = closePriceIndicator.getValue(lastIndex).doubleValue();
 
         // Moving averages
         final var sma50 = getIndicatorValue(sma50Indicator, lastIndex, 50);
