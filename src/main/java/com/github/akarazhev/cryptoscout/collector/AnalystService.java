@@ -51,8 +51,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.HIGH;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.LOW;
@@ -179,10 +177,10 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
             final var low = ((Number) kline.get(LOW)).doubleValue();
             final var close = ((Number) kline.get(CLOSE)).doubleValue();
             final var volume = ((Number) kline.get(VOLUME)).doubleValue();
-            final var marketCap = kline.get(MARKET_CAP) instanceof Number ?
-                    ((Number) kline.get(MARKET_CAP)).doubleValue() : 0.0;
-            final var supply = kline.get(CIRCULATING_SUPPLY) instanceof Number ?
-                    ((Number) kline.get(CIRCULATING_SUPPLY)).longValue() : 0L;
+            final var marketCap = kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP) instanceof Number ?
+                    ((Number) kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP)).doubleValue() : 0.0;
+            final var supply = kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY) instanceof Number ?
+                    ((Number) kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY)).longValue() : 0L;
 
             final var point = new TechnicalAnalysisCalculator.OhlcvPoint(
                     timestamp, open, high, low, close, volume, marketCap, supply);
@@ -354,8 +352,8 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         final var volume = volumeObj instanceof Number ? ((Number) volumeObj).doubleValue() : 0.0;
 
         // Extract market fundamentals if available
-        final var marketCapObj = quote.get(MARKET_CAP);
-        final var supplyObj = quote.get(CIRCULATING_SUPPLY);
+        final var marketCapObj = quote.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP);
+        final var supplyObj = quote.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY);
 
         final var marketCap = marketCapObj instanceof Number ? ((Number) marketCapObj).doubleValue() : 0.0;
         final var supply = supplyObj instanceof Number ? ((Number) supplyObj).longValue() : 0L;
