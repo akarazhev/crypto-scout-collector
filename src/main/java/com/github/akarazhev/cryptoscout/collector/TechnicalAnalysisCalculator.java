@@ -61,7 +61,6 @@ final class TechnicalAnalysisCalculator {
     private static final int MACD_SLOW = 26;
     private static final int MACD_SIGNAL = 9;
     private static final int BB_PERIOD = 20;
-    private static final double BB_MULTIPLIER = 2.0;
     private static final int ATR_PERIOD = 14;
     private static final int STOCHASTIC_PERIOD = 14;
     private static final int VOLUME_SMA_PERIOD = 20;
@@ -491,7 +490,7 @@ final class TechnicalAnalysisCalculator {
         this.macdIndicator = this.config.enableMacd
             ? new MACDIndicator(closePriceIndicator, MACD_FAST, MACD_SLOW)
             : null;
-        this.macdSignalIndicator = this.config.enableMacd && this.macdIndicator != null
+        this.macdSignalIndicator = this.config.enableMacd
             ? new SMAIndicator(macdIndicator, MACD_SIGNAL)
             : null;
         // Bollinger Bands - need stdDev for upper/lower bands
@@ -501,10 +500,10 @@ final class TechnicalAnalysisCalculator {
         this.bbMiddleIndicator = this.config.enableBollinger
             ? new BollingerBandsMiddleIndicator(closePriceIndicator)
             : null;
-        this.bbUpperIndicator = this.config.enableBollinger && this.bbMiddleIndicator != null && bbStdDev != null
+        this.bbUpperIndicator = this.config.enableBollinger
             ? new BollingerBandsUpperIndicator(bbMiddleIndicator, bbStdDev)
             : null;
-        this.bbLowerIndicator = this.config.enableBollinger && this.bbMiddleIndicator != null && bbStdDev != null
+        this.bbLowerIndicator = this.config.enableBollinger
             ? new BollingerBandsLowerIndicator(bbMiddleIndicator, bbStdDev)
             : null;
 
@@ -519,7 +518,7 @@ final class TechnicalAnalysisCalculator {
             ? new VolumeIndicator(barSeries)
             : null;
         this.vwapIndicator = this.config.enableVwap ? new VWAPIndicator(barSeries, BB_PERIOD) : null;
-        this.volumeSmaIndicator = this.config.enableVolumeSma && this.volumeIndicator != null
+        this.volumeSmaIndicator = this.config.enableVolumeSma
             ? new SMAIndicator(volumeIndicator, VOLUME_SMA_PERIOD)
             : null;
 
