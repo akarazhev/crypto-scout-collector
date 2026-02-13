@@ -290,10 +290,10 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldSupportLegacyInitializeMethod() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        final var data = new java.util.ArrayList<>();
+        final var data = new java.util.ArrayList<java.util.Map<String, Object>>();
 
         for (var i = 0; i < 50; i++) {
-            final var row = new java.util.HashMap<>();
+            final var row = new java.util.HashMap<String, Object>();
             row.put("timestamp", BASE_TIME.plusDays(i));
             row.put("close_price", 100.0 + i);
             data.add(row);
@@ -344,7 +344,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Generate alternating up/down prices for RSI calculation
-        final var points = new ArrayList<>();
+        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
         for (var i = 0; i < 20; i++) {
             points.add(createPoint(i, 100.0 + (i % 2 == 0 ? 5.0 : -3.0), 1000.0));
         }
@@ -378,7 +378,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Generate 25 points (need 20 for BB period)
-        final var points = new ArrayList<>();
+        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
         for (var i = 0; i < 25; i++) {
             // Oscillating price for meaningful bands
             final var price = 100.0 + 10.0 * Math.sin(i * 0.5);
@@ -402,7 +402,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Generate 15 points with varying ranges (need 14 for ATR)
-        final var points = new ArrayList<>();
+        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
         for (var i = 0; i < 15; i++) {
             final var close = 100.0 + i;
             points.add(createPoint(i, close - 5, close + 5, close - 10, close, 1000.0));
@@ -460,7 +460,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Add 21 points to have enough for volume SMA
-        final var points = new ArrayList<>();
+        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
         for (var i = 0; i < 21; i++) {
             points.add(createPointWithFundamentals(i, 95.0, 105.0, 90.0, 100.0,
                 1000000.0, 1000000000.0, 19000000L));
@@ -577,7 +577,7 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldHandleEmptyInitialization() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        calc.initialize(new java.util.ArrayList<>());
+        calc.initialize(new java.util.ArrayList<java.util.Map<String, Object>>());
         assertEquals(0, calc.getDataCount());
     }
 
@@ -591,7 +591,7 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldHandleEmptyOhlcvInitialization() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        calc.initializeWithOhlcv(new java.util.ArrayList<>());
+        calc.initializeWithOhlcv(new java.util.ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>());
         assertEquals(0, calc.getDataCount());
     }
 
@@ -632,7 +632,7 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldHandleVolatilePrices() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        final var points = new ArrayList<>();
+        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
 
         // Generate volatile prices with large swings
         for (var i = 0; i < 100; i++) {
