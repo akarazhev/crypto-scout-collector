@@ -372,7 +372,7 @@ final class TechnicalAnalysisCalculator {
             this.bbUpper = bbUpper;
             this.bbLower = bbLower;
             this.bbWidth = calculateBbWidth(bbUpper, bbLower, bbMiddle);
-            this.bbPercentB = calculateBbPercentB(bbUpper, bbLower, bbMiddle, ema50);
+            this.bbPercentB = calculateBbPercentB(bbUpper, bbLower, ema50);
             this.atr14 = atr14;
             this.stdDev20 = stdDev20;
             this.vwap = vwap;
@@ -390,7 +390,7 @@ final class TechnicalAnalysisCalculator {
         }
 
         private static Double calculateBbPercentB(final Double upper, final Double lower,
-                                                   final Double middle, final Double price) {
+                                                   final Double price) {
             if (upper == null || lower == null || upper.equals(lower)) {
                 return null;
             }
