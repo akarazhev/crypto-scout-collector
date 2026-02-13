@@ -39,9 +39,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.KLINE_1W_SELECT_BY_SYMBOL;
-import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.TIME_CLOSE;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.TIME_HIGH;
 import static com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.TIME_LOW;
