@@ -12,6 +12,29 @@ CREATE TABLE IF NOT EXISTS crypto_scout.cmc_kline_1w_indicators (
     ema_50 DOUBLE PRECISION,
     ema_100 DOUBLE PRECISION,
     ema_200 DOUBLE PRECISION,
+    -- Momentum Indicators
+    rsi_14 DOUBLE PRECISION,
+    stochastic_14 DOUBLE PRECISION,
+    -- MACD
+    macd_line DOUBLE PRECISION,
+    macd_signal DOUBLE PRECISION,
+    macd_histogram DOUBLE PRECISION,
+    -- Bollinger Bands
+    bb_middle DOUBLE PRECISION,
+    bb_upper DOUBLE PRECISION,
+    bb_lower DOUBLE PRECISION,
+    bb_width DOUBLE PRECISION,
+    bb_percent_b DOUBLE PRECISION,
+    -- Volatility
+    atr_14 DOUBLE PRECISION,
+    std_dev_20 DOUBLE PRECISION,
+    -- Volume
+    vwap DOUBLE PRECISION,
+    volume_sma_20 DOUBLE PRECISION,
+    -- Market Fundamentals
+    market_cap DOUBLE PRECISION,
+    circulating_supply BIGINT,
+    market_cap_to_volume DOUBLE PRECISION,
     -- Metadata
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -59,12 +82,34 @@ SELECT
     k.volume,
     k.market_cap,
     k.circulating_supply,
+    -- Moving Averages
     i.sma_50,
     i.sma_100,
     i.sma_200,
     i.ema_50,
     i.ema_100,
-    i.ema_200
+    i.ema_200,
+    -- Momentum
+    i.rsi_14,
+    i.stochastic_14,
+    -- MACD
+    i.macd_line,
+    i.macd_signal,
+    i.macd_histogram,
+    -- Bollinger Bands
+    i.bb_middle,
+    i.bb_upper,
+    i.bb_lower,
+    i.bb_width,
+    i.bb_percent_b,
+    -- Volatility
+    i.atr_14,
+    i.std_dev_20,
+    -- Volume
+    i.vwap,
+    i.volume_sma_20,
+    -- Market Cap Ratio
+    i.market_cap_to_volume
 FROM crypto_scout.cmc_kline_1w k
 LEFT JOIN crypto_scout.cmc_kline_1w_indicators i
     ON k.symbol = i.symbol AND k.timestamp = i.timestamp;

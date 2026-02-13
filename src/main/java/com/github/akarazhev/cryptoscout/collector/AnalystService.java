@@ -52,9 +52,13 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.CLOSE;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.HIGH;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.LOW;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.OPEN;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTE;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.QUOTES;
 import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.TIMESTAMP;
+import static com.github.akarazhev.jcryptolib.cmc.Constants.Response.VOLUME;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getFirstRow;
 import static com.github.akarazhev.jcryptolib.util.ParserUtils.getRow;
 
@@ -93,7 +97,21 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         this.batchSize = JdbcConfig.getAnalystBatchSize();
         this.flushIntervalMs = JdbcConfig.getAnalystFlushIntervalMs();
         this.stream = AmqpConfig.getAmqpCryptoScoutStream();
-        this.taCalculator = new TechnicalAnalysisCalculator(INITIAL_LOOKBACK);
+
+        // Configure calculator with all technical indicators enabled
+        final var config = TechnicalAnalysisCalculator.Config.builder()
+                .maxPeriod(INITIAL_LOOKBACK)
+                .enableRsi(true)
+                .enableStochastic(true)
+                .enableMacd(true)
+                .enableBollinger(true)
+                .enableAtr(true)
+                .enableStdDev(true)
+                .enableVwap(true)
+                .enableVolumeSma(true)
+                .includeMarketFundamentals(true)
+                .build();
+        this.taCalculator = new TechnicalAnalysisCalculator(config);
     }
 
     @Override
@@ -154,11 +172,22 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
 
         for (final var kline : toProcess) {
             final var timestamp = (OffsetDateTime) kline.get(TIMESTAMP);
+            final var open = ((Number) kline.get(OPEN)).doubleValue();
+            final var high = ((Number) kline.get(HIGH)).doubleValue();
+            final var low = ((Number) kline.get(LOW)).doubleValue();
             final var close = ((Number) kline.get(CLOSE)).doubleValue();
-            taCalculator.addPrice(timestamp, close);
+            final var volume = ((Number) kline.get(VOLUME)).doubleValue();
+            final var marketCap = kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP) instanceof Number ?
+                    ((Number) kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP)).doubleValue() : 0.0;
+            final var supply = kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY) instanceof Number ?
+                    ((Number) kline.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY)).longValue() : 0L;
+
+            final var point = new TechnicalAnalysisCalculator.OhlcvPoint(
+                    timestamp, open, high, low, close, volume, marketCap, supply);
+            taCalculator.addOhlcv(point);
         }
 
-        LOGGER.info("Loaded {} klines from cmc_kline_1w", toProcess.size());
+        LOGGER.info("Loaded {} klines with full OHLCV from cmc_kline_1w", toProcess.size());
     }
 
     @Override
@@ -235,11 +264,11 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
                 final var payload = item.payload();
                 final var data = payload.getData();
                 final var timestamp = extractTimestamp(data);
-                final var close = extractClosePrice(data);
+                final var ohlcv = extractOhlcv(data);
 
-                if (timestamp != null && !Double.isNaN(close)) {
-                    final var mas = taCalculator.addPrice(timestamp, close);
-                    final var indicator = mas.toMap(TARGET_SYMBOL, timestamp, close);
+                if (timestamp != null && ohlcv != null) {
+                    final var result = taCalculator.addOhlcv(ohlcv);
+                    final var indicator = result.toMap(TARGET_SYMBOL, timestamp, ohlcv);
                     indicators.add(indicator);
                 }
 
@@ -289,19 +318,51 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
         return null;
     }
 
-    private double extractClosePrice(final Map<String, Object> data) {
+    private TechnicalAnalysisCalculator.OhlcvPoint extractOhlcv(final Map<String, Object> data) {
         final var row = getFirstRow(QUOTES, data);
         if (row == null) {
-            return Double.NaN;
+            return null;
         }
         final var quote = getRow(QUOTE, row);
         if (quote == null) {
-            return Double.NaN;
+            return null;
         }
+
+        final var timestamp = extractTimestamp(data);
+        if (timestamp == null) {
+            return null;
+        }
+
+        // Extract OHLCV values
+        final var openObj = quote.get(OPEN);
+        final var highObj = quote.get(HIGH);
+        final var lowObj = quote.get(LOW);
         final var closeObj = quote.get(CLOSE);
-        if (closeObj instanceof Number) {
-            return ((Number) closeObj).doubleValue();
+        final var volumeObj = quote.get(VOLUME);
+
+        if (!(openObj instanceof Number) || !(highObj instanceof Number) ||
+            !(lowObj instanceof Number) || !(closeObj instanceof Number)) {
+            return null;
         }
-        return Double.NaN;
+
+        final var open = ((Number) openObj).doubleValue();
+        final var high = ((Number) highObj).doubleValue();
+        final var low = ((Number) lowObj).doubleValue();
+        final var close = ((Number) closeObj).doubleValue();
+        final var volume = volumeObj instanceof Number ? ((Number) volumeObj).doubleValue() : 0.0;
+
+        // Extract market fundamentals if available
+        final var marketCapObj = quote.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.MARKET_CAP);
+        final var supplyObj = quote.get(com.github.akarazhev.cryptoscout.collector.db.Constants.Cmc.CIRCULATING_SUPPLY);
+
+        final var marketCap = marketCapObj instanceof Number ? ((Number) marketCapObj).doubleValue() : 0.0;
+        final var supply = supplyObj instanceof Number ? ((Number) supplyObj).longValue() : 0L;
+
+        try {
+            return new TechnicalAnalysisCalculator.OhlcvPoint(timestamp, open, high, low, close, volume, marketCap, supply);
+        } catch (final IllegalArgumentException e) {
+            LOGGER.warn("Invalid OHLCV data: {}", e.getMessage());
+            return null;
+        }
     }
 }

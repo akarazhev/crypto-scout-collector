@@ -422,7 +422,7 @@ public final class Constants {
         // CMC kline 1w indicators table
         public static final String CMC_KLINE_1W_INDICATORS_TABLE = "crypto_scout.cmc_kline_1w_indicators";
 
-        // Column names
+        // Column names - Moving Averages
         public static final String CLOSE_PRICE = "close_price";
         public static final String EMA_50 = "ema_50";
         public static final String EMA_100 = "ema_100";
@@ -431,24 +431,68 @@ public final class Constants {
         public static final String SMA_100 = "sma_100";
         public static final String SMA_200 = "sma_200";
 
-        // CMC kline 1w indicators
+        // Column names - Momentum
+        public static final String RSI_14 = "rsi_14";
+        public static final String STOCHASTIC_14 = "stochastic_14";
+
+        // Column names - MACD
+        public static final String MACD_LINE = "macd_line";
+        public static final String MACD_SIGNAL = "macd_signal";
+        public static final String MACD_HISTOGRAM = "macd_histogram";
+
+        // Column names - Bollinger Bands
+        public static final String BB_MIDDLE = "bb_middle";
+        public static final String BB_UPPER = "bb_upper";
+        public static final String BB_LOWER = "bb_lower";
+        public static final String BB_WIDTH = "bb_width";
+        public static final String BB_PERCENT_B = "bb_percent_b";
+
+        // Column names - Volatility
+        public static final String ATR_14 = "atr_14";
+        public static final String STD_DEV_20 = "std_dev_20";
+
+        // Column names - Volume
+        public static final String VWAP = "vwap";
+        public static final String VOLUME_SMA_20 = "volume_sma_20";
+
+        // Column names - Market Fundamentals
+        public static final String MARKET_CAP = "market_cap";
+        public static final String CIRCULATING_SUPPLY = "circulating_supply";
+        public static final String MARKET_CAP_TO_VOLUME = "market_cap_to_volume";
+
+        // CMC kline 1w indicators - Extended INSERT with all fields
         static final String INDICATORS_INSERT = "INSERT INTO " + CMC_KLINE_1W_INDICATORS_TABLE +
-                "(symbol, timestamp, close_price, sma_50, sma_100, sma_200, ema_50, ema_100, ema_200) VALUES " +
-                "(?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+                "(symbol, timestamp, close_price, sma_50, sma_100, sma_200, ema_50, ema_100, ema_200, " +
+                "rsi_14, stochastic_14, macd_line, macd_signal, macd_histogram, " +
+                "bb_middle, bb_upper, bb_lower, bb_width, bb_percent_b, " +
+                "atr_14, std_dev_20, vwap, volume_sma_20, " +
+                "market_cap, circulating_supply, market_cap_to_volume) VALUES " +
+                "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) " +
                 "ON CONFLICT (symbol, timestamp) DO UPDATE SET " +
                 "close_price = EXCLUDED.close_price, " +
-                "sma_50 = EXCLUDED.sma_50, " +
-                "sma_100 = EXCLUDED.sma_100, " +
-                "sma_200 = EXCLUDED.sma_200, " +
-                "ema_50 = EXCLUDED.ema_50, " +
-                "ema_100 = EXCLUDED.ema_100, " +
-                "ema_200 = EXCLUDED.ema_200, " +
+                "sma_50 = EXCLUDED.sma_50, sma_100 = EXCLUDED.sma_100, sma_200 = EXCLUDED.sma_200, " +
+                "ema_50 = EXCLUDED.ema_50, ema_100 = EXCLUDED.ema_100, ema_200 = EXCLUDED.ema_200, " +
+                "rsi_14 = EXCLUDED.rsi_14, stochastic_14 = EXCLUDED.stochastic_14, " +
+                "macd_line = EXCLUDED.macd_line, macd_signal = EXCLUDED.macd_signal, macd_histogram = EXCLUDED.macd_histogram, " +
+                "bb_middle = EXCLUDED.bb_middle, bb_upper = EXCLUDED.bb_upper, bb_lower = EXCLUDED.bb_lower, " +
+                "bb_width = EXCLUDED.bb_width, bb_percent_b = EXCLUDED.bb_percent_b, " +
+                "atr_14 = EXCLUDED.atr_14, std_dev_20 = EXCLUDED.std_dev_20, " +
+                "vwap = EXCLUDED.vwap, volume_sma_20 = EXCLUDED.volume_sma_20, " +
+                "market_cap = EXCLUDED.market_cap, circulating_supply = EXCLUDED.circulating_supply, " +
+                "market_cap_to_volume = EXCLUDED.market_cap_to_volume, " +
                 "updated_at = NOW()";
+
         static final String INDICATORS_SELECT_BY_SYMBOL_RANGE =
                 "SELECT symbol, timestamp, close_price, sma_50, sma_100, sma_200, " +
-                        "ema_50, ema_100, ema_200 " +
+                        "ema_50, ema_100, ema_200, " +
+                        "rsi_14, stochastic_14, macd_line, macd_signal, macd_histogram, " +
+                        "bb_middle, bb_upper, bb_lower, bb_width, bb_percent_b, " +
+                        "atr_14, std_dev_20, vwap, volume_sma_20, " +
+                        "market_cap, circulating_supply, market_cap_to_volume " +
                         "FROM " + CMC_KLINE_1W_INDICATORS_TABLE +
                         " WHERE symbol = ? AND timestamp >= ? AND timestamp <= ?";
+
+        // Parameter indices for INSERT
         static final int IND_SYMBOL = 1;
         static final int IND_TIMESTAMP = 2;
         static final int IND_CLOSE_PRICE = 3;
@@ -458,6 +502,23 @@ public final class Constants {
         static final int IND_EMA_50 = 7;
         static final int IND_EMA_100 = 8;
         static final int IND_EMA_200 = 9;
+        static final int IND_RSI_14 = 10;
+        static final int IND_STOCHASTIC_14 = 11;
+        static final int IND_MACD_LINE = 12;
+        static final int IND_MACD_SIGNAL = 13;
+        static final int IND_MACD_HISTOGRAM = 14;
+        static final int IND_BB_MIDDLE = 15;
+        static final int IND_BB_UPPER = 16;
+        static final int IND_BB_LOWER = 17;
+        static final int IND_BB_WIDTH = 18;
+        static final int IND_BB_PERCENT_B = 19;
+        static final int IND_ATR_14 = 20;
+        static final int IND_STD_DEV_20 = 21;
+        static final int IND_VWAP = 22;
+        static final int IND_VOLUME_SMA_20 = 23;
+        static final int IND_MARKET_CAP = 24;
+        static final int IND_CIRCULATING_SUPPLY = 25;
+        static final int IND_MARKET_CAP_TO_VOLUME = 26;
     }
 
     public final static class Offsets {
