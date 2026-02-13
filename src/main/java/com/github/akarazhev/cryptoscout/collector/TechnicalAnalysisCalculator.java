@@ -391,7 +391,7 @@ final class TechnicalAnalysisCalculator {
 
         private static Double calculateBbPercentB(final Double upper, final Double lower,
                                                    final Double price) {
-            if (upper == null || lower == null || upper.equals(lower)) {
+            if (upper == null || lower == null || price == null || upper.equals(lower)) {
                 return null;
             }
             return (price - lower) / (upper - lower);
