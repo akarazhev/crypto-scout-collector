@@ -175,43 +175,38 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldRejectInvalidOhlcvHighLessThanLow() {
-        final var timestamp = BASE_TIME;
         assertThrows(IllegalArgumentException.class, () ->
-            new TechnicalAnalysisCalculator.OhlcvPoint(timestamp, 100.0, 90.0, 100.0, 95.0, 1000.0)
+            new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 100.0, 90.0, 100.0, 95.0, 1000.0)
         );
     }
 
     @Test
     void shouldRejectInvalidOhlcvHighLessThanOpen() {
-        final var timestamp = BASE_TIME;
         assertThrows(IllegalArgumentException.class, () ->
-            new TechnicalAnalysisCalculator.OhlcvPoint(timestamp, 100.0, 95.0, 90.0, 95.0, 1000.0)
+            new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 100.0, 95.0, 90.0, 95.0, 1000.0)
         );
     }
 
     @Test
     void shouldRejectInvalidOhlcvLowGreaterThanOpen() {
-        final var timestamp = BASE_TIME;
         assertThrows(IllegalArgumentException.class, () ->
-            new TechnicalAnalysisCalculator.OhlcvPoint(timestamp, 90.0, 100.0, 95.0, 100.0, 1000.0)
+            new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 90.0, 100.0, 95.0, 100.0, 1000.0)
         );
     }
 
     @Test
     void shouldRejectNegativeVolume() {
-        final var timestamp = BASE_TIME;
         assertThrows(IllegalArgumentException.class, () ->
-            new TechnicalAnalysisCalculator.OhlcvPoint(timestamp, 100.0, 100.0, 100.0, 100.0, -1000.0)
+            new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 100.0, 100.0, 100.0, 100.0, -1000.0)
         );
     }
 
     @Test
     void shouldAcceptValidOhlcv() {
-        final var timestamp = BASE_TIME;
         final var point = new TechnicalAnalysisCalculator.OhlcvPoint(
-            timestamp, 95.0, 105.0, 90.0, 100.0, 1000.0);
+            BASE_TIME, 95.0, 105.0, 90.0, 100.0, 1000.0);
         assertNotNull(point);
-        assertEquals(timestamp, point.timestamp);
+        assertEquals(BASE_TIME, point.timestamp);
         assertEquals(95.0, point.open);
         assertEquals(105.0, point.high);
         assertEquals(90.0, point.low);
@@ -221,9 +216,8 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldAcceptOhlcvWithFundamentals() {
-        final var timestamp = BASE_TIME;
         final var point = new TechnicalAnalysisCalculator.OhlcvPoint(
-            timestamp, 95.0, 105.0, 90.0, 100.0, 1000.0, 1000000000.0, 19000000L);
+            BASE_TIME, 95.0, 105.0, 90.0, 100.0, 1000.0, 1000000000.0, 19000000L);
         assertNotNull(point);
         assertEquals(1000000000.0, point.marketCap);
         assertEquals(19000000L, point.circulatingSupply);
@@ -296,10 +290,10 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldSupportLegacyInitializeMethod() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        final var data = new java.util.ArrayList<java.util.Map<String, Object>>();
+        final var data = new java.util.ArrayList<>();
 
         for (var i = 0; i < 50; i++) {
-            final var row = new java.util.HashMap<String, Object>();
+            final var row = new java.util.HashMap<>();
             row.put("timestamp", BASE_TIME.plusDays(i));
             row.put("close_price", 100.0 + i);
             data.add(row);
@@ -350,18 +344,15 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Generate alternating up/down prices for RSI calculation
-        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
+        final var points = new ArrayList<>();
         for (var i = 0; i < 20; i++) {
             points.add(createPoint(i, 100.0 + (i % 2 == 0 ? 5.0 : -3.0), 1000.0));
         }
 
         calc.initializeWithOhlcv(points);
 
-        // Need at least 14 points for RSI
-        final var result = calc.addOhlcv(createPoint(20, 110.0, 1000.0));
-
-        // RSI should be calculated when we have enough data
-        // Note: RSI may be null if exactly at boundary
+        // Need at least 14 points for RSI - just verify no exception
+        calc.addOhlcv(createPoint(20, 110.0, 1000.0));
     }
 
     @Test
@@ -375,9 +366,8 @@ final class TechnicalAnalysisCalculatorTest {
         final var points = generateRisingPriceSeries(35, 100.0, 1.0, 1000.0);
 
         calc.initializeWithOhlcv(points.subList(0, 34));
-        final var result = calc.addOhlcv(points.get(34));
-
-        // MACD may be null if insufficient data, or have values if enough data
+        // MACD may be null if insufficient data - just verify no exception
+        calc.addOhlcv(points.get(34));
     }
 
     @Test
@@ -388,7 +378,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Generate 25 points (need 20 for BB period)
-        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
+        final var points = new ArrayList<>();
         for (var i = 0; i < 25; i++) {
             // Oscillating price for meaningful bands
             final var price = 100.0 + 10.0 * Math.sin(i * 0.5);
@@ -412,16 +402,15 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Generate 15 points with varying ranges (need 14 for ATR)
-        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
+        final var points = new ArrayList<>();
         for (var i = 0; i < 15; i++) {
             final var close = 100.0 + i;
             points.add(createPoint(i, close - 5, close + 5, close - 10, close, 1000.0));
         }
 
         calc.initializeWithOhlcv(points.subList(0, 14));
-        final var result = calc.addOhlcv(points.get(14));
-
-        // ATR should be calculated when enough data exists
+        // ATR should be calculated when enough data exists - just verify no exception
+        calc.addOhlcv(points.get(14));
     }
 
     @Test
@@ -471,7 +460,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(config);
 
         // Add 21 points to have enough for volume SMA
-        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
+        final var points = new ArrayList<>();
         for (var i = 0; i < 21; i++) {
             points.add(createPointWithFundamentals(i, 95.0, 105.0, 90.0, 100.0,
                 1000000.0, 1000000000.0, 19000000L));
@@ -547,7 +536,6 @@ final class TechnicalAnalysisCalculatorTest {
         final var calc = new TechnicalAnalysisCalculator(300);
         final var threads = new java.util.ArrayList<Thread>();
         final var exceptions = new java.util.concurrent.CopyOnWriteArrayList<Exception>();
-        final var dataAdded = new java.util.concurrent.atomic.AtomicBoolean(false);
 
         // First, add some data from main thread
         for (var i = 0; i < 100; i++) {
@@ -589,7 +577,7 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldHandleEmptyInitialization() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        calc.initialize(new java.util.ArrayList<java.util.Map<String, Object>>());
+        calc.initialize(new java.util.ArrayList<>());
         assertEquals(0, calc.getDataCount());
     }
 
@@ -603,7 +591,7 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldHandleEmptyOhlcvInitialization() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        calc.initializeWithOhlcv(new java.util.ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>());
+        calc.initializeWithOhlcv(new java.util.ArrayList<>());
         assertEquals(0, calc.getDataCount());
     }
 
@@ -644,7 +632,7 @@ final class TechnicalAnalysisCalculatorTest {
     @Test
     void shouldHandleVolatilePrices() {
         final var calc = new TechnicalAnalysisCalculator(200);
-        final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
+        final var points = new ArrayList<>();
 
         // Generate volatile prices with large swings
         for (var i = 0; i < 100; i++) {
