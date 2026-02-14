@@ -148,10 +148,6 @@ final class TechnicalAnalysisCalculator {
          * Builder for Config with sensible defaults.
          */
         static final class Builder {
-            private Builder() {
-                throw new UnsupportedOperationException();
-            }
-
             private int maxPeriod = DEFAULT_MAX_PERIOD;
             private boolean enableSma = true;
             private boolean enableEma = true;
