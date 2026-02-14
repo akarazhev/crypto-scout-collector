@@ -24,13 +24,22 @@
 
 package com.github.akarazhev.cryptoscout.collector;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.ta4j.core.BarSeries;
 import org.ta4j.core.BaseBarSeriesBuilder;
+import org.ta4j.core.Indicator;
 import org.ta4j.core.indicators.ATRIndicator;
 import org.ta4j.core.indicators.MACDIndicator;
 import org.ta4j.core.indicators.RSIIndicator;
 import org.ta4j.core.indicators.StochasticOscillatorKIndicator;
-import org.ta4j.core.indicators.volume.VWAPIndicator;
 import org.ta4j.core.indicators.averages.EMAIndicator;
 import org.ta4j.core.indicators.averages.SMAIndicator;
 import org.ta4j.core.indicators.bollinger.BollingerBandsLowerIndicator;
@@ -39,14 +48,9 @@ import org.ta4j.core.indicators.bollinger.BollingerBandsUpperIndicator;
 import org.ta4j.core.indicators.helpers.ClosePriceIndicator;
 import org.ta4j.core.indicators.helpers.VolumeIndicator;
 import org.ta4j.core.indicators.statistics.StandardDeviationIndicator;
+import org.ta4j.core.indicators.volume.VWAPIndicator;
 import org.ta4j.core.num.DecimalNumFactory;
-
-import java.time.Duration;
-import java.time.OffsetDateTime;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.ta4j.core.num.Num;
 
 /**
  * Thread-safe stateful calculator for technical indicators using ta4j library.
@@ -54,6 +58,8 @@ import java.util.Map;
  * Maintains backward compatibility with the original MovingAverageCalculator API.
  */
 final class TechnicalAnalysisCalculator {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TechnicalAnalysisCalculator.class);
+
     private static final int DEFAULT_MAX_PERIOD = 200;
     private static final Duration DEFAULT_DURATION = Duration.ofDays(7);
     private static final int RSI_PERIOD = 14;
@@ -142,6 +148,10 @@ final class TechnicalAnalysisCalculator {
          * Builder for Config with sensible defaults.
          */
         static final class Builder {
+            private Builder() {
+                throw new UnsupportedOperationException();
+            }
+
             private int maxPeriod = DEFAULT_MAX_PERIOD;
             private boolean enableSma = true;
             private boolean enableEma = true;
@@ -256,17 +266,17 @@ final class TechnicalAnalysisCalculator {
         private void validateOhlcv(final double open, final double high, final double low,
                                    final double close, final double volume) {
             if (high < low) {
-                throw new IllegalArgumentException(
+                throw new IllegalStateException(
                     String.format("High (%.2f) cannot be less than low (%.2f)", high, low));
             }
             if (high < Math.max(open, close)) {
-                throw new IllegalArgumentException("High must be >= max(open, close)");
+                throw new IllegalStateException("High must be >= max(open, close)");
             }
             if (low > Math.min(open, close)) {
-                throw new IllegalArgumentException("Low must be <= min(open, close)");
+                throw new IllegalStateException("Low must be <= min(open, close)");
             }
             if (volume < 0) {
-                throw new IllegalArgumentException("Volume cannot be negative");
+                throw new IllegalStateException("Volume cannot be negative");
             }
         }
     }
@@ -455,13 +465,17 @@ final class TechnicalAnalysisCalculator {
         }
     }
 
-    // Legacy constructor for backward compatibility
-    TechnicalAnalysisCalculator(final int maxPeriod) {
-        this(Config.builder().maxPeriod(maxPeriod).build());
+    // Legacy factory method for backward compatibility
+    static TechnicalAnalysisCalculator create(final int maxPeriod) {
+        return new TechnicalAnalysisCalculator(Config.builder().maxPeriod(maxPeriod).build());
     }
 
-    // New constructor with configuration
-    TechnicalAnalysisCalculator(final Config config) {
+    // Factory method with configuration
+    static TechnicalAnalysisCalculator create(final Config config) {
+        return new TechnicalAnalysisCalculator(config);
+    }
+
+    private TechnicalAnalysisCalculator(final Config config) {
         this.config = config != null ? config : Config.builder().build();
         final var maxSize = Math.max(this.config.maxPeriod, DEFAULT_MAX_PERIOD);
 
@@ -678,9 +692,7 @@ final class TechnicalAnalysisCalculator {
         );
     }
 
-    private Double getIndicatorValue(final org.ta4j.core.Indicator<org.ta4j.core.num.Num> indicator,
-                                      final int index,
-                                      final int period) {
+    private Double getIndicatorValue(final Indicator<Num> indicator, final int index, final int period) {
         if (indicator == null || barSeries.getBarCount() < period) {
             return null;
         }

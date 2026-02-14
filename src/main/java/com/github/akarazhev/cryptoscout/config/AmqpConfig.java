@@ -68,7 +68,7 @@ public final class AmqpConfig {
     }
 
     private static String getAmqpBybitTaStream() {
-        return AppConfig.getAsString(AMQP_BYBIT_TA_STREAM);
+        return AppConfig.getAsString(AMQP_BYBIT_TA_STREAM); // todo
     }
 
     public static String getAmqpCryptoScoutStream() {

@@ -111,7 +111,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
                 .enableVolumeSma(true)
                 .includeMarketFundamentals(true)
                 .build();
-        this.taCalculator = new TechnicalAnalysisCalculator(config);
+        this.taCalculator = TechnicalAnalysisCalculator.create(config);
     }
 
     @Override
@@ -360,7 +360,7 @@ public final class AnalystService extends AbstractReactive implements ReactiveSe
 
         try {
             return new TechnicalAnalysisCalculator.OhlcvPoint(timestamp, open, high, low, close, volume, marketCap, supply);
-        } catch (final IllegalArgumentException e) {
+        } catch (final IllegalStateException e) {
             LOGGER.warn("Invalid OHLCV data: {}", e.getMessage());
             return null;
         }
