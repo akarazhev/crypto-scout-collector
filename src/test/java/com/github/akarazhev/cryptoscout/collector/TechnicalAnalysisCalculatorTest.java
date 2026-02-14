@@ -206,12 +206,12 @@ final class TechnicalAnalysisCalculatorTest {
         final var point = new TechnicalAnalysisCalculator.OhlcvPoint(
             BASE_TIME, 95.0, 105.0, 90.0, 100.0, 1000.0);
         assertNotNull(point);
-        assertEquals(BASE_TIME, point.timestamp);
-        assertEquals(95.0, point.open);
-        assertEquals(105.0, point.high);
-        assertEquals(90.0, point.low);
-        assertEquals(100.0, point.close);
-        assertEquals(1000.0, point.volume);
+        assertEquals(BASE_TIME, point.timestamp());
+        assertEquals(95.0, point.open());
+        assertEquals(105.0, point.high());
+        assertEquals(90.0, point.low());
+        assertEquals(100.0, point.close());
+        assertEquals(1000.0, point.volume());
     }
 
     @Test
@@ -219,8 +219,8 @@ final class TechnicalAnalysisCalculatorTest {
         final var point = new TechnicalAnalysisCalculator.OhlcvPoint(
             BASE_TIME, 95.0, 105.0, 90.0, 100.0, 1000.0, 1000000000.0, 19000000L);
         assertNotNull(point);
-        assertEquals(1000000000.0, point.marketCap);
-        assertEquals(19000000L, point.circulatingSupply);
+        assertEquals(1000000000.0, point.marketCap());
+        assertEquals(19000000L, point.circulatingSupply());
     }
 
     // ==================== Basic Moving Average Tests ====================
@@ -235,12 +235,12 @@ final class TechnicalAnalysisCalculatorTest {
         }
 
         final var result = calc.addPrice(BASE_TIME.plusDays(10), 100.0);
-        assertNull(result.sma50);  // Need 50 points
-        assertNull(result.sma100); // Need 100 points
-        assertNull(result.sma200); // Need 200 points
-        assertNull(result.ema50);
-        assertNull(result.ema100);
-        assertNull(result.ema200);
+        assertNull(result.sma50());  // Need 50 points
+        assertNull(result.sma100()); // Need 100 points
+        assertNull(result.sma200()); // Need 200 points
+        assertNull(result.ema50());
+        assertNull(result.ema100());
+        assertNull(result.ema200());
     }
 
     @Test
@@ -255,8 +255,8 @@ final class TechnicalAnalysisCalculatorTest {
         final var result = calc.addOhlcv(points.get(50));
 
         // SMA should equal the price for flat series
-        assertNotNull(result.sma50);
-        assertEquals(100.0, result.sma50, 0.001);
+        assertNotNull(result.sma50());
+        assertEquals(100.0, result.sma50(), 0.001);
     }
 
     @Test
@@ -269,8 +269,8 @@ final class TechnicalAnalysisCalculatorTest {
 
         // For series 100, 101, 102, ..., 150 (51 points, last 50 are 101-150)
         // SMA of last 50 points (101-150) should be (101 + 150) / 2 = 125.5
-        assertNotNull(result.sma50);
-        assertEquals(125.5, result.sma50, 0.001);
+        assertNotNull(result.sma50());
+        assertEquals(125.5, result.sma50(), 0.001);
     }
 
     @Test
@@ -281,8 +281,8 @@ final class TechnicalAnalysisCalculatorTest {
         calc.initializeWithOhlcv(points.subList(0, 50));
         final var result = calc.addOhlcv(points.get(50));
 
-        assertNotNull(result.ema50);
-        assertEquals(100.0, result.ema50, 0.001);
+        assertNotNull(result.ema50());
+        assertEquals(100.0, result.ema50(), 0.001);
     }
 
     // ==================== Legacy API Compatibility Tests ====================
@@ -389,8 +389,8 @@ final class TechnicalAnalysisCalculatorTest {
         final var result = calc.addOhlcv(points.get(24));
 
         // Bollinger Bands should be calculated with enough data
-        if (result.bbUpper != null && result.bbLower != null) {
-            assertTrue(result.bbUpper > result.bbLower);
+        if (result.bbUpper() != null && result.bbLower() != null) {
+            assertTrue(result.bbUpper() > result.bbLower());
         }
     }
 
@@ -426,8 +426,8 @@ final class TechnicalAnalysisCalculatorTest {
         final var result = calc.addOhlcv(points.get(9));
 
         // VWAP should be calculated
-        if (result.vwap != null) {
-            assertTrue(result.vwap > 0);
+        if (result.vwap() != null) {
+            assertTrue(result.vwap() > 0);
         }
     }
 
@@ -445,10 +445,10 @@ final class TechnicalAnalysisCalculatorTest {
 
         final var result = calc.addOhlcv(point);
 
-        assertNotNull(result.marketCap);
-        assertEquals(1000000000.0, result.marketCap);
-        assertNotNull(result.circulatingSupply);
-        assertEquals(19000000L, result.circulatingSupply);
+        assertNotNull(result.marketCap());
+        assertEquals(1000000000.0, result.marketCap());
+        assertNotNull(result.circulatingSupply());
+        assertEquals(19000000L, result.circulatingSupply());
     }
 
     @Test
@@ -469,8 +469,8 @@ final class TechnicalAnalysisCalculatorTest {
         calc.initializeWithOhlcv(points.subList(0, 20));
         final var result = calc.addOhlcv(points.get(20));
 
-        if (result.marketCapToVolume != null) {
-            assertTrue(result.marketCapToVolume > 0);
+        if (result.marketCapToVolume() != null) {
+            assertTrue(result.marketCapToVolume() > 0);
         }
     }
 
@@ -610,9 +610,9 @@ final class TechnicalAnalysisCalculatorTest {
         assertNotNull(result);
         assertEquals(1, calc.getDataCount());
         // All indicators should be null with only 1 point
-        assertNull(result.sma50);
-        assertNull(result.sma100);
-        assertNull(result.sma200);
+        assertNull(result.sma50());
+        assertNull(result.sma100());
+        assertNull(result.sma200());
     }
 
     @Test
@@ -625,8 +625,8 @@ final class TechnicalAnalysisCalculatorTest {
 
         // Should be able to calculate all MAs with 500 points
         final var result = calc.addPrice(BASE_TIME.plusDays(500), 100.0);
-        assertNotNull(result.sma200);
-        assertNotNull(result.ema200);
+        assertNotNull(result.sma200());
+        assertNotNull(result.ema200());
     }
 
     @Test
