@@ -266,16 +266,20 @@ final class TechnicalAnalysisCalculator {
         private void validateOhlcv(final double open, final double high, final double low,
                                    final double close, final double volume) {
             if (high < low) {
+                LOGGER.error("Invalid OHLCV: high ({} ) < low ({})", high, low);
                 throw new IllegalStateException(
                     String.format("High (%.2f) cannot be less than low (%.2f)", high, low));
             }
             if (high < Math.max(open, close)) {
+                LOGGER.error("Invalid OHLCV: high ({}) < max(open, close) ({}, {})", high, open, close);
                 throw new IllegalStateException("High must be >= max(open, close)");
             }
             if (low > Math.min(open, close)) {
+                LOGGER.error("Invalid OHLCV: low ({}) > min(open, close) ({}, {})", low, open, close);
                 throw new IllegalStateException("Low must be <= min(open, close)");
             }
             if (volume < 0) {
+                LOGGER.error("Invalid OHLCV: volume ({}) cannot be negative", volume);
                 throw new IllegalStateException("Volume cannot be negative");
             }
         }
@@ -485,6 +489,8 @@ final class TechnicalAnalysisCalculator {
             .withNumFactory(DecimalNumFactory.getInstance())
             .build();
 
+        LOGGER.info("TechnicalAnalysisCalculator initialized with maxPeriod={}", this.config.maxPeriod);
+
         // Core indicators (always initialized)
         this.closePriceIndicator = new ClosePriceIndicator(barSeries);
         this.sma50Indicator = this.config.enableSma ? new SMAIndicator(closePriceIndicator, 50) : null;
@@ -544,8 +550,11 @@ final class TechnicalAnalysisCalculator {
     // Legacy method for backward compatibility
     synchronized void initialize(final List<Map<String, Object>> historicalData) {
         if (historicalData == null || historicalData.isEmpty()) {
+            LOGGER.warn("Initialize called with null or empty historical data");
             return;
         }
+
+        LOGGER.info("Initializing calculator with {} historical data points", historicalData.size());
 
         final var sorted = historicalData.stream()
             .sorted(Comparator.comparing(m -> (OffsetDateTime) m.get("timestamp")))
@@ -569,13 +578,18 @@ final class TechnicalAnalysisCalculator {
                 addBar(timestamp, open, high, low, close, volume, 0.0, 0L);
             }
         }
+
+        LOGGER.info("Calculator initialized with {} data points from historical data", barSeries.getBarCount());
     }
 
     // New method for OHLCV initialization
     synchronized void initializeWithOhlcv(final List<OhlcvPoint> historicalData) {
         if (historicalData == null || historicalData.isEmpty()) {
+            LOGGER.warn("InitializeWithOhlcv called with null or empty historical data");
             return;
         }
+
+        LOGGER.info("Initializing calculator with {} OHLCV data points", historicalData.size());
 
         final var sorted = historicalData.stream()
             .sorted(Comparator.comparing(p -> p.timestamp))
@@ -585,6 +599,8 @@ final class TechnicalAnalysisCalculator {
             addBar(point.timestamp, point.open, point.high, point.low, point.close,
                    point.volume, point.marketCap, point.circulatingSupply);
         }
+
+        LOGGER.info("Calculator initialized with {} data points from OHLCV data", barSeries.getBarCount());
     }
 
     // Legacy method for backward compatibility
@@ -699,6 +715,7 @@ final class TechnicalAnalysisCalculator {
         try {
             return indicator.getValue(index).doubleValue();
         } catch (final Exception e) {
+            LOGGER.warn("Failed to get indicator value at index {} for period {}: {}", index, period, e.getMessage());
             return null;
         }
     }
