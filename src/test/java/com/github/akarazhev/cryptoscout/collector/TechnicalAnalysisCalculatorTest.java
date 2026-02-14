@@ -120,15 +120,15 @@ final class TechnicalAnalysisCalculatorTest {
     // ==================== Construction and Configuration Tests ====================
 
     @Test
-    void shouldCreateCalculatorWithLegacyConstructor() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+    void shouldCreateCalculatorWithLegacyFactoryMethod() {
+        final var calc = TechnicalAnalysisCalculator.create(200);
         assertNotNull(calc);
         assertEquals(0, calc.getDataCount());
     }
 
     @Test
     void shouldCreateCalculatorWithDefaultConfig() {
-        final var calc = new TechnicalAnalysisCalculator(TechnicalAnalysisCalculator.Config.builder().build());
+        final var calc = TechnicalAnalysisCalculator.create(TechnicalAnalysisCalculator.Config.builder().build());
         assertNotNull(calc);
         assertEquals(0, calc.getDataCount());
     }
@@ -147,7 +147,7 @@ final class TechnicalAnalysisCalculatorTest {
             .includeMarketFundamentals(true)
             .build();
 
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
         assertNotNull(calc);
     }
 
@@ -167,7 +167,7 @@ final class TechnicalAnalysisCalculatorTest {
             .includeMarketFundamentals(false)
             .build();
 
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
         assertNotNull(calc);
     }
 
@@ -175,28 +175,28 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldRejectInvalidOhlcvHighLessThanLow() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(IllegalStateException.class, () ->
             new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 100.0, 90.0, 100.0, 95.0, 1000.0)
         );
     }
 
     @Test
     void shouldRejectInvalidOhlcvHighLessThanOpen() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(IllegalStateException.class, () ->
             new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 100.0, 95.0, 90.0, 95.0, 1000.0)
         );
     }
 
     @Test
     void shouldRejectInvalidOhlcvLowGreaterThanOpen() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(IllegalStateException.class, () ->
             new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 90.0, 100.0, 95.0, 100.0, 1000.0)
         );
     }
 
     @Test
     void shouldRejectNegativeVolume() {
-        assertThrows(IllegalArgumentException.class, () ->
+        assertThrows(IllegalStateException.class, () ->
             new TechnicalAnalysisCalculator.OhlcvPoint(BASE_TIME, 100.0, 100.0, 100.0, 100.0, -1000.0)
         );
     }
@@ -227,7 +227,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldReturnNullForInsufficientData() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
 
         // Add only 10 points
         for (var i = 0; i < 10; i++) {
@@ -245,7 +245,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldCalculateSmaForFlatPrice() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         final var points = generateFlatPriceSeries(51, 100.0, 1000.0);
 
         // Initialize with first 50 points
@@ -261,7 +261,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldCalculateSmaForRisingPrice() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         final var points = generateRisingPriceSeries(51, 100.0, 1.0, 1000.0);
 
         calc.initializeWithOhlcv(points.subList(0, 50));
@@ -275,7 +275,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldCalculateEmaForFlatPrice() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         final var points = generateFlatPriceSeries(51, 100.0, 1000.0);
 
         calc.initializeWithOhlcv(points.subList(0, 50));
@@ -289,7 +289,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldSupportLegacyInitializeMethod() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         final var data = new java.util.ArrayList<java.util.Map<String, Object>>();
 
         for (var i = 0; i < 50; i++) {
@@ -305,7 +305,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldSupportLegacyAddPriceMethod() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
 
         for (var i = 0; i < 51; i++) {
             final var result = calc.addPrice(BASE_TIME.plusDays(i), 100.0);
@@ -319,7 +319,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldReturnMovingAveragesFromLegacyApi() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
 
         for (var i = 0; i < 51; i++) {
             calc.addPrice(BASE_TIME.plusDays(i), 100.0);
@@ -341,7 +341,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var config = TechnicalAnalysisCalculator.Config.builder()
             .enableRsi(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         // Generate alternating up/down prices for RSI calculation
         final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
@@ -360,7 +360,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var config = TechnicalAnalysisCalculator.Config.builder()
             .enableMacd(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         // Generate 35 points (need 26 for slow EMA + 9 for signal)
         final var points = generateRisingPriceSeries(35, 100.0, 1.0, 1000.0);
@@ -375,7 +375,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var config = TechnicalAnalysisCalculator.Config.builder()
             .enableBollinger(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         // Generate 25 points (need 20 for BB period)
         final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
@@ -399,7 +399,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var config = TechnicalAnalysisCalculator.Config.builder()
             .enableAtr(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         // Generate 15 points with varying ranges (need 14 for ATR)
         final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
@@ -418,7 +418,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var config = TechnicalAnalysisCalculator.Config.builder()
             .enableVwap(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         final var points = generateFlatPriceSeries(10, 100.0, 1000.0);
 
@@ -438,7 +438,7 @@ final class TechnicalAnalysisCalculatorTest {
         final var config = TechnicalAnalysisCalculator.Config.builder()
             .includeMarketFundamentals(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         final var point = createPointWithFundamentals(0, 95.0, 105.0, 90.0, 100.0,
             1000.0, 1000000000.0, 19000000L);
@@ -457,7 +457,7 @@ final class TechnicalAnalysisCalculatorTest {
             .includeMarketFundamentals(true)
             .enableVolumeSma(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         // Add 21 points to have enough for volume SMA
         final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
@@ -488,7 +488,7 @@ final class TechnicalAnalysisCalculatorTest {
             .enableVolumeSma(true)
             .includeMarketFundamentals(true)
             .build();
-        final var calc = new TechnicalAnalysisCalculator(config);
+        final var calc = TechnicalAnalysisCalculator.create(config);
 
         // Add enough data
         final var points = generateFlatPriceSeries(250, 100.0, 1000.0);
@@ -533,7 +533,7 @@ final class TechnicalAnalysisCalculatorTest {
         // Note: ta4j BarSeries requires strict chronological ordering of bars.
         // Concurrent addition from multiple threads is not supported by ta4j.
         // This test verifies thread-safe read operations while data is being added.
-        final var calc = new TechnicalAnalysisCalculator(300);
+        final var calc = TechnicalAnalysisCalculator.create(300);
         final var threads = new java.util.ArrayList<Thread>();
         final var exceptions = new java.util.concurrent.CopyOnWriteArrayList<Exception>();
 
@@ -576,35 +576,35 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldHandleEmptyInitialization() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         calc.initialize(new java.util.ArrayList<java.util.Map<String, Object>>());
         assertEquals(0, calc.getDataCount());
     }
 
     @Test
     void shouldHandleNullInitialization() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         calc.initialize(null);
         assertEquals(0, calc.getDataCount());
     }
 
     @Test
     void shouldHandleEmptyOhlcvInitialization() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         calc.initializeWithOhlcv(new java.util.ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>());
         assertEquals(0, calc.getDataCount());
     }
 
     @Test
     void shouldHandleNullOhlcvInitialization() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         calc.initializeWithOhlcv(null);
         assertEquals(0, calc.getDataCount());
     }
 
     @Test
     void shouldHandleSingleDataPoint() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         final var result = calc.addPrice(BASE_TIME, 100.0);
 
         assertNotNull(result);
@@ -617,7 +617,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldHandleLargeDataset() {
-        final var calc = new TechnicalAnalysisCalculator(500);
+        final var calc = TechnicalAnalysisCalculator.create(500);
         final var points = generateFlatPriceSeries(500, 100.0, 1000.0);
 
         calc.initializeWithOhlcv(points);
@@ -631,7 +631,7 @@ final class TechnicalAnalysisCalculatorTest {
 
     @Test
     void shouldHandleVolatilePrices() {
-        final var calc = new TechnicalAnalysisCalculator(200);
+        final var calc = TechnicalAnalysisCalculator.create(200);
         final var points = new ArrayList<TechnicalAnalysisCalculator.OhlcvPoint>();
 
         // Generate volatile prices with large swings
