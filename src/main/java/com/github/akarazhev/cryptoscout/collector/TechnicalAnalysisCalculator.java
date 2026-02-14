@@ -386,6 +386,30 @@ final class TechnicalAnalysisCalculator {
             this.ema200 = ema200;
         }
 
+        Double sma50() {
+            return sma50;
+        }
+
+        Double sma100() {
+            return sma100;
+        }
+
+        Double sma200() {
+            return sma200;
+        }
+
+        Double ema50() {
+            return ema50;
+        }
+
+        Double ema100() {
+            return ema100;
+        }
+
+        Double ema200() {
+            return ema200;
+        }
+
         Map<String, Object> toMap(final String symbol, final OffsetDateTime timestamp, final double closePrice) {
             final var map = new HashMap<String, Object>();
             map.put("symbol", symbol);
@@ -473,6 +497,98 @@ final class TechnicalAnalysisCalculator {
             this.marketCap = marketCap;
             this.circulatingSupply = circulatingSupply;
             this.marketCapToVolume = calculateMarketCapToVolume(marketCap, volumeSma20);
+        }
+
+        Double sma50() {
+            return sma50;
+        }
+
+        Double sma100() {
+            return sma100;
+        }
+
+        Double sma200() {
+            return sma200;
+        }
+
+        Double ema50() {
+            return ema50;
+        }
+
+        Double ema100() {
+            return ema100;
+        }
+
+        Double ema200() {
+            return ema200;
+        }
+
+        Double rsi14() {
+            return rsi14;
+        }
+
+        Double stochastic14() {
+            return stochastic14;
+        }
+
+        Double macdLine() {
+            return macdLine;
+        }
+
+        Double macdSignal() {
+            return macdSignal;
+        }
+
+        Double macdHistogram() {
+            return macdHistogram;
+        }
+
+        Double bbMiddle() {
+            return bbMiddle;
+        }
+
+        Double bbUpper() {
+            return bbUpper;
+        }
+
+        Double bbLower() {
+            return bbLower;
+        }
+
+        Double bbWidth() {
+            return bbWidth;
+        }
+
+        Double bbPercentB() {
+            return bbPercentB;
+        }
+
+        Double atr14() {
+            return atr14;
+        }
+
+        Double stdDev20() {
+            return stdDev20;
+        }
+
+        Double vwap() {
+            return vwap;
+        }
+
+        Double volumeSma20() {
+            return volumeSma20;
+        }
+
+        Double marketCap() {
+            return marketCap;
+        }
+
+        Long circulatingSupply() {
+            return circulatingSupply;
+        }
+
+        Double marketCapToVolume() {
+            return marketCapToVolume;
         }
 
         private static Double calculateBbWidth(final Double upper, final Double lower, final Double middle) {
